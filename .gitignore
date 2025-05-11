@@ -1,5 +1,6 @@
 .venv/
 .env
+.coverage
 
 # Fichiers Python compilés
 *.pyc

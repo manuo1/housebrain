@@ -9,3 +9,10 @@ class TerminalColor(StrEnum):
     MAGENTA = "95"
     CYAN = "96"
     WHITE = "97"
+
+
+DEFAULT_VOLTAGE = 220  # Volts
+
+
+class LoggerLabel(StrEnum):
+    TELEINFOLISTENER = "[TeleinfoListener]"

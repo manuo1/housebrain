@@ -1,5 +1,3 @@
-from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum, StrEnum
 import os
 import serial
@@ -61,7 +59,7 @@ UNUSED_CHARS_IN_TELEINFO = {
 }
 
 # teleinfo sample:
-# b'ADCO 021728123456 =\r\n'
+# b'ADCO 021728123456 @\r\n'
 # b'OPTARIF HC.. <\r\n'
 # b'ISOUSC 45 ?\r\n'
 # b'HCHC 050977332 *\r\n'
@@ -72,10 +70,3 @@ UNUSED_CHARS_IN_TELEINFO = {
 # b'PAPP 00850 .\r\n'
 # b'HHPHC E 0\r\n'
 # b'MOTDETAT 000000 B\r\x03\x02\n'
-
-
-@dataclass
-class Teleinfo:
-    created: datetime | None = None
-    data: dict = field(default_factory=dict)
-    last_save: datetime | None = None

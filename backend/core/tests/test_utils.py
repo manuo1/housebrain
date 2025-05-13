@@ -89,6 +89,7 @@ def test_is_new_hour(old_datetime, new_datetime, expected):
         (None, None),  # None input
         ("Not bytes", None),  # Invalid type (string instead of bytes)
         (b"\xff\xfe\xfd", None),  # Invalid UTF-8 sequence
+        (b"HCHP 056567645 ?\r\n", "HCHP 056567645 ?\r\n"),
     ],
 )
 def test_decode_byte(byte_data, expected):

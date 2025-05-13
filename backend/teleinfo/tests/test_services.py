@@ -21,6 +21,7 @@ from teleinfo.constants import FIRST_TELEINFO_FRAME_KEY, REQUIRED_TELEINFO_KEYS
         (None, None),
         (12345, None),
         ({}, None),
+        ("HCHP 056567645 ?\r\n", "HCHP 056567645 ?"),
     ],
 )
 def test_clean_data(input_data, expected_output):
@@ -48,6 +49,8 @@ def test_clean_data(input_data, expected_output):
         ("DATA TEST ~", ["DATA", "TEST", "~"]),
         # more than 3 data
         ("ADCO 021728123456 = EXTRA", [None, None, None]),
+        #
+        ("HCHP 056567645 ?", ["HCHP", "056567645", "?"]),
     ],
 )
 def test_split_data(cleaned_data, expected):
@@ -69,6 +72,7 @@ def test_split_data(cleaned_data, expected):
         ("KEY", None, None),  # Test with 'None' as value
         (None, None, None),  # Test with 'None' as key and value
         (123, "VALUE", None),  # Test with a non-string type
+        ("HCHP", "056567645", "?"),
     ],
 )
 def test_calculate_checksum(key, value, expected):
@@ -89,6 +93,7 @@ def test_calculate_checksum(key, value, expected):
         ("", "021728123456", "@", False),
         ("ADCO", "", "@", False),
         ("ADCO", "021728123456", "", False),
+        ("HCHP", "056567645", "?", True),
     ],
 )
 def test_data_is_valid(key, value, checksum, expected):
@@ -105,6 +110,7 @@ def test_data_is_valid(key, value, checksum, expected):
         (None, None, None),
         (b"TRUNCATED DATA", None, None),
         (b"INVALID CHAR\xff", None, None),
+        (b"HCHP 056567645 ?\r\n", "HCHP", "056567645"),
     ],
 )
 def test_get_data_in_line(byte_data, expected_key, expected_value):
@@ -128,6 +134,7 @@ def test_get_data_in_line(byte_data, expected_key, expected_value):
         (123, {FIRST_TELEINFO_FRAME_KEY: "a"}, False),
         # Buffer is not a dictionary
         ("KEY", "not_a_dict", False),
+        ("HCHP", {FIRST_TELEINFO_FRAME_KEY: "a"}, True),
     ],
 )
 def test_buffer_can_accept_new_data(key, buffer, expected):

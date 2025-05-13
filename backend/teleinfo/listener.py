@@ -75,11 +75,12 @@ class TeleinfoListener:
     def _process_data(self, raw_data: bytes) -> None:
         """Process the incoming raw data line."""
         key, value = get_data_in_line(raw_data)
+
         if buffer_can_accept_new_data(key, self.buffer):
             self.buffer[key] = value
         if buffer_is_complete(self.buffer):
             self.teleinfo = self.buffer.copy()
-            self.teleinfo.update({"created": timezone.now(), "last_save": None})
+            self.teleinfo.update({"created": timezone.now(), "last_saved_at": None})
             self.buffer.clear()
             logger.info(
                 colored_text(

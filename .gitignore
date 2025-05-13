@@ -1,6 +1,7 @@
 .venv/
 .env
 .coverage
+staticfiles
 
 # Fichiers Python compilés
 *.pyc

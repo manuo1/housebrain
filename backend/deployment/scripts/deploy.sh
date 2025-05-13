@@ -58,6 +58,7 @@ python manage.py collectstatic --no-input
 sudo chown -R admin:www-data /home/admin/housebrain
 chmod 664 /home/admin/housebrain/backend/db.sqlite3
 chmod 775 /home/admin/housebrain/backend
+mkdir -p /home/admin/housebrain/backend/media
 sudo chmod 775 /home/admin/housebrain/backend/media
 
 # Démarrer et activer Gunicorn

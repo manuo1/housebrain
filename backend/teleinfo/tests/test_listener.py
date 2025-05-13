@@ -1,6 +1,7 @@
 from unittest.mock import patch
 import pytest
 import serial
+from core.constants import LoggerLabel
 from teleinfo.constants import REQUIRED_TELEINFO_KEYS
 from teleinfo.listener import TeleinfoListener
 from freezegun import freeze_time
@@ -97,7 +98,8 @@ def test_process_data_when__buffer_is_only_missing_one_key_to_be_complete(
     ],
 )
 @patch("serial.Serial")
-def test_fetch_data(mock_serial, in_waiting, readline, excepted_buffer):
+@patch("time.sleep", return_value=None)
+def test_fetch_data(mock_sleep, mock_serial, in_waiting, readline, excepted_buffer):
     listener = TeleinfoListener()
     listener.buffer = START_BUFFER.copy()
 
@@ -111,7 +113,8 @@ def test_fetch_data(mock_serial, in_waiting, readline, excepted_buffer):
 
 
 @patch("serial.Serial")
-def test_fetch_data_raise_serial_exception(mock_serial):
+@patch("time.sleep", return_value=None)
+def test_fetch_data_raise_serial_exception(mock_sleep, mock_serial):
     listener = TeleinfoListener()
     listener.buffer = START_BUFFER.copy()
     mock_connection = mock_serial.return_value
@@ -119,3 +122,36 @@ def test_fetch_data_raise_serial_exception(mock_serial):
     mock_connection.readline.side_effect = serial.SerialException()
     # assert nothing breaks in case of an exception and that the buffer doesn't change.
     assert listener.buffer == START_BUFFER
+
+
+@patch("serial.Serial.open", side_effect=serial.SerialException())
+@patch("time.sleep", return_value=None)
+def test_listen_if_serial_exception(mock_sleep, mock_serial):
+    listener = TeleinfoListener()
+    listener.buffer = START_BUFFER.copy()
+    listener._listen()
+    # assert nothing breaks in case of an exception and that the buffer doesn't change.
+    assert listener.buffer == START_BUFFER
+
+
+@patch("teleinfo.listener.logger")
+def test_start_thread(mock_logger):
+    listener = TeleinfoListener()
+    assert not listener._thread.is_alive()
+    listener.start_thread()
+    assert listener._thread.is_alive()
+    mock_logger.info.assert_called_once_with(
+        f"{LoggerLabel.TELEINFOLISTENER} Thread started."
+    )
+
+
+@patch("teleinfo.listener.logger")
+def test_start_thread_when_already_running(mock_logger):
+    listener = TeleinfoListener()
+
+    listener.start_thread()
+    listener.start_thread()
+
+    mock_logger.warning.assert_called_once_with(
+        f"{LoggerLabel.TELEINFOLISTENER} Thread is already running."
+    )

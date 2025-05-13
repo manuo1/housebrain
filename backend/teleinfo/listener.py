@@ -22,23 +22,23 @@ class TeleinfoListener:
         self._stop_event = threading.Event()
         self._thread = threading.Thread(target=self._listen, daemon=True)
 
-    def start(self) -> None:
+    def start_thread(self) -> None:
         """Starts the listener thread."""
         if not self._thread.is_alive():
             self._stop_event.clear()
             self._thread.start()
             logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread started.")
         else:
-            logger.warning(
-                f"{LoggerLabel.TELEINFOLISTENER} Listener is already running."
-            )
+            logger.warning(f"{LoggerLabel.TELEINFOLISTENER} Thread is already running.")
 
-    def stop(self) -> None:
+    def stop_thread(self) -> None:
         """Stops the listener thread."""
         if self._thread.is_alive():
             self._stop_event.set()
             self._thread.join()
             logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread stopped.")
+        else:
+            logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread is already stopped.")
 
     def _listen(self) -> None:
         """Internal method to listen for incoming teleinfo data."""

@@ -17,12 +17,13 @@ sudo apt install -y python3-pip python3-venv nginx
 
 # Configuration Nginx
 echo "Configuration de Nginx..."
-sudo cp /home/admin/housebrain/backend/deployment/nginx/housebrain.conf /etc/nginx/sites-available/housebrain
+sudo cp /home/admin/housebrain/backend/deployment/nginx/housebrain /etc/nginx/sites-available/housebrain
 sudo ln -sf /etc/nginx/sites-available/housebrain /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl restart nginx
 
 # Configuration Gunicorn
 echo "Configuration de Gunicorn..."
+sudo cp /home/admin/housebrain/backend/deployment/gunicorn/gunicorn.socket /etc/systemd/system/
 sudo cp /home/admin/housebrain/backend/deployment/gunicorn/gunicorn.service /etc/systemd/system/
 sudo systemctl daemon-reload
 
@@ -66,4 +67,4 @@ sudo systemctl start gunicorn
 sudo systemctl enable gunicorn
 sudo systemctl status gunicorn
 
-echo "Déploiement terminé ! Accédez à http://housebrain.local/"
+echo "Déploiement terminé ! Accédez à http://housebrain/"

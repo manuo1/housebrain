@@ -1,12 +1,17 @@
 [Unit]
 Description=gunicorn daemon
+Requires=gunicorn.socket
 After=network.target
 
 [Service]
 User=admin
 Group=www-data
 WorkingDirectory=/home/admin/housebrain/backend
-ExecStart=/home/admin/housebrain/backend/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/admin/housebrain/backend/gunicorn.sock core.wsgi:application
+ExecStart=/home/admin/housebrain/backend/.venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          core.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

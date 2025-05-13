@@ -1,7 +1,7 @@
 Dans un terminal, connectez vous au raspberry :
 
 ```bash
-ssh admin@housebrain.local
+ssh admin@housebrain
 ```
 Sur votre Raspberry Pi :
 

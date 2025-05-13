@@ -58,7 +58,7 @@ Attendre que l'image soit flashée sur la clé USB
 
 Dans un terminal, tapez la commande suivante :
 ```bash
-ssh admin@housebrain.local
+ssh admin@housebrain
 ```
 
 - Lorsque vous y êtes invité, tapez **`yes`** pour accepter la connexion.

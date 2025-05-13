@@ -1,4 +1,6 @@
+from unittest.mock import patch
 import pytest
+import serial
 from teleinfo.constants import REQUIRED_TELEINFO_KEYS
 from teleinfo.listener import TeleinfoListener
 from freezegun import freeze_time
@@ -37,7 +39,7 @@ def test_process_data_when_buffer_is_empty(new_serial, excepted_buffer):
 )
 def test_process_data_when_buffer_is_not_empty(new_serial, excepted_buffer):
     listener = TeleinfoListener()
-    listener.buffer = START_BUFFER
+    listener.buffer = START_BUFFER.copy()
     listener._process_data(new_serial)
     assert listener.buffer == excepted_buffer
     assert listener.teleinfo == {}
@@ -85,3 +87,35 @@ def test_process_data_when__buffer_is_only_missing_one_key_to_be_complete(
 
     assert listener.buffer == excepted_buffer
     assert listener.teleinfo == excepted_teleinfo
+
+
+@pytest.mark.parametrize(
+    "in_waiting, readline, excepted_buffer",
+    [
+        (True, b"ISOUSC 45 ?\r\n", {**START_BUFFER, "ISOUSC": "45"}),
+        (False, "", START_BUFFER),
+    ],
+)
+@patch("serial.Serial")
+def test_fetch_data(mock_serial, in_waiting, readline, excepted_buffer):
+    listener = TeleinfoListener()
+    listener.buffer = START_BUFFER.copy()
+
+    mock_connection = mock_serial.return_value
+    mock_connection.in_waiting = in_waiting
+    mock_connection.readline.return_value = readline
+
+    listener._fetch_data(mock_connection)
+
+    assert listener.buffer == excepted_buffer
+
+
+@patch("serial.Serial")
+def test_fetch_data_raise_serial_exception(mock_serial):
+    listener = TeleinfoListener()
+    listener.buffer = START_BUFFER.copy()
+    mock_connection = mock_serial.return_value
+    mock_connection.in_waiting = True
+    mock_connection.readline.side_effect = serial.SerialException()
+    # assert nothing breaks in case of an exception and that the buffer doesn't change.
+    assert listener.buffer == START_BUFFER

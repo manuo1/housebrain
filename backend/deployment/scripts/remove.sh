@@ -59,5 +59,14 @@ else
     echo "Redis est toujours présent. Vérifiez manuellement."
 fi
 
+# Arrêt et suppression de Teleinfo Listener
+print_step "Arrêt et suppression de Teleinfo Listener..."
+sudo systemctl stop teleinfo-listener
+sudo systemctl disable teleinfo-listener
+sudo rm /etc/systemd/system/teleinfo-listener.service || true
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+
+
 print_step "Suppression complète terminée."
 print_step "Merci de redémarrer le Raspberry avant toute nouvelle installation."

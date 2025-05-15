@@ -17,4 +17,5 @@ python-dotenv==1.1.0
 redis==6.1.0
 six==1.17.0
 sqlparse==0.5.3
+systemd-python==235; sys_platform == 'linux'
 tzdata==2025.2

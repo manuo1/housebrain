@@ -1,6 +1,32 @@
-```bash
-# Voir les logs de Gunicorn
-sudo journalctl -u gunicorn --since "5 minutes ago"
+##  **Voir les logs en temps réel :**
 
-# Voir les logs d'erreur de Nginx
-sudo tail -f /var/log/nginx/error.log
+### **Nginx :**
+Affiche les logs du serveur web Nginx.
+```bash
+sudo journalctl -u nginx -f
+```
+
+---
+
+### **Gunicorn :**
+Affiche les logs du serveur d'application Gunicorn.
+```bash
+sudo journalctl -u gunicorn -f
+```
+
+---
+
+### **Teleinfo Listener :**
+Affiche les logs du listener Teleinfo.
+```bash
+sudo journalctl -u teleinfo-listener -f
+```
+
+---
+
+### **Redis :**
+Affiche les logs du serveur Redis.
+```bash
+sudo journalctl -u redis-server -f
+```
+

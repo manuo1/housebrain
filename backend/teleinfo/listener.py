@@ -11,7 +11,7 @@ from teleinfo.constants import SerialConfig
 from django.utils import timezone
 from django.core.cache import caches
 
-# from systemd import daemon
+from systemd import daemon
 
 cache = caches["default"]
 logger = logging.getLogger("django")
@@ -63,4 +63,4 @@ class TeleinfoListener:
             self.teleinfo.update({"created": timezone.now(), "last_saved_at": None})
             self.buffer.clear()
             cache.set("teleinfo_data", self.teleinfo)
-            # daemon.notify("WATCHDOG=1")
+            daemon.notify("WATCHDOG=1")

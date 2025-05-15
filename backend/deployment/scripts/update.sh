@@ -17,7 +17,8 @@ sudo systemctl stop gunicorn
 
 print_step "Mise à jour du code source..."
 cd /home/admin/housebrain
-git pull origin main
+git fetch 
+git reset --hard origin/main
 
 # Activation le l'env virtuel
 source backend/.venv/bin/activate

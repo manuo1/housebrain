@@ -4,9 +4,6 @@ from django.http import JsonResponse
 
 def teleinfo_data(request):
     """Return the latest Teleinfo data as JSON."""
-
-
-def teleinfo_view(request):
-    data = cache.get("teleinfo_data", {})
+    data = cache.get("teleinfo_data", {"created": None, "last_saved_at": None})
     sorted_data = dict(sorted(data.items()))
     return JsonResponse(sorted_data)

@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from django.core.cache import cache
+from django.http import JsonResponse
 
-# Create your views here.
+
+def teleinfo_data(request):
+    """Return the latest Teleinfo data as JSON."""
+    data = cache.get("teleinfo_data", {})
+    return JsonResponse(data)

@@ -2,15 +2,15 @@ import logging
 import serial
 import threading
 import time
-from core.utils import colored_text
 from teleinfo.services import (
     buffer_can_accept_new_data,
     get_data_in_line,
     buffer_is_complete,
 )
-from core.constants import LoggerLabel, TerminalColor
+from core.constants import LoggerLabel
 from teleinfo.constants import SerialConfig
 from django.utils import timezone
+from django.core.cache import cache
 
 logger = logging.getLogger("django")
 
@@ -79,12 +79,8 @@ class TeleinfoListener:
         if buffer_can_accept_new_data(key, self.buffer):
             self.buffer[key] = value
         if buffer_is_complete(self.buffer):
+            self.teleinfo.clear()
             self.teleinfo = self.buffer.copy()
             self.teleinfo.update({"created": timezone.now(), "last_saved_at": None})
             self.buffer.clear()
-            logger.info(
-                colored_text(
-                    f"{LoggerLabel.TELEINFOLISTENER} Teleinfo : {self.teleinfo}",
-                    TerminalColor.CYAN,
-                )
-            )
+            cache.set("teleinfo_data", self.teleinfo)

@@ -40,5 +40,24 @@ sudo rm /run/gunicorn.sock || true
 print_step "Suppression du dossier HouseBrain..."
 sudo rm -rf /home/admin/housebrain
 
+# Arrêt et suppression de Redis
+print_step "Arrêt et suppression de Redis..."
+sudo systemctl stop redis-server
+sudo systemctl disable redis-server
+sudo apt-get remove --purge -y redis-server
+sudo apt-get autoremove -y
+sudo apt-get autoclean -y
+print_step "Suppression des fichiers de configuration et logs de Redis..."
+sudo rm -rf /etc/redis/
+sudo rm -rf /var/lib/redis/
+sudo rm -rf /var/log/redis/
+print_step "Suppression de l'utilisateur Redis..."
+sudo userdel -r redis 2>/dev/null || echo "L'utilisateur 'redis' n'existe pas."
+if ! command -v redis-server &> /dev/null; then
+    print_step "Redis désinstallé avec succès."
+else
+    echo "Redis est toujours présent. Vérifiez manuellement."
+fi
+
 print_step "Suppression complète terminée."
-print_step "Merci de redémarrer le Raspberry avant toute nouvelles installation"
+print_step "Merci de redémarrer le Raspberry avant toute nouvelle installation."

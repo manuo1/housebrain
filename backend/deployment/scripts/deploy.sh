@@ -84,14 +84,18 @@ python manage.py migrate
 python manage.py collectstatic --no-input
 
 # Permissions
+print_step "Configuration des permissions..."
 sudo usermod -aG admin www-data
 sudo chmod 750 /home/admin
-print_step "Configuration des permissions..."
 sudo chown -R admin:www-data /home/admin/housebrain
 chmod 664 /home/admin/housebrain/backend/db.sqlite3
 chmod 775 /home/admin/housebrain/backend
 mkdir -p /home/admin/housebrain/backend/media
 sudo chmod 775 /home/admin/housebrain/backend/media
+
+print_step "Rendre les scripts de désinstallions et mise à jour exécutables"
+chmod +x /home/admin/housebrain/backend/deployment/scripts/remove.sh
+chmod +x /home/admin/housebrain/backend/deployment/scripts/update.sh
 
 # Démarrer et activer Gunicorn
 print_step "Démarrage de Gunicorn..."

@@ -95,7 +95,10 @@ sudo chmod 775 /home/admin/housebrain/backend/media
 print_step "Démarrage de Gunicorn..."
 sudo systemctl start gunicorn
 sudo systemctl enable gunicorn
+# Création du Super Utilisateur
+print_step "Création du Super Utilisateur :"
+python manage.py createsuperuser
+# Terminé
+print_step "Déploiement terminé ! Vous pouvez accédez à HouseBrain aux adresses http://$ip/ ou http//:housebrain/"
 sudo systemctl status gunicorn
 
-# Fin du déploiement
-print_step "Déploiement terminé ! Accédez à http://$ip/"

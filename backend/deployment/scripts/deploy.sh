@@ -20,7 +20,7 @@ sudo apt update && sudo apt upgrade -y
 
 # Installation des dépendances
 print_step "Installation des dépendances..."
-sudo apt install -y python3-pip python3-venv nginx
+sudo apt install -y python3-pip python3-venv nginx pkg-config libsystemd-dev
 
 # Configuration Nginx
 print_step "Configuration de Nginx..."

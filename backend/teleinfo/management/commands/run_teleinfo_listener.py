@@ -10,10 +10,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         listener = TeleinfoListener()
-        listener.start_thread()
-
-        try:
-            while listener._thread.is_alive():
-                listener._thread.join(5)
-        except KeyboardInterrupt:
-            listener.stop_thread()
+        listener.start()

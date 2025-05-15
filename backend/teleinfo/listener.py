@@ -1,6 +1,5 @@
 import logging
 import serial
-import threading
 import time
 from teleinfo.services import (
     buffer_can_accept_new_data,
@@ -12,6 +11,8 @@ from teleinfo.constants import SerialConfig
 from django.utils import timezone
 from django.core.cache import caches
 
+# from systemd import daemon
+
 cache = caches["default"]
 logger = logging.getLogger("django")
 
@@ -20,30 +21,10 @@ class TeleinfoListener:
     def __init__(self) -> None:
         self.buffer = {}
         self.teleinfo = {}
-        self._stop_event = threading.Event()
-        self._thread = threading.Thread(target=self._listen, daemon=True)
         cache.set("teleinfo_data", {"created": timezone.now(), "last_saved_at": None})
 
-    def start_thread(self) -> None:
-        """Starts the listener thread."""
-        if not self._thread.is_alive():
-            self._stop_event.clear()
-            self._thread.start()
-            logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread started.")
-        else:
-            logger.warning(f"{LoggerLabel.TELEINFOLISTENER} Thread is already running.")
-
-    def stop_thread(self) -> None:
-        """Stops the listener thread."""
-        if self._thread.is_alive():
-            self._stop_event.set()
-            self._thread.join(5)
-            logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread stopped.")
-        else:
-            logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread is already stopped.")
-
-    def _listen(self) -> None:
-        """Internal method to listen for incoming teleinfo data."""
+    def start(self) -> None:
+        """Starts the listener process."""
         try:
             with serial.Serial(
                 port=SerialConfig.PORT.value,
@@ -53,8 +34,9 @@ class TeleinfoListener:
                 bytesize=SerialConfig.BYTESIZE.value,
                 timeout=SerialConfig.TIMEOUT.value,
             ) as serial_connection:
+                logger.info(f"{LoggerLabel.TELEINFOLISTENER} Listening for data...")
 
-                while not self._stop_event.is_set():
+                while True:
                     self._fetch_data(serial_connection)
         except serial.SerialException as e:
             logger.error(f"{LoggerLabel.TELEINFOLISTENER} Cannot open serial port: {e}")
@@ -65,11 +47,6 @@ class TeleinfoListener:
         try:
             if connection.in_waiting:
                 self._process_data(connection.readline())
-            else:
-                logger.warning(
-                    f"{LoggerLabel.TELEINFOLISTENER} No data received, retrying..."
-                )
-                time.sleep(1)
         except serial.SerialException as e:
             logger.error(f"{LoggerLabel.TELEINFOLISTENER} Serial error: {e}")
             time.sleep(2)
@@ -86,3 +63,4 @@ class TeleinfoListener:
             self.teleinfo.update({"created": timezone.now(), "last_saved_at": None})
             self.buffer.clear()
             cache.set("teleinfo_data", self.teleinfo)
+            # daemon.notify("WATCHDOG=1")

@@ -41,3 +41,4 @@ print_step "Suppression du dossier HouseBrain..."
 sudo rm -rf /home/admin/housebrain
 
 print_step "Suppression complète terminée."
+print_step "Merci de redémarrer le Raspberry avant toute nouvelles installation"

@@ -84,6 +84,8 @@ python manage.py migrate
 python manage.py collectstatic --no-input
 
 # Permissions
+sudo usermod -aG admin www-data
+sudo chmod 750 /home/admin
 print_step "Configuration des permissions..."
 sudo chown -R admin:www-data /home/admin/housebrain
 chmod 664 /home/admin/housebrain/backend/db.sqlite3

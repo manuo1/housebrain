@@ -4,11 +4,11 @@ server {
 
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
-        root /home/admin/housebrain/backend;
+        alias /home/admin/housebrain/backend/static/;
     }
     
     location /media/ {
-        root /home/admin/housebrain/backend;
+        alias /home/admin/housebrain/backend/media/;
     }
 
     location / {

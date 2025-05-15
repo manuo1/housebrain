@@ -21,6 +21,7 @@ class TeleinfoListener:
         self.teleinfo = {}
         self._stop_event = threading.Event()
         self._thread = threading.Thread(target=self._listen, daemon=True)
+        cache.set("teleinfo_data", {"created": timezone.now(), "last_saved_at": None})
 
     def start_thread(self) -> None:
         """Starts the listener thread."""
@@ -35,7 +36,7 @@ class TeleinfoListener:
         """Stops the listener thread."""
         if self._thread.is_alive():
             self._stop_event.set()
-            self._thread.join()
+            self._thread.join(5)
             logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread stopped.")
         else:
             logger.info(f"{LoggerLabel.TELEINFOLISTENER} Thread is already stopped.")

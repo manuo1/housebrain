@@ -1,3 +1,9 @@
+⚠️Avant de commencer le déploiement il est important de paramétrer une IP fixe pour votre Raspberry 
+
+=> Voir dans les paramètres de votre Box Internet
+
+---
+
 Dans un terminal, connectez vous au raspberry :
 
 ```bash

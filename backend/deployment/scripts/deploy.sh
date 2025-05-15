@@ -57,6 +57,13 @@ sudo systemctl enable redis-server
 sudo systemctl start redis-server
 sudo systemctl is-active --quiet redis-server && echo "Redis is running" || echo "Redis is not running"
 
+# Configuration de teleinfo listener
+print_step "Configuration de Teleinfo listener..."
+sudo cp /home/admin/housebrain/backend/deployment/teleinfo-listener/teleinfo-listener.service /etc/systemd/system
+sudo systemctl daemon-reload
+sudo systemctl enable teleinfo-listener.service
+sudo systemctl start teleinfo-listener.service
+
 # Activer l'environnement virtuel
 source .venv/bin/activate
 

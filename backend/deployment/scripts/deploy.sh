@@ -67,8 +67,13 @@ fi
 
 # Ajout de l'IP locale du Raspberry dans le fichier .env
 ip=$(hostname -I | awk '{print $1}')
-if ! grep -q "RASPBERRYPI_LOCAL_IP" .env; then
-    echo "RASPBERRYPI_LOCAL_IP=$ip" >> .env
+ENV_FILE="/home/admin/housebrain/backend/.env"
+
+if ! grep -q "^RASPBERRYPI_LOCAL_IP=" "$ENV_FILE"; then
+    echo "RASPBERRYPI_LOCAL_IP=$ip" >> "$ENV_FILE"
+    echo "[✔] IP ajoutée dans $ENV_FILE"
+else
+    echo "[✔] IP déjà présente dans $ENV_FILE"
 fi
 
 # Migrations et collecte des fichiers statiques

@@ -50,6 +50,13 @@ if [ ! -d ".venv" ]; then
     python3 -m venv .venv
 fi
 
+# Configuration de redis
+print_step "Configuration de Redis..."
+sudo apt-get install -y redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+sudo systemctl is-active --quiet redis-server && echo "Redis is running" || echo "Redis is not running"
+
 # Activer l'environnement virtuel
 source .venv/bin/activate
 

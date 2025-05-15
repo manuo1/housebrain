@@ -10,8 +10,9 @@ from teleinfo.services import (
 from core.constants import LoggerLabel
 from teleinfo.constants import SerialConfig
 from django.utils import timezone
-from django.core.cache import cache
+from django.core.cache import caches
 
+cache = caches["default"]
 logger = logging.getLogger("django")
 
 

@@ -19,11 +19,11 @@ function print_error() {
 
 print_step "Désinstallation de HouseBrain..."
 
-# 🔹 Rendre tous les scripts exécutables (sécurisation)
-chmod +x ./remove_parts/*.sh
+# 🔹 Rendre tous les scripts exécutables
+chmod +x /home/admin/housebrain/backend/deployment/scripts/remove_parts/*.sh
 
 # 🔹 Exécution des scripts de désinstallation par ordre numérique
-for script in ./remove_parts/*.sh; do
+for script in /home/admin/housebrain/backend/deployment/scripts/remove_parts/*.sh; do
     print_step "Exécution de $(basename "$script")"
     if bash "$script"; then
         print_step "$(basename "$script") exécuté avec succès."

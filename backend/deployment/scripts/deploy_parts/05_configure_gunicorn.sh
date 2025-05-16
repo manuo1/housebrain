@@ -1,7 +1,10 @@
 #!/bin/bash
-# Installation et configuration de Gunicorn
+# Configuration de Gunicorn dans le venv
 
-# Vérification si Gunicorn est déjà installé
+# Activation de l'environnement virtuel
+source /home/admin/housebrain/backend/.venv/bin/activate
+
+# Vérification de l'installation de Gunicorn
 if ! command -v gunicorn &> /dev/null; then
     echo "Gunicorn non détecté, installation en cours..."
     pip install gunicorn
@@ -10,16 +13,16 @@ else
     echo "Gunicorn est déjà installé."
 fi
 
-# Copier les fichiers de service
+# Copie des fichiers de configuration
 sudo cp /home/admin/housebrain/backend/deployment/gunicorn/gunicorn.socket /etc/systemd/system/
 sudo cp /home/admin/housebrain/backend/deployment/gunicorn/gunicorn.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl start gunicorn
 sudo systemctl enable gunicorn
+sudo systemctl start gunicorn
 
-# Vérification du service
+# Vérification de l'état du service
 if systemctl is-active --quiet gunicorn; then
-    echo "Gunicorn est actif."
+    echo "Gunicorn démarré avec succès."
 else
     echo "Gunicorn n'a pas démarré correctement."
 fi

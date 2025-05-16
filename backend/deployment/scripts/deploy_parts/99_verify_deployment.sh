@@ -28,7 +28,7 @@ for service in "${SERVICES[@]}"; do
 done
 
 # 🔹 Vérification de l'application Django
-APP_URL="http://$(hostname -I | awk '{print $1}')/"
+APP_URL="http://$(hostname -I | awk '{print $1}')/admin/"
 
 if curl --output /dev/null --silent --head --fail "$APP_URL"; then
     print_success "L'application HouseBrain est accessible à $APP_URL"
@@ -56,7 +56,7 @@ done
 # 🔹 Vérification des répertoires
 DIRS=(
     "/home/admin/housebrain/backend/media"
-    "/home/admin/housebrain/backend/deployment"
+    "/home/admin/housebrain/backend/static"
 )
 
 for dir in "${DIRS[@]}"; do

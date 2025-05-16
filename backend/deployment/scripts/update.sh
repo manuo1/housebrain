@@ -1,56 +1,62 @@
 #!/bin/bash
-# Script de mise à jour pour HouseBrain sur Raspberry Pi
+# Script de mise à jour pour HouseBrain
 
 # Arrêter en cas d'erreur
 set -e
 
 # Couleurs
 GREEN='\033[0;32m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 function print_step() {
     echo -e "${GREEN}[✔] $1${NC}"
 }
 
-print_step "Arrêt de Gunicorn..."
+function print_error() {
+    echo -e "${RED}[✘] $1${NC}"
+}
+
+print_step "Mise à jour de HouseBrain..."
+
+# 🔹 Arrêt des services
+print_step "Arrêt des services..."
+sudo systemctl stop nginx
 sudo systemctl stop gunicorn
+sudo systemctl stop teleinfo-listener.service
 
-print_step "Arrêt de Teleinfo Listener..."
-sudo systemctl stop teleinfo-listener
-
-print_step "Mise à jour du code source..."
+# 🔹 Mise à jour du dépôt
+print_step "Mise à jour du code source depuis Git..."
 cd /home/admin/housebrain
-git fetch 
+git fetch --all
 git reset --hard origin/main
+git pull origin main
 
-# Activation de l'environnement virtuel
-source backend/.venv/bin/activate
-
-print_step "Mise à jour des dépendances Python (si nécessaire)..."
-pip install -r backend/requirements.txt
-
-print_step "Application des migrations (si nécessaire)..."
+# 🔹 Mise à jour de l'environnement virtuel
+print_step "Activation de l'environnement virtuel..."
 cd backend
+source .venv/bin/activate
+
+print_step "Mise à jour des dépendances..."
+pip install -r requirements.txt
+
+# 🔹 Migrations Django et collectstatic
+print_step "Application des migrations..."
 python manage.py migrate
 
 print_step "Collecte des fichiers statiques..."
 python manage.py collectstatic --no-input
 
-# Désactivation de l'environnement virtuel
-deactivate
-
-print_step "Redémarrage de Redis..."
-sudo systemctl restart redis-server
-sudo systemctl is-active --quiet redis-server && echo "Redis is running" || echo "Redis is not running"
-
-print_step "Redémarrage de Gunicorn..."
+# 🔹 Redémarrage des services
+print_step "Redémarrage des services..."
+sudo systemctl start nginx
 sudo systemctl start gunicorn
+sudo systemctl start teleinfo-listener.service
 
-print_step "Redémarrage de Nginx..."
-sudo systemctl restart nginx
+# 🔹 Vérification des statuts
+print_step "Vérification des statuts des services..."
+sudo systemctl status nginx --no-pager
+sudo systemctl status gunicorn --no-pager
+sudo systemctl status teleinfo-listener.service --no-pager
 
-print_step "Redémarrage de Teleinfo Listener..."
-sudo systemctl start teleinfo-listener
-sudo systemctl is-active --quiet teleinfo-listener && echo "Teleinfo Listener is running" || echo "Teleinfo Listener is not running"
-
-print_step "Mise à jour terminée avec succès !"
+print_step "Mise à jour de HouseBrain terminée avec succès !"

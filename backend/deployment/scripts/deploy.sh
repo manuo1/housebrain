@@ -20,10 +20,10 @@ function print_error() {
 print_step "Déploiement de HouseBrain..."
 
 # 🔹 Rendre tous les scripts exécutables (sécurisation)
-chmod +x ./deploy_parts/*.sh
+chmod +x /home/admin/housebrain/backend/deployment/scripts/deploy_parts/*.sh
 
 # 🔹 Exécution des scripts de déploiement par ordre numérique
-for script in ./deploy_parts/*.sh; do
+for script in /home/admin/housebrain/backend/deployment/scripts/deploy_parts/*.sh; do
     print_step "Exécution de $(basename "$script")"
     if bash "$script"; then
         print_step "$(basename "$script") exécuté avec succès."

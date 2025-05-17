@@ -1,5 +1,5 @@
-from django.conf import settings
 import logging
+import os
 
 from core.constants import LoggerLabel
 
@@ -10,7 +10,7 @@ def notify_watchdog() -> None:
     """
     Notify the systemd watchdog only in production.
     """
-    if settings.ENVIRONMENT == "production":
+    if os.environ["ENVIRONMENT"] == "production":
         try:
             from systemd import daemon
 

@@ -1,5 +1,5 @@
 import pytest
-from core.utils import (
+from core.utils.utils import (
     colored_text,
     watt_to_ampere,
     ampere_to_watt,

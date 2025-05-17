@@ -13,7 +13,7 @@ logger = logging.getLogger("django")
 class BluetoothListener:
     def __init__(self):
         self.sensors = {}
-        cache.set("sensors_data", {"created": timezone.now(), "last_saved_at": None})
+        cache.set("sensors_data", self.sensors)
 
     async def start_scanner(self):
         """Starts the Bluetooth listener process."""
@@ -38,6 +38,7 @@ class BluetoothListener:
                     "name": device.name or "Unknown",
                     "rssi": advertisement_data.rssi,
                     "last_seen": timezone.now(),
+                    "last_saved_at": None,
                     **measurements,
                 }
 

@@ -1,7 +1,5 @@
 #!/bin/bash
-# Installation de Bleak dans le venv avec version spécifique
-
-# Activation de l'environnement virtuel
+# # Configuration de Bluetooth Listener
 source /home/admin/housebrain/backend/.venv/bin/activate
 
 BLEAK_VERSION="0.22.3"
@@ -14,3 +12,16 @@ if ! python -c "import bleak; assert bleak.__version__ == '$BLEAK_VERSION'" &> /
 else
     echo "Bleak version $BLEAK_VERSION est déjà installée."
 fi
+
+sudo cp /home/admin/housebrain/backend/deployment/bluetooth-listener/bluetooth-listener.service /etc/systemd/system
+sudo systemctl daemon-reload
+sudo systemctl enable bluetooth-listener.service
+sudo systemctl start bluetooth-listener.service
+
+# Vérification du service
+if systemctl is-active --quiet bluetooth-listener.service; then
+    echo "Teleinfo Listener est actif."
+else
+    echo "Teleinfo Listener n'a pas démarré correctement."
+fi
+

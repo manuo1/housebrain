@@ -11,6 +11,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("authentication.urls")),
     path("teleinfo/", include("teleinfo.urls")),
+    path("sensors/", include("sensors.urls")),
 ]
 
 if os.environ["ENVIRONMENT"] == "development":

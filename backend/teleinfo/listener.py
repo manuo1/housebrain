@@ -21,8 +21,8 @@ class TeleinfoListener:
     def __init__(self) -> None:
         self.buffer = {}
         self.teleinfo = {}
-        cache.set("teleinfo_data", {"last_read": None})
-        cache.set("teleinfo_data_last_saved_at", None)
+        cache.set("teleinfo_data", {"last_read": None}, timeout=None)
+        cache.set("teleinfo_data_last_saved_at", None, timeout=None)
 
     def start(self) -> None:
         """Starts the listener process."""
@@ -63,5 +63,5 @@ class TeleinfoListener:
             self.teleinfo = self.buffer.copy()
             self.teleinfo.update({"last_read": timezone.now()})
             self.buffer.clear()
-            cache.set("teleinfo_data", self.teleinfo)
+            cache.set("teleinfo_data", self.teleinfo, timeout=None)
             notify_watchdog()

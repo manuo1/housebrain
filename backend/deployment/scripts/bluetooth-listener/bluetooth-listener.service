@@ -1,0 +1,19 @@
+[Unit]
+Description=Bluetooth Listener Service
+After=network.target
+
+[Service]
+User=admin
+Group=www-data
+WorkingDirectory=/home/admin/housebrain/backend
+ExecStart=/home/admin/housebrain/backend/.venv/bin/python3 manage.py run_bluetooth_listener
+Restart=always
+Environment="DJANGO_SETTINGS_MODULE=core.settings.production"
+
+# Configuration du Watchdog
+WatchdogSec=15s  
+RestartSec=5s  
+Type=simple  
+
+[Install]
+WantedBy=multi-user.target

@@ -64,8 +64,7 @@ def test_process_data_when_buffer_is_not_empty(
             {
                 **INCOMPLETE_BUFFER,
                 "ISOUSC": "45",
-                "created": NOW_DATETIME,
-                "last_saved_at": None,
+                "last_read": NOW_DATETIME,
             },
         ),
         # Adding new key (not a REQUIRED_TELEINFO_KEYS)

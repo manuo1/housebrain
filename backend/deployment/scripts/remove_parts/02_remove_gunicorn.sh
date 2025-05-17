@@ -10,6 +10,7 @@ sudo systemctl disable gunicorn
 # Supprimer les fichiers de service
 sudo rm -f /etc/systemd/system/gunicorn.service
 sudo rm -f /etc/systemd/system/gunicorn.socket
+sudo rm -f /run/gunicorn.sock
 sudo systemctl daemon-reload
 
 # Supprimer Gunicorn du venv

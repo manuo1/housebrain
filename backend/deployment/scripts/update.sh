@@ -24,6 +24,7 @@ print_step "Arrêt des services..."
 sudo systemctl stop nginx
 sudo systemctl stop gunicorn
 sudo systemctl stop teleinfo-listener.service
+sudo systemctl stop bluetooth-listener.service
 
 # 🔹 Mise à jour du dépôt
 print_step "Mise à jour du code source depuis Git..."
@@ -52,11 +53,13 @@ print_step "Redémarrage des services..."
 sudo systemctl start nginx
 sudo systemctl start gunicorn
 sudo systemctl start teleinfo-listener.service
+sudo systemctl start bluetooth-listener.service
 
 # 🔹 Vérification des statuts
 print_step "Vérification des statuts des services..."
 sudo systemctl status nginx --no-pager
 sudo systemctl status gunicorn --no-pager
 sudo systemctl status teleinfo-listener.service --no-pager
+sudo systemctl status bluetooth-listener.service --no-pager
 
 print_step "Mise à jour de HouseBrain terminée avec succès !"

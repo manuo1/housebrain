@@ -17,7 +17,7 @@ function print_error() {
 print_success "Vérification globale de HouseBrain..."
 
 # 🔹 Vérification des services
-SERVICES=("nginx" "gunicorn" "redis-server" "teleinfo-listener")
+SERVICES=("nginx" "gunicorn" "redis-server" "teleinfo-listener" "bluetooth-listener")
 
 for service in "${SERVICES[@]}"; do
     if systemctl is-active --quiet "$service"; then
@@ -43,6 +43,7 @@ FILES=(
     "/etc/nginx/sites-available/housebrain"
     "/etc/systemd/system/gunicorn.service"
     "/etc/systemd/system/teleinfo-listener.service"
+    "/etc/systemd/system/bluetooth-listener.service"
 )
 
 for file in "${FILES[@]}"; do

@@ -4,13 +4,15 @@
 # Activation de l'environnement virtuel
 source /home/admin/housebrain/backend/.venv/bin/activate
 
-# Vérification de l'installation de Gunicorn
-if ! command -v gunicorn &> /dev/null; then
-    echo "Gunicorn non détecté, installation en cours..."
-    pip install gunicorn
-    echo "Gunicorn installé avec succès."
+GUNICORN_VERSION="23.0.0"
+
+# Vérification de l'installation de Gunicorn avec la bonne version
+if ! python -c "import gunicorn; assert gunicorn.__version__ == '$GUNICORN_VERSION'" &> /dev/null; then
+    echo "Gunicorn version $GUNICORN_VERSION non détectée, installation en cours..."
+    pip install gunicorn=="$GUNICORN_VERSION"
+    echo "Gunicorn version $GUNICORN_VERSION installée avec succès."
 else
-    echo "Gunicorn est déjà installé."
+    echo "Gunicorn version $GUNICORN_VERSION est déjà installée."
 fi
 
 # Copie des fichiers de configuration

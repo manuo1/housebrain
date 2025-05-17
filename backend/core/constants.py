@@ -16,3 +16,4 @@ DEFAULT_VOLTAGE = 220  # Volts
 
 class LoggerLabel(StrEnum):
     TELEINFOLISTENER = "[TeleinfoListener]"
+    SYSTEMD = "[Systemd]"

@@ -3,7 +3,7 @@ from teleinfo.constants import (
     REQUIRED_TELEINFO_KEYS,
     UNUSED_CHARS_IN_TELEINFO,
 )
-from core.utils import decode_byte
+from core.utils.utils import decode_byte
 
 
 def clean_data(data: str) -> str | None:

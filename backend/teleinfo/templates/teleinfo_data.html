@@ -41,7 +41,7 @@
     <div id="teleinfo-data">
         {% if data %}
             {% for key, value in data.items %}
-                {% if "last_saved_at" in key or "created" in key %}
+                {% if "last_saved_at" in key or "last_read" in key %}
                     <p class="data-item"><strong>{{ key }}:</strong> {{ value|date:"Y-m-d H:i:s" }}</p>
                 {% else %}
                     <p class="data-item"><strong>{{ key }}:</strong> {{ value }}</p>

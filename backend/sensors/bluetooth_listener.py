@@ -14,6 +14,7 @@ class BluetoothListener:
     def __init__(self):
         self.sensors = {}
         cache.set("sensors_data", self.sensors)
+        cache.set("sensors_data_last_saved_at", None)
 
     async def start_scanner(self):
         """Starts the Bluetooth listener process."""
@@ -44,7 +45,6 @@ class BluetoothListener:
 
                 cache.set("sensors_data", self.sensors)
                 notify_watchdog()
-                logger.info(f"BluetoothListener: Updated sensor {device.address}")
 
     def start(self):
         """Synchronous method to start the Bluetooth listener."""

@@ -19,6 +19,18 @@ function print_error() {
 
 print_step "Mise à jour de HouseBrain..."
 
+# 🔹 Gestion du cron
+print_step "Suppression du cron..."
+
+# Supprimer de la tâche cron
+if crontab -l | grep -q "manage.py periodic_tasks"; then
+    crontab -l | grep -v "manage.py periodic_tasks" | crontab -
+    print_step "Ancienne tâche cron supprimée."
+else
+    print_step "Aucune tâche cron existante trouvée."
+fi
+
+
 # 🔹 Arrêt des services
 print_step "Arrêt des services..."
 sudo systemctl stop nginx
@@ -61,5 +73,11 @@ sudo systemctl status nginx --no-pager
 sudo systemctl status gunicorn --no-pager
 sudo systemctl status teleinfo-listener.service --no-pager
 sudo systemctl status bluetooth-listener.service --no-pager
+
+# Recréer la tâche cron
+CRON_CMD="* * * * * cd /home/admin/housebrain/backend && /home/admin/housebrain/backend/.venv/bin/python manage.py periodic_tasks 2>&1 | sed \"s/^/$(date +\%Y-\%m-\%d\ \%H:\%M:\%S) /\" >> /home/admin/housebrain/backend/logs/cron_tasks.log"
+(crontab -l; echo "$CRON_CMD") | crontab -
+
+print_step "Tâche cron configurée."
 
 print_step "Mise à jour de HouseBrain terminée avec succès !"

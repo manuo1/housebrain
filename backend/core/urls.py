@@ -10,8 +10,9 @@ load_dotenv()
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("authentication.urls")),
-    path("teleinfo/", include("teleinfo.urls")),
+    path("consumption/", include("consumption.urls")),
     path("sensors/", include("sensors.urls")),
+    path("teleinfo/", include("teleinfo.urls")),
 ]
 
 if os.environ["ENVIRONMENT"] == "development":

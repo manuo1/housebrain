@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     #
     "authentication",
     "consumption",
+    "scheduler",
     "sensors",
     "teleinfo",
 ]

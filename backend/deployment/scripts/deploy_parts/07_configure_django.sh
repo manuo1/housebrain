@@ -1,6 +1,7 @@
 #!/bin/bash
 # Configuration de Django pour HouseBrain
 
+cd /home/admin/housebrain/backend
 # Activation de l'environnement virtuel
 source /home/admin/housebrain/backend/.venv/bin/activate
 

@@ -19,10 +19,10 @@ function print_error() {
 
 print_step "Désinstallation de HouseBrain..."
 
-# 🔹 Rendre tous les scripts exécutables
+# Rendre tous les scripts exécutables
 chmod +x /home/admin/housebrain/backend/deployment/scripts/remove_parts/*.sh
 
-# 🔹 Exécution des scripts de désinstallation par ordre numérique
+# Exécution des scripts de désinstallation par ordre numérique
 for script in /home/admin/housebrain/backend/deployment/scripts/remove_parts/*.sh; do
     print_step "Exécution de $(basename "$script")"
     if bash "$script"; then
@@ -33,3 +33,4 @@ for script in /home/admin/housebrain/backend/deployment/scripts/remove_parts/*.s
 done
 
 print_step "Désinstallation complète de HouseBrain terminée."
+print_step "Vous devez redémarrer le raspberry avant une autre réinstallions"

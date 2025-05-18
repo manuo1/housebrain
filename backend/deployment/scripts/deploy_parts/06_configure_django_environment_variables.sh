@@ -1,9 +1,4 @@
 #!/bin/bash
-# Configuration de Django pour HouseBrain
-
-# Activation de l'environnement virtuel
-source /home/admin/housebrain/backend/.venv/bin/activate
-
 # Configuration du fichier .env
 cd /home/admin/housebrain/backend
 if [ ! -f ".env" ]; then
@@ -23,10 +18,12 @@ else
     echo "IP déjà présente dans .env"
 fi
 
-# Migrations et collecte des fichiers statiques
-echo "Application des migrations Django..."
-python manage.py migrate
-echo "Collecte des fichiers statiques..."
-python manage.py collectstatic --no-input
-
-echo "Django configuré avec succès."
+# Ajout de l'adresse IP publique dans le .env
+ip_public=$(curl -4 -s ifconfig.me)
+if ! grep -q "^RASPBERRYPI_PUBLIC_IP=" ".env"; then
+    echo -e "\n# Adresse IP publique du Raspberry Pi" >> ".env"
+    echo "RASPBERRYPI_PUBLIC_IP=$ip_public" >> ".env"
+    echo "Adresse IP publique ajoutée dans .env"
+else
+    echo "Adresse IP publique déjà présente dans .env"
+fi

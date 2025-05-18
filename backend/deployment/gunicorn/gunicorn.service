@@ -10,7 +10,7 @@ WorkingDirectory=/home/admin/housebrain/backend
 ExecStart=/home/admin/housebrain/backend/.venv/bin/gunicorn \
           --access-logfile - \
           --error-logfile - \
-          --workers 1 \
+          --workers 3 \
           --bind unix:/run/gunicorn.sock \
           core.wsgi:application
 

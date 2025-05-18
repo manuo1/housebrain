@@ -16,7 +16,7 @@ function print_error() {
 
 print_success "Vérification globale de HouseBrain..."
 
-# 🔹 Vérification des services
+# Vérification des services
 SERVICES=("nginx" "gunicorn" "redis-server" "teleinfo-listener" "bluetooth-listener")
 
 for service in "${SERVICES[@]}"; do
@@ -27,7 +27,7 @@ for service in "${SERVICES[@]}"; do
     fi
 done
 
-# 🔹 Vérification de l'application Django
+# Vérification de l'application Django
 APP_URL="http://$(hostname -I | awk '{print $1}')/admin/"
 
 if curl --output /dev/null --silent --head --fail "$APP_URL"; then
@@ -36,7 +36,7 @@ else
     print_error "L'application HouseBrain n'est pas accessible."
 fi
 
-# 🔹 Vérification des fichiers essentiels
+# Vérification des fichiers essentiels
 FILES=(
     "/home/admin/housebrain/backend/.env"
     "/home/admin/housebrain/backend/db.sqlite3"
@@ -54,7 +54,7 @@ for file in "${FILES[@]}"; do
     fi
 done
 
-# 🔹 Vérification des répertoires
+# Vérification des répertoires
 DIRS=(
     "/home/admin/housebrain/backend/media"
     "/home/admin/housebrain/backend/static"

@@ -42,6 +42,21 @@ class TeleinfoLabel(StrEnum):
     MOTDETAT = "MOTDETAT"  # Mot d'état du compteur
 
 
+TELEINFO_INDEX_LABELS = [
+    TeleinfoLabel.BASE,
+    TeleinfoLabel.HCHC,
+    TeleinfoLabel.HCHP,
+    TeleinfoLabel.EJPHN,
+    TeleinfoLabel.EJPHPM,
+    TeleinfoLabel.BBRHCJB,
+    TeleinfoLabel.BBRHPJB,
+    TeleinfoLabel.BBRHCJW,
+    TeleinfoLabel.BBRHPJW,
+    TeleinfoLabel.BBRHCJR,
+    TeleinfoLabel.BBRHPJR,
+]
+
+
 REQUIRED_TELEINFO_KEYS = [
     TeleinfoLabel.ADCO,
     TeleinfoLabel.MOTDETAT,

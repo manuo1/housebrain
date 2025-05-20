@@ -1,8 +1,8 @@
 from django.contrib import admin
-from consumption.models import DailyConsumption
+from consumption.models import DailyIndexes
 
 
-@admin.register(DailyConsumption)
-class DailyConsumptionAdmin(admin.ModelAdmin):
+@admin.register(DailyIndexes)
+class DailyIndexesAdmin(admin.ModelAdmin):
     list_display = ("date",)
     search_fields = ("date",)

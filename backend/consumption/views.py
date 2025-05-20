@@ -1,14 +1,14 @@
 from django.http import JsonResponse
-from .models import DailyConsumption
+from .models import DailyIndexes
 from datetime import datetime
 
 
-def consumption(request, date):
+def indexes(request, date):
     try:
         date_obj = datetime.strptime(date, "%Y-%m-%d").date()
-        obj = DailyConsumption.objects.get(date=date_obj)
+        obj = DailyIndexes.objects.get(date=date_obj)
         return JsonResponse(obj.values, safe=False)
-    except DailyConsumption.DoesNotExist:
+    except DailyIndexes.DoesNotExist:
         return JsonResponse(
             {"error": "Aucune donnée trouvée pour cette date."}, status=404
         )

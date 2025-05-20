@@ -1,9 +1,9 @@
 from django.db import models
 
 
-class DailyConsumption(models.Model):
+class DailyIndexes(models.Model):
     date = models.DateField(unique=True)
     values = models.JSONField(default=dict)
 
     def __str__(self):
-        return f"Consommation du {self.date}"
+        return f"Indexes du {self.date}"

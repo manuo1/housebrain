@@ -36,7 +36,6 @@ export default function DailyConsumption() {
 
   return (
     <div className={styles.container}>
-      <h1>Daily Consumption for {selectedDate}</h1>
       <DatePicker
         value={selectedDate}
         onChange={handleDateChange}

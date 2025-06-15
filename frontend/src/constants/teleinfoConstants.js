@@ -42,6 +42,20 @@ export const TELEINFO_LABELS = {
   PMAX: "Puissance maximale triphasée",
 };
 
+export const INDEX_LABELS = {
+  BASE: "Consommation",
+  HCHC: "Heures Creuses",
+  HCHP: "Heures Pleines",
+  EJPHN: "Heures Normales",
+  EJPHPM: "Heures de Pointe Mobile",
+  BBRHCJB: "Heures Creuses Jours Bleus",
+  BBRHPJB: "Heures Pleines Jours Bleus",
+  BBRHCJW: "Heures Creuses Jours Blancs",
+  BBRHPJW: "Heures Pleines Jours Blancs",
+  BBRHCJR: "Heures Creuses Jours Rouges",
+  BBRHPJR: "Heures Pleines Jours Rouges",
+};
+
 export const TELEINFO_UNITS = {
   ISOUSC: "A",
   IINST: "A",

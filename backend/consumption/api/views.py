@@ -26,6 +26,6 @@ class DailyWattHourConsumptionView(APIView):
             )
 
         output_serializer = DailyConsumptionOutputSerializer(
-            {"watt_hours": compute_watt_hours(obj.values)}
+            {"date": date_obj, "watt_hours": compute_watt_hours(obj.values)}
         )
         return Response(output_serializer.data)

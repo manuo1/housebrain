@@ -6,6 +6,7 @@ class DailyConsumptionInputSerializer(serializers.Serializer):
 
 
 class DailyConsumptionOutputSerializer(serializers.Serializer):
+    date = serializers.DateField()
     watt_hours = serializers.DictField(
         child=serializers.DictField(child=serializers.IntegerField(allow_null=True)),
         required=False,

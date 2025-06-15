@@ -50,6 +50,25 @@ export default function DailyConsumptionChart({ data }) {
   return (
     <div className={styles.chartContainer}>
       <ResponsiveContainer width="100%" height={400}>
+        {data.totals && (
+          <div className={styles.kwhOverlay}>
+            {Object.entries(data.totals).map(([key, value]) => (
+              <div key={key}>
+                {getReadableLabel(key)}: {(value / 1000).toFixed(2)} kWh
+              </div>
+            ))}
+            <div className={styles.kwhTotal}>
+              Total:{" "}
+              {(
+                Object.values(data.totals).reduce(
+                  (sum, v) => sum + (v ?? 0),
+                  0
+                ) / 1000
+              ).toFixed(2)}{" "}
+              kWh
+            </div>
+          </div>
+        )}
         <LineChart
           data={chartData}
           margin={{ top: 10, right: 30, bottom: 30, left: 0 }}

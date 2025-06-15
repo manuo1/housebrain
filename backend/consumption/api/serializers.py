@@ -11,3 +11,7 @@ class DailyConsumptionOutputSerializer(serializers.Serializer):
         child=serializers.DictField(child=serializers.IntegerField(allow_null=True)),
         required=False,
     )
+    totals = serializers.DictField(
+        child=serializers.IntegerField(allow_null=True),
+        required=False,
+    )

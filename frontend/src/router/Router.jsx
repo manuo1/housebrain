@@ -5,6 +5,7 @@ import DailyConsumption from "../pages/DailyConsumption";
 
 const router = createBrowserRouter([
   { path: "/", element: <Home /> },
+  { path: "/daily-consumption", element: <DailyConsumption /> },
   { path: "/daily-consumption/:date", element: <DailyConsumption /> },
 ]);
 

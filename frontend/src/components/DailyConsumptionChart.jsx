@@ -10,19 +10,42 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import styles from "./DailyConsumptionChart.module.scss";
+import { INDEX_LABELS } from "../constants/teleinfoConstants";
 
-function transformData(data) {
-  console.log(data);
-  const minutes = Object.keys(data.values.HCHC || {});
-  return minutes.map((minute) => ({
-    time: minute,
-    HCHC: data.values.HCHC[minute],
-    HCHP: data.values.HCHP ? data.values.HCHP[minute] : null,
-  }));
+// Couleurs des courbes
+const colors = [
+  "#00E5FF",
+  "#FFC107",
+  "#FF4081",
+  "#7C4DFF",
+  "#69F0AE",
+  "#F44336",
+  "#FFAB00",
+];
+
+// Transforme les données pour Recharts
+function transformData(values) {
+  const allKeys = Object.keys(values);
+  const allTimestamps = Object.keys(values[allKeys[0]] || {});
+  return allTimestamps.map((minute) => {
+    const entry = { time: minute };
+    allKeys.forEach((key) => {
+      entry[key] = values[key][minute] ?? null;
+    });
+    return entry;
+  });
+}
+
+// Label lisible
+function getReadableLabel(key) {
+  return INDEX_LABELS[key] ?? key;
 }
 
 export default function DailyConsumptionChart({ data }) {
-  const chartData = transformData(data);
+  if (!data?.values) return null;
+
+  const chartData = transformData(data.values);
+  const keys = Object.keys(data.values);
 
   return (
     <div className={styles.chartContainer}>
@@ -31,27 +54,44 @@ export default function DailyConsumptionChart({ data }) {
           data={chartData}
           margin={{ top: 10, right: 30, bottom: 30, left: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" interval={59} tick={{ fontSize: 12 }} />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="HCHC"
-            stroke="#8884d8"
-            dot={false}
-            isAnimationActive={false}
+          <CartesianGrid stroke="#444" strokeDasharray="3 3" />
+          <XAxis
+            dataKey="time"
+            interval={59}
+            tick={{ fontSize: 12, fill: "#ccc" }}
+            axisLine={{ stroke: "#555" }}
+            tickLine={{ stroke: "#555" }}
           />
-          {data.values.HCHP && (
+          <YAxis
+            tick={{ fontSize: 12, fill: "#ccc" }}
+            axisLine={{ stroke: "#555" }}
+            tickLine={{ stroke: "#555" }}
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#222",
+              border: "none",
+              color: "#fff",
+            }}
+            itemStyle={{ color: "#fff" }}
+            labelStyle={{ color: "#fff" }}
+            formatter={(value, key) => [value, getReadableLabel(key)]}
+          />
+          <Legend
+            wrapperStyle={{ color: "#ccc" }}
+            formatter={(key) => getReadableLabel(key)}
+          />
+          {keys.map((key, index) => (
             <Line
+              key={key}
               type="monotone"
-              dataKey="HCHP"
-              stroke="#82ca9d"
+              dataKey={key}
+              stroke={colors[index % colors.length]}
               dot={false}
+              strokeWidth={2}
               isAnimationActive={false}
             />
-          )}
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </div>

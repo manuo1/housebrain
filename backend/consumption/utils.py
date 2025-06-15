@@ -34,3 +34,43 @@ def compute_watt_hours(indexes: dict[str, dict[str, int | None] | None]) -> dict
                 watt_hours[label][current_minute] = next_index - current_index
 
     return watt_hours
+
+
+def compute_totals(values: dict[str, dict[str, int | None]]) -> dict[str, int | None]:
+    """
+    Calculate total consumption per label as the difference between
+    the last and first non-null readings of the day.
+
+    Args:
+        values: dict of labels with timestamped readings (int or None).
+
+    Returns:
+        dict of total consumption per label or None if no valid readings.
+    """
+    totals = {}
+
+    for label, indexes in values.items():
+        totals[label] = None
+        if not indexes:
+            continue
+
+        sorted_times = sorted(indexes.keys())
+
+        # Get the first not None value
+        first_val = None
+        for t in sorted_times:
+            if indexes[t] is not None:
+                first_val = indexes[t]
+                break
+
+        # Get the last not None value
+        last_val = None
+        for t in reversed(sorted_times):
+            if indexes[t] is not None:
+                last_val = indexes[t]
+                break
+
+        if first_val and last_val:
+            totals[label] = last_val - first_val
+
+    return totals

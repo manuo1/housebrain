@@ -7,12 +7,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-urlpatterns = [
-    path("admin/", admin.site.urls),
+
+api_patterns = [
+    path("consumption/", include("consumption.api.urls")),
+]
+
+backend_patterns = [
     path("auth/", include("authentication.urls")),
     path("consumption/", include("consumption.urls")),
     path("sensors/", include("sensors.urls")),
     path("teleinfo/", include("teleinfo.urls")),
+]
+
+
+urlpatterns = [
+    path("backend/admin/", admin.site.urls),
+    path("backend/", include((backend_patterns, "backend"), namespace="backend")),
+    path("api/", include((api_patterns, "api"), namespace="api")),
 ]
 
 if os.environ["ENVIRONMENT"] == "development":

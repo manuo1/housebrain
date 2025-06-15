@@ -3,4 +3,31 @@
   padding: 1rem;
   border-radius: 12px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.kwhOverlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(30, 30, 30, 0.9);
+  color: #eee;
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  z-index: 10;
+  pointer-events: none;
+
+  div {
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+  }
+
+  .kwhTotal {
+    font-weight: bold;
+    color: #fff;
+    margin-top: 0.5rem;
+    border-top: 1px solid #555;
+    padding-top: 0.4rem;
+  }
 }

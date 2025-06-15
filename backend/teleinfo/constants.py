@@ -62,6 +62,7 @@ REQUIRED_TELEINFO_KEYS = [
     TeleinfoLabel.MOTDETAT,
     TeleinfoLabel.IINST,
     TeleinfoLabel.ISOUSC,
+    TeleinfoLabel.PAPP,
 ]
 
 FIRST_TELEINFO_FRAME_KEY = TeleinfoLabel.ADCO

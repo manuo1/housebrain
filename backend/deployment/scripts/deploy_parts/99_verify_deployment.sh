@@ -28,7 +28,7 @@ for service in "${SERVICES[@]}"; do
 done
 
 # Vérification de l'application Django
-APP_URL="http://$(hostname -I | awk '{print $1}')/admin/"
+APP_URL="http://$(hostname -I | awk '{print $1}')/backend/admin/"
 
 if curl --output /dev/null --silent --head --fail "$APP_URL"; then
     print_success "L'application HouseBrain est accessible à $APP_URL"

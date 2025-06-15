@@ -1,55 +1,38 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #teleinfo-data {
-            margin-top: 10px;
-            padding: 15px;
-        }
-        .data-item {
-            margin-bottom: 10px;
-            font-size: 1.4em;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #teleinfo-data {
+        margin-top: 10px;
+        padding: 15px;
+      }
+      .data-item {
+        margin-bottom: 10px;
+        font-size: 1.4em;
+      }
     </style>
-    <script>
-        async function refreshPage() {
-            try {
-                const response = await fetch('/teleinfo/data/');
-                if (response.ok) {
-                    const html = await response.text();
-                    document.open();
-                    document.write(html);
-                    document.close();
-                } else {
-                    console.error("Erreur lors de l'actualisation");
-                }
-            } catch (error) {
-                console.error("Erreur de connexion", error);
-            }
-        }
-
-        setInterval(refreshPage, 1000);
-    </script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="teleinfo-data">
-        {% if data %}
-            {% for key, value in data.items %}
-                {% if "last_saved_at" in key or "last_read" in key %}
-                    <p class="data-item"><strong>{{ key }}:</strong> {{ value|date:"Y-m-d H:i:s" }}</p>
-                {% else %}
-                    <p class="data-item"><strong>{{ key }}:</strong> {{ value }}</p>
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            <p>Aucune donnée disponible.</p>
-        {% endif %}
+    {% if data %} 
+        {% for key, value in data.items %} 
+            {% if "last_saved_at" in key or "last_read" in key %}
+                <p class="data-item">
+                    <strong>{{ key }}:</strong> {{ value|date:"Y-m-d H:i:s" }}
+                </p>
+            {% else %}
+                <p class="data-item"><strong>{{ key }}:</strong> {{ value }}</p>
+            {% endif %} 
+        {% endfor %} 
+    {% else %}
+        <p>Aucune donnée disponible.</p>
+    {% endif %}
     </div>
-</body>
+  </body>
 </html>

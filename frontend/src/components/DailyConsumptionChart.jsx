@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Brush,
 } from "recharts";
 import styles from "./DailyConsumptionChart.module.scss";
 import { INDEX_LABELS } from "../constants/teleinfoConstants";
@@ -25,12 +26,15 @@ const colors = [
 
 // Transforme les données pour Recharts
 function transformData(values) {
+  const WH_TO_W_FACTOR = 60; // 1 Wh par minute = 60 W moyen
   const allKeys = Object.keys(values);
   const allTimestamps = Object.keys(values[allKeys[0]] || {});
   return allTimestamps.map((minute) => {
     const entry = { time: minute };
     allKeys.forEach((key) => {
-      entry[key] = values[key][minute] ?? null;
+      const rawValue = values[key][minute];
+      entry[key] =
+        rawValue != null ? Math.round(rawValue * WH_TO_W_FACTOR) : null;
     });
     return entry;
   });
@@ -94,7 +98,10 @@ export default function DailyConsumptionChart({ data }) {
             }}
             itemStyle={{ color: "#fff" }}
             labelStyle={{ color: "#fff" }}
-            formatter={(value, key) => [value, getReadableLabel(key)]}
+            formatter={(value, key) => [
+              `${value} ${"watt"}`,
+              getReadableLabel(key),
+            ]}
           />
           <Legend
             wrapperStyle={{ color: "#ccc" }}
@@ -103,7 +110,7 @@ export default function DailyConsumptionChart({ data }) {
           {keys.map((key, index) => (
             <Line
               key={key}
-              type="monotone"
+              type="stepAfter"
               dataKey={key}
               stroke={colors[index % colors.length]}
               dot={false}
@@ -111,6 +118,7 @@ export default function DailyConsumptionChart({ data }) {
               isAnimationActive={false}
             />
           ))}
+          <Brush dataKey="time" height={30} stroke="#8884d8" />
         </LineChart>
       </ResponsiveContainer>
     </div>

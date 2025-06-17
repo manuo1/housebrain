@@ -54,6 +54,7 @@ export const INDEX_LABELS = {
   BBRHPJW: "Heures Pleines Jours Blancs",
   BBRHCJR: "Heures Creuses Jours Rouges",
   BBRHPJR: "Heures Pleines Jours Rouges",
+  missing_indexes: "Extrapolées",
 };
 
 export const TELEINFO_UNITS = {

@@ -86,3 +86,13 @@ UNUSED_CHARS_IN_TELEINFO = {
 # b'PAPP 00850 .\r\n'
 # b'HHPHC E 0\r\n'
 # b'MOTDETAT 000000 B\r\x03\x02\n'
+
+# Connaître la puissance souscrite du contrat grace au champ ISOUC de la teleinfo
+ISOUC_TO_SUBSCRIBED_POWER = {
+    # A : kva
+    "15": 3,
+    "30": 6,
+    "45": 9,
+    "60": 12,
+    "90": 15,
+}

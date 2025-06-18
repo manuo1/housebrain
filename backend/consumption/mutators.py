@@ -1,7 +1,11 @@
 import logging
 from core.constants import LoggerLabel
 from consumption.utils import generate_daily_index_structure
-from teleinfo.constants import TELEINFO_INDEX_LABELS, TeleinfoLabel
+from teleinfo.constants import (
+    ISOUC_TO_SUBSCRIBED_POWER,
+    TELEINFO_INDEX_LABELS,
+    TeleinfoLabel,
+)
 from consumption.models import DailyIndexes
 from django.utils import timezone
 from django.core.cache import cache
@@ -34,12 +38,20 @@ def save_teleinfo_data():
     }
 
     tarif_period = cache_teleinfo_data.get(TeleinfoLabel.PTEC)
+    subscribed_intensity = cache_teleinfo_data.get(TeleinfoLabel.ISOUSC)
 
     # Update current day
-
     daily_indexes, _ = DailyIndexes.objects.get_or_create(
-        date=now_date, defaults={"values": {}, "tarif_periods": {}}
+        date=now_date,
+        defaults={
+            "values": {},
+            "tarif_periods": {},
+            "subscribed_power": None,
+        },
     )
+
+    if subscribed_intensity:
+        daily_indexes.subscribed_power = ISOUC_TO_SUBSCRIBED_POWER[subscribed_intensity]
 
     if len(daily_indexes.tarif_periods) < 1441:
         daily_indexes.tarif_periods = generate_daily_index_structure()
@@ -58,8 +70,18 @@ def save_teleinfo_data():
         previous_day = now_date - timezone.timedelta(days=1)
 
         previous_day_indexes, _ = DailyIndexes.objects.get_or_create(
-            date=previous_day, defaults={"values": {}, "tarif_periods": {}}
+            date=previous_day,
+            defaults={
+                "values": {},
+                "tarif_periods": {},
+                "subscribed_power": None,
+            },
         )
+
+        if subscribed_intensity:
+            previous_day_indexes.subscribed_power = ISOUC_TO_SUBSCRIBED_POWER[
+                subscribed_intensity
+            ]
 
         if len(daily_indexes.tarif_periods) < 1441:
             previous_day_indexes.tarif_periods = generate_daily_index_structure()

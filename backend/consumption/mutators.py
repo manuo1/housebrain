@@ -1,7 +1,7 @@
 import logging
 from core.constants import LoggerLabel
 from consumption.utils import generate_daily_index_structure
-from teleinfo.constants import TELEINFO_INDEX_LABELS
+from teleinfo.constants import TELEINFO_INDEX_LABELS, TeleinfoLabel
 from consumption.models import DailyIndexes
 from django.utils import timezone
 from django.core.cache import cache
@@ -33,11 +33,17 @@ def save_teleinfo_data():
         if key in TELEINFO_INDEX_LABELS
     }
 
+    tarif_period = cache_teleinfo_data.get(TeleinfoLabel.PTEC)
+
     # Update current day
 
     daily_indexes, _ = DailyIndexes.objects.get_or_create(
-        date=now_date, defaults={"values": {}}
+        date=now_date, defaults={"values": {}, "tarif_periods": {}}
     )
+
+    if len(daily_indexes.tarif_periods) < 1441:
+        daily_indexes.tarif_periods = generate_daily_index_structure()
+    daily_indexes.tarif_periods[now_minute_str] = tarif_period
 
     for label, value in indexes_in_teleinfo.items():
         try:
@@ -52,8 +58,12 @@ def save_teleinfo_data():
         previous_day = now_date - timezone.timedelta(days=1)
 
         previous_day_indexes, _ = DailyIndexes.objects.get_or_create(
-            date=previous_day, defaults={}
+            date=previous_day, defaults={"values": {}, "tarif_periods": {}}
         )
+
+        if len(daily_indexes.tarif_periods) < 1441:
+            previous_day_indexes.tarif_periods = generate_daily_index_structure()
+        previous_day_indexes.tarif_periods["24:00"] = tarif_period
 
         for label, value in indexes_in_teleinfo.items():
             try:

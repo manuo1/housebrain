@@ -35,3 +35,13 @@ def decode_byte(byte_data: bytes) -> str | None:
         return byte_data.decode("utf-8")
     except (UnicodeDecodeError, AttributeError):
         return None
+
+
+def wh_to_watt(wh: float, duration_minutes: float) -> float:
+    """Convert watt hour to watt"""
+    if not isinstance(wh, (int, float)):
+        return None
+    if not duration_minutes:
+        return None
+    duration_hours = duration_minutes / 60
+    return wh / duration_hours

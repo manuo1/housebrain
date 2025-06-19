@@ -42,6 +42,32 @@ class TeleinfoLabel(StrEnum):
     MOTDETAT = "MOTDETAT"  # Mot d'état du compteur
 
 
+TELEINFO_LABEL_TRANSLATIONS = {
+    TeleinfoLabel.ADCO: "Adresse du compteur",
+    TeleinfoLabel.OPTARIF: "Option tarifaire choisie",
+    TeleinfoLabel.ISOUSC: "Intensité souscrite",
+    TeleinfoLabel.BASE: "Index option Base",
+    TeleinfoLabel.HCHC: "Index Heures Creuses",
+    TeleinfoLabel.HCHP: "Index Heures Pleines",
+    TeleinfoLabel.EJPHN: "Index Heures Normales EJP",
+    TeleinfoLabel.EJPHPM: "Index Heures de Pointe Mobile EJP",
+    TeleinfoLabel.BBRHCJB: "Heures Creuses Jours Bleus Tempo",
+    TeleinfoLabel.BBRHPJB: "Heures Pleines Jours Bleus Tempo",
+    TeleinfoLabel.BBRHCJW: "Heures Creuses Jours Blancs Tempo",
+    TeleinfoLabel.BBRHPJW: "Heures Pleines Jours Blancs Tempo",
+    TeleinfoLabel.BBRHCJR: "Heures Creuses Jours Rouges Tempo",
+    TeleinfoLabel.BBRHPJR: "Heures Pleines Jours Rouges Tempo",
+    TeleinfoLabel.PEJP: "Préavis Début EJP (30 min)",
+    TeleinfoLabel.PTEC: "Période Tarifaire en cours",
+    TeleinfoLabel.DEMAIN: "Couleur du lendemain (Tempo)",
+    TeleinfoLabel.IINST: "Intensité Instantanée",
+    TeleinfoLabel.ADPS: "Avertissement Dépassement Puissance Souscrite",
+    TeleinfoLabel.IMAX: "Intensité maximale appelée",
+    TeleinfoLabel.PAPP: "Puissance apparente",
+    TeleinfoLabel.HHPHC: "Horaire Heures Pleines Heures Creuses",
+    TeleinfoLabel.MOTDETAT: "Mot d'état du compteur",
+}
+
 TELEINFO_INDEX_LABELS = [
     TeleinfoLabel.BASE,
     TeleinfoLabel.HCHC,
@@ -95,4 +121,48 @@ ISOUC_TO_SUBSCRIBED_POWER = {
     "45": 9,
     "60": 12,
     "90": 15,
+}
+
+
+class TarifPeriods(StrEnum):
+    TH = "TH.."  # Toutes les Heures (option Base)
+    HC = "HC.."  # Heures Creuses
+    HP = "HP.."  # Heures Pleines
+    HN = "HN.."  # Heures Normales (option EJP)
+    PM = "PM.."  # Heures de Pointe Mobile (option EJP)
+    HCJB = "HCJB"  # Heures Creuses Jours Bleus (option Tempo)
+    HCJW = "HCJW"  # Heures Creuses Jours Blancs (option Tempo)
+    HCJR = "HCJR"  # Heures Creuses Jours Rouges (option Tempo)
+    HPJB = "HPJB"  # Heures Pleines Jours Bleus (option Tempo)
+    HPJW = "HPJW"  # Heures Pleines Jours Blancs (option Tempo)
+    HPJR = "HPJR"  # Heures Pleines Jours Rouges (option Tempo)
+
+
+TARIF_PERIODS_TRANSLATIONS = {
+    TarifPeriods.TH: "Toutes les Heures",
+    TarifPeriods.HC: "Heures Creuses",
+    TarifPeriods.HP: "Heures Pleines",
+    TarifPeriods.HN: "Heures Normales",
+    TarifPeriods.PM: "Heures de Pointe Mobile",
+    TarifPeriods.HCJB: "Heures Creuses Jours Bleus",
+    TarifPeriods.HCJW: "Heures Creuses Jours Blancs",
+    TarifPeriods.HCJR: "Heures Creuses Jours Rouges",
+    TarifPeriods.HPJB: "Heures Pleines Jours Bleus",
+    TarifPeriods.HPJW: "Heures Pleines Jours Blancs",
+    TarifPeriods.HPJR: "Heures Pleines Jours Rouges",
+}
+
+
+TARIF_PERIOD_LABEL_TO_INDEX_LABEL = {
+    TarifPeriods.TH: TeleinfoLabel.BASE,
+    TarifPeriods.HC: TeleinfoLabel.HCHC,
+    TarifPeriods.HP: TeleinfoLabel.HCHP,
+    TarifPeriods.HN: TeleinfoLabel.EJPHN,
+    TarifPeriods.PM: TeleinfoLabel.EJPHPM,
+    TarifPeriods.HCJB: TeleinfoLabel.BBRHCJB,
+    TarifPeriods.HCJW: TeleinfoLabel.BBRHCJW,
+    TarifPeriods.HCJR: TeleinfoLabel.BBRHCJR,
+    TarifPeriods.HPJB: TeleinfoLabel.BBRHPJB,
+    TarifPeriods.HPJW: TeleinfoLabel.BBRHPJW,
+    TarifPeriods.HPJR: TeleinfoLabel.BBRHPJR,
 }

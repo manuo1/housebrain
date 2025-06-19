@@ -29,4 +29,10 @@ Affiche les logs du serveur Redis.
 ```bash
 sudo journalctl -u redis-server -f
 ```
+---
 
+### **Scheduler (taches périodiques) :**
+Affiche les logs du Scheduler.
+```bash
+ nano /home/admin/housebrain/backend/scheduler/logs/cron_tasks.log
+ ```

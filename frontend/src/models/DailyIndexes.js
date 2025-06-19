@@ -1,7 +1,8 @@
 class DailyIndexes {
-  constructor(date, values, totals = {}) {
+  constructor(date, step, data, totals = {}) {
     this.date = date;
-    this.values = values;
+    this.step = step;
+    this.data = data;
     this.totals = totals;
   }
 }

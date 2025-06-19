@@ -1,33 +1,365 @@
-.chartContainer {
-  background-color: #121212;
-  padding: 1rem;
+.container {
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  color: #e2e8f0;
+  border: 1px solid #2d3748;
 }
 
-.kwhOverlay {
-  position: absolute;
-  top: -3rem;
-  right: 1rem;
-  background: rgba(30, 30, 30, 0.9);
-  color: #eee;
-  font-size: 0.9rem;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  z-index: 10;
-  pointer-events: none;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 24px;
+}
 
-  div {
-    margin-bottom: 0.3rem;
-    white-space: nowrap;
+.controls {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #cbd5e0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  background: rgba(45, 55, 72, 0.6);
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+  color: #a0aec0;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
 
-  .kwhTotal {
-    font-weight: bold;
-    color: #fff;
-    margin-top: 0.5rem;
-    border-top: 1px solid #555;
-    padding-top: 0.4rem;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.buttonActive {
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.buttonMetric {
+  min-width: 140px;
+}
+
+.buttonStep {
+  min-width: 110px;
+}
+
+// Couleurs spécifiques pour les métriques
+.button[data-metric="wh"] {
+  &.buttonActive {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+  }
+
+  &:not(.buttonActive):hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    color: #667eea;
+  }
+}
+
+.button[data-metric="average_watt"] {
+  &.buttonActive {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border-color: #11998e;
+    color: white;
+  }
+
+  &:not(.buttonActive):hover {
+    background: rgba(17, 153, 142, 0.1);
+    border-color: #11998e;
+    color: #11998e;
+  }
+}
+
+.button[data-metric="euros"] {
+  &.buttonActive {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-color: #f093fb;
+    color: white;
+  }
+
+  &:not(.buttonActive):hover {
+    background: rgba(240, 147, 251, 0.1);
+    border-color: #f093fb;
+    color: #f093fb;
+  }
+}
+
+.button[data-step] {
+  &.buttonActive {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    border-color: #4facfe;
+    color: white;
+  }
+
+  &:not(.buttonActive):hover {
+    background: rgba(79, 172, 254, 0.1);
+    border-color: #4facfe;
+    color: #4facfe;
+  }
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  border: 1px solid #2d3748;
+  color: #e2e8f0;
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+.totals {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: rgba(45, 55, 72, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  flex-wrap: wrap;
+  border: 1px solid #2d3748;
+}
+
+.totalItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 140px;
+  padding: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: #a0aec0;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.totalValue {
+  font-size: 18px;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.totalCost {
+  font-size: 14px;
+  color: #f093fb;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.chartContainer {
+  width: 100%;
+  height: 400px;
+  position: relative;
+  background: rgba(45, 55, 72, 0.2);
+  border-radius: 12px;
+  padding: 10px;
+  border: 1px solid #2d3748;
+}
+
+.noData {
+  padding: 40px 20px;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 16px;
+  background: rgba(45, 55, 72, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 2px dashed #2d3748;
+
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// Styles pour le tooltip personnalisé
+:global(.custom-tooltip) {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+  border: 1px solid #2d3748 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(10px) !important;
+  color: #e2e8f0 !important;
+}
+
+.tooltipContainer {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  max-width: 280px;
+  color: #e2e8f0;
+}
+
+.tooltipHeader {
+  margin: 0 0 12px 0;
+  font-weight: bold;
+  color: #cbd5e0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.tooltipContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tooltipRow {
+  display: flex;
+  justify-content: space-between;
+  min-width: 220px;
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+.tooltipLabel {
+  color: #a0aec0;
+}
+
+.tooltipValue {
+  font-weight: bold;
+
+  &.consumption {
+    color: #667eea;
+  }
+
+  &.power {
+    color: #11998e;
+  }
+
+  &.cost {
+    color: #f093fb;
+  }
+}
+
+.tooltipInterpolated {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(245, 87, 108, 0.1);
+  border-radius: 6px;
+  font-size: 11px;
+  color: #f5576c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(245, 87, 108, 0.2);
+}
+
+// Animation pour les graphiques
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chartContainer {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .buttonGroup {
+    justify-content: center;
+  }
+
+  .totals {
+    justify-content: center;
+  }
+
+  .totalItem {
+    min-width: 120px;
   }
 }

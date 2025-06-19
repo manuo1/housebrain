@@ -5,6 +5,7 @@ from core.utils.utils import (
     ampere_to_watt,
     is_new_hour,
     decode_byte,
+    wh_to_watt,
 )
 from core.constants import DEFAULT_VOLTAGE, TerminalColor
 from datetime import datetime
@@ -94,3 +95,20 @@ def test_is_new_hour(old_datetime, new_datetime, expected):
 )
 def test_decode_byte(byte_data, expected):
     assert decode_byte(byte_data) == expected
+
+
+@pytest.mark.parametrize(
+    "wh, duration_minutes, expected",
+    [
+        (60, 60, 60),  # 60 Wh over 60 minutes = 60 W
+        (30, 30, 60),  # 30 Wh over 30 minutes = 60 W
+        (120, 30, 240),  # 120 Wh over 30 minutes = 240 W
+        (0, 15, 0),  # 0 Wh = 0 W regardless of duration
+        (None, 60, None),  # Invalid input: None as energy
+        ("abc", 60, None),  # Invalid input: string instead of number
+        (100, 0, None),  # Invalid input: division by zero duration
+        (100, None, None),  # Invalid input: None as duration
+    ],
+)
+def test_wh_to_watt(wh, duration_minutes, expected):
+    assert wh_to_watt(wh, duration_minutes) == expected

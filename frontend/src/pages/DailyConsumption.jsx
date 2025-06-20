@@ -4,6 +4,7 @@ import DailyConsumptionChart from "../components/DailyConsumptionChart";
 import DatePicker from "../components/DatePicker";
 import styles from "./DailyConsumption.module.scss";
 import fetchDailyIndexes from "../services/fetchDailyIndexes";
+import DailyIndexes from "../models/DailyIndexes";
 
 export default function DailyConsumption() {
   const { date } = useParams();
@@ -21,11 +22,27 @@ export default function DailyConsumption() {
     setError(null);
 
     try {
+      // Validation du step avant l'appel
+      if (!DailyIndexes.ALLOWED_STEPS.includes(step)) {
+        throw new Error(
+          `Step invalide: ${step}. Valeurs autorisées: ${DailyIndexes.ALLOWED_STEPS.join(
+            ", "
+          )}`
+        );
+      }
+
       const result = await fetchDailyIndexes(date, step);
+
+      // Validation additionnelle du modèle
+      if (!result.isValidStep()) {
+        console.warn("Step invalide reçu du serveur:", result.step);
+      }
+
       setData(result);
       setCurrentStep(step);
     } catch (err) {
-      setError(err.message || "Failed to fetch data");
+      console.error("Erreur lors du chargement des données:", err);
+      setError(err.message || "Échec du chargement des données");
     } finally {
       setLoading(false);
     }
@@ -51,7 +68,10 @@ export default function DailyConsumption() {
   // Gestion du changement de step (résolution)
   const handleStepChange = useCallback(
     (newStep) => {
-      if (newStep !== currentStep) {
+      if (
+        newStep !== currentStep &&
+        DailyIndexes.ALLOWED_STEPS.includes(newStep)
+      ) {
         loadData(selectedDate, newStep);
       }
     },
@@ -66,7 +86,7 @@ export default function DailyConsumption() {
         max={new Date().toISOString().slice(0, 10)}
       />
 
-      {error && <p className={styles.error}>Error: {error}</p>}
+      {error && <p className={styles.error}>Erreur: {error}</p>}
 
       {(data || loading) && (
         <DailyConsumptionChart

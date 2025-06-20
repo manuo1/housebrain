@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import DailyIndexes from "../models/DailyIndexes";
 import styles from "./DailyConsumptionChart.module.scss";
 
 const METRICS = {
@@ -73,10 +74,21 @@ export default function DailyConsumptionChart({ data, onStepChange, loading }) {
 
   // Transformation des données pour Recharts
   const chartData = useMemo(() => {
-    if (!data?.data) return [];
+    if (!data?.data || !Array.isArray(data.data)) return [];
 
     return data.data.map((item, index) => ({
-      ...item,
+      // Accès direct aux propriétés des objets DailyConsumptionElement
+      date:
+        item.date instanceof Date
+          ? item.date.toISOString().split("T")[0]
+          : item.date,
+      start_time: item.start_time,
+      end_time: item.end_time,
+      wh: item.wh,
+      average_watt: item.average_watt,
+      euros: item.euros,
+      interpolated: item.interpolated,
+      tarif_period: item.tarif_period,
       timeDisplay: item.start_time,
       index,
     }));
@@ -117,6 +129,12 @@ export default function DailyConsumptionChart({ data, onStepChange, loading }) {
               ⚠️ Donnée interpolée
             </div>
           )}
+          <div className={styles.tooltipRow}>
+            <span className={styles.tooltipLabel}>Période tarifaire:</span>
+            <span className={styles.tooltipValue}>
+              {data.tarif_period || "N/A"}
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -128,7 +146,7 @@ export default function DailyConsumptionChart({ data, onStepChange, loading }) {
 
   // Gestion du changement de step (refetch des données)
   const handleStepChange = (newStep) => {
-    if (onStepChange) {
+    if (onStepChange && DailyIndexes.ALLOWED_STEPS.includes(newStep)) {
       onStepChange(newStep);
     }
   };
@@ -234,11 +252,13 @@ export default function DailyConsumptionChart({ data, onStepChange, loading }) {
     }
   };
 
+  // Vérification des données avec le nouveau modèle
   if (!data || !data.data || data.data.length === 0) {
     return (
       <div className={styles.container}>
         <div className={styles.noData}>
           <p>Aucune donnée de consommation disponible pour cette date.</p>
+          {data && !data.isValidStep() && <p>Step invalide: {data.step}</p>}
         </div>
       </div>
     );
@@ -277,7 +297,9 @@ export default function DailyConsumptionChart({ data, onStepChange, loading }) {
                 <button
                   key={step.value}
                   onClick={() => handleStepChange(step.value)}
-                  disabled={loading}
+                  disabled={
+                    loading || !DailyIndexes.ALLOWED_STEPS.includes(step.value)
+                  }
                   data-step={step.value}
                   className={`${styles.button} ${styles.buttonStep} ${
                     (data?.step || 1) === step.value ? styles.buttonActive : ""
@@ -298,17 +320,17 @@ export default function DailyConsumptionChart({ data, onStepChange, loading }) {
         </div>
       )}
 
-      {/* Totaux */}
+      {/* Totaux - Utilisation des objets TotalByLabel */}
       {data.totals && Object.keys(data.totals).length > 0 && (
         <div className={styles.totals} style={{ opacity: loading ? 0.6 : 1 }}>
-          {Object.entries(data.totals).map(([label, totals]) => (
+          {Object.entries(data.totals).map(([label, totalObj]) => (
             <div key={label} className={styles.totalItem}>
               <div className={styles.totalLabel}>{label}</div>
               <div className={styles.totalValue}>
-                {(Math.round(totals.wh || 0) / 1000).toFixed(2)} kWh
+                {(Math.round(totalObj.wh || 0) / 1000).toFixed(2)} kWh
               </div>
               <div className={styles.totalCost}>
-                {(totals.euros || 0).toFixed(2)} €
+                {(totalObj.euros || 0).toFixed(2)} €
               </div>
             </div>
           ))}
@@ -324,6 +346,21 @@ export default function DailyConsumptionChart({ data, onStepChange, loading }) {
           {renderChart()}
         </ResponsiveContainer>
       </div>
+
+      {/* Informations sur les données */}
+      {data && (
+        <div className={styles.dataInfo}>
+          <small>
+            Date:{" "}
+            {data.date instanceof Date
+              ? data.date.toLocaleDateString("fr-FR")
+              : data.date}{" "}
+            | Résolution: {data.step} min | Points de données:{" "}
+            {data.data.length}
+            {!data.isValidStep() && " | ⚠️ Step invalide"}
+          </small>
+        </div>
+      )}
     </div>
   );
 }

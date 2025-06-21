@@ -1,0 +1,32 @@
+.stepSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #444;
+  background: #222;
+  color: #ccc;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.button:hover {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+}
+
+.active {
+  background: #198754; /* vert bootstrap dark mode */
+  color: white;
+  border-color: #198754;
+  box-shadow: 0 0 6px #19875499;
+}

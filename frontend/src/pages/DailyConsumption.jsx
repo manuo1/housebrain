@@ -1,100 +1,87 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import DailyConsumptionChart from "../components/DailyConsumptionChart";
+import React, { useState, useEffect } from "react";
 import DatePicker from "../components/DatePicker";
-import styles from "./DailyConsumption.module.scss";
+import ValueSelector from "../components/ValueSelector";
+import StepSelector from "../components/StepSelector";
+import TotalsDisplay from "../components/TotalsDisplay";
+import DailyConsumptionChart from "../components/DailyConsumptionChart";
+import Loader from "../components/Loader";
 import fetchDailyIndexes from "../services/fetchDailyIndexes";
-import DailyIndexes from "../models/DailyIndexes";
+import styles from "./DailyConsumption.module.scss";
 
 export default function DailyConsumption() {
-  const { date } = useParams();
-  const navigate = useNavigate();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [date, setDate] = useState(today);
+  const [step, setStep] = useState(1); // valeurs autorisées : 1, 30, 60
+  const [valueType, setValueType] = useState("average_watt"); // "wh", "average_watt", "euros"
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1);
 
-  const selectedDate = date || new Date().toISOString().slice(0, 10);
+  function renderChart() {
+    if (!data) return null;
 
-  // Fonction pour charger les données avec un step spécifique
-  const loadData = useCallback(async (date, step = 1) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Validation du step avant l'appel
-      if (!DailyIndexes.ALLOWED_STEPS.includes(step)) {
-        throw new Error(
-          `Step invalide: ${step}. Valeurs autorisées: ${DailyIndexes.ALLOWED_STEPS.join(
-            ", "
-          )}`
+    switch (valueType) {
+      case "average_watt":
+        return (
+          <DailyConsumptionChart
+            data={data.data}
+            chartType="line"
+            valueKey="average_watt"
+          />
         );
-      }
-
-      const result = await fetchDailyIndexes(date, step);
-
-      // Validation additionnelle du modèle
-      if (!result.isValidStep()) {
-        console.warn("Step invalide reçu du serveur:", result.step);
-      }
-
-      setData(result);
-      setCurrentStep(step);
-    } catch (err) {
-      console.error("Erreur lors du chargement des données:", err);
-      setError(err.message || "Échec du chargement des données");
-    } finally {
-      setLoading(false);
+      case "wh":
+        return (
+          <DailyConsumptionChart
+            data={data.data}
+            chartType="area"
+            valueKey="wh"
+          />
+        );
+      case "euros":
+        return (
+          <DailyConsumptionChart
+            data={data.data}
+            chartType="area"
+            valueKey="euros"
+          />
+        );
+      default:
+        return null;
     }
-  }, []);
-
-  // Chargement initial des données
-  useEffect(() => {
-    const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(selectedDate);
-    if (!isValidDate) {
-      const currentDay = new Date().toISOString().slice(0, 10);
-      navigate(`/daily-consumption/${currentDay}`, { replace: true });
-      return;
-    }
-
-    loadData(selectedDate, currentStep);
-  }, [selectedDate, loadData, navigate, currentStep]);
-
-  // Gestion du changement de date
-  function handleDateChange(newDate) {
-    navigate(`/daily-consumption/${newDate}`);
   }
 
-  // Gestion du changement de step (résolution)
-  const handleStepChange = useCallback(
-    (newStep) => {
-      if (
-        newStep !== currentStep &&
-        DailyIndexes.ALLOWED_STEPS.includes(newStep)
-      ) {
-        loadData(selectedDate, newStep);
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await fetchDailyIndexes(date, step);
+        setData(result);
+      } catch (err) {
+        setError(err.message || "Unknown error");
+        setData(null);
+      } finally {
+        setLoading(false);
       }
-    },
-    [selectedDate, currentStep, loadData]
-  );
+    };
+
+    loadData();
+  }, [date, step]);
 
   return (
-    <div className={styles.container}>
-      <DatePicker
-        value={selectedDate}
-        onChange={handleDateChange}
-        max={new Date().toISOString().slice(0, 10)}
-      />
-
-      {error && <p className={styles.error}>Erreur: {error}</p>}
-
-      {(data || loading) && (
-        <DailyConsumptionChart
-          data={data}
-          onStepChange={handleStepChange}
-          loading={loading}
-        />
-      )}
+    <div className={styles.dailyConsumption}>
+      <div className={styles.selectors}>
+        <ValueSelector value={valueType} onChange={setValueType} />
+        <DatePicker value={date} onChange={setDate} />
+        <StepSelector step={step} onChange={setStep} />
+      </div>
+      <div className={styles.data}>
+        {data && renderChart()}
+        {data && <TotalsDisplay totals={data.totals} />}
+      </div>
+      {loading && <Loader />}
+      {error && <p className={styles.error}>Error: {error}</p>}
     </div>
   );
 }

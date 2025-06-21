@@ -1,0 +1,22 @@
+.totalsDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #eee;
+}
+
+.cardGrid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1rem auto;
+}
+
+.empty {
+  color: #888;
+  font-style: italic;
+  margin-top: 1rem;
+}

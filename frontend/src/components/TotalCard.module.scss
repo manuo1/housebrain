@@ -1,0 +1,30 @@
+.card {
+  display: flex;
+  background: #2a2a2a;
+  justify-content: space-between;
+  text-align: center;
+  color: #f0f0f0;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  min-width: 120px;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 1rem;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kwh {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.euros {
+  font-size: 1rem;
+  color: #6fffc2;
+}

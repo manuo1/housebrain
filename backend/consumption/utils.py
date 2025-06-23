@@ -1,12 +1,21 @@
+import logging
 from copy import deepcopy
 from datetime import datetime, timedelta
-
+from django.core.cache import cache
+from django.utils import timezone
+from consumption.models import DailyIndexes
+from core.constants import LoggerLabel
 from consumption.constants import ALLOWED_CONSUMPTION_STEPS
 from teleinfo.constants import (
+    ISOUC_TO_SUBSCRIBED_POWER,
     TARIF_PERIOD_LABEL_TO_INDEX_LABEL,
     TARIF_PERIODS_TRANSLATIONS,
+    TELEINFO_INDEX_LABELS,
+    TeleinfoLabel,
 )
 from core.utils.utils import wh_to_watt
+
+logger = logging.getLogger("django")
 
 
 def generate_daily_index_structure(step: int = 1) -> dict[str, None]:
@@ -421,19 +430,43 @@ def get_human_readable_tarif_period(tarif_period: str) -> str | None:
         return None
 
 
-def build_consumption_data(daily_indexes, date, step):
+def build_consumption_data(
+    daily_indexes: DailyIndexes,
+    date: str,
+    step: int,
+) -> list[dict[str, str | int | float | None | bool]]:
+    """
+    Builds a list of consumption data entries for a given day and step size.
 
+    It reconstructs missing indexes via interpolation, handles tariff periods,
+    computes watt-hour consumption, and structures the data per time step.
+
+    Args:
+        daily_indexes: An object containing raw index values (daily_indexes.values)
+                       and tariff periods (daily_indexes.tarif_periods).
+        date: The date of the data, in format 'YYYY-MM-DD'.
+        step: The step size in minutes (e.g. 1, 15, 30) used to aggregate data.
+
+    Returns:
+        A list of dictionaries, each representing a consumption interval.
+        Each entry includes:
+            - date: the date of the entry
+            - start_time: start time of the interval (HH:MM)
+            - end_time: end time of the interval (HH:MM)
+            - wh: watt-hours consumed during the interval
+            - average_watt: average power in watts during the interval
+            - euros: always None for now (can be computed later)
+            - interpolated: whether the value was interpolated (only if step == 1)
+            - tarif_period: human-readable tariff period (e.g. 'Heures Creuses')
+    """
     data = []
-    # Indexes
     raw_indexes = daily_indexes.values
     missing_indexes = compute_indexes_missing_values(raw_indexes)
     reconstructed_indexes = fill_missing_values(raw_indexes, missing_indexes)
 
-    # Tarif periods
     raw_tarif_periods = daily_indexes.tarif_periods
     tarif_periods = fill_missing_tarif_periods(raw_tarif_periods)
 
-    # apply step
     if step != 1:
         indexes = downsample_indexes(reconstructed_indexes, step)
     else:
@@ -442,7 +475,7 @@ def build_consumption_data(daily_indexes, date, step):
     watt_hours_data = compute_watt_hours(indexes)
 
     minute_keys = list(generate_daily_index_structure(step).keys())
-    for curent_time_str, next_time_str in list(zip(minute_keys, minute_keys[1:])):
+    for curent_time_str, next_time_str in zip(minute_keys, minute_keys[1:]):
         tarif_period = tarif_periods[curent_time_str]
         curent_index_label = get_index_label(tarif_period)
         wh = get_wh_of_index_label(
@@ -471,3 +504,202 @@ def build_consumption_data(daily_indexes, date, step):
         )
 
     return data
+
+
+def get_cache_teleinfo_data(now: datetime) -> dict | None:
+    """
+    Retrieves teleinfo data from the cache if it's valid for the current minute.
+
+    The cache is expected to store a dictionary under the "teleinfo_data" key,
+    with a "last_read" datetime. If the timestamp matches the current `now`
+    (to the minute), the data is returned. Otherwise, a warning is logged and None is returned.
+
+    Args:
+        now: The current datetime (timezone-aware), rounded to minute precision.
+
+    Returns:
+        The teleinfo data dictionary if it was last read at the current minute,
+        otherwise None.
+    """
+    cache_teleinfo_data = cache.get("teleinfo_data", {})
+    cache_last_read = cache_teleinfo_data.get("last_read")
+
+    try:
+        cache_last_read = timezone.localtime(cache_last_read).replace(
+            second=0, microsecond=0
+        )
+    except AttributeError:
+        logger.warning(
+            f"{LoggerLabel.CONSUMPTION} A problem occurred while accessing teleinfo in the cache : cache_teleinfo_data = {cache_teleinfo_data}"
+        )
+        return None
+
+    if cache_last_read == now:
+        return cache_teleinfo_data
+    else:
+        logger.warning(
+            f"{LoggerLabel.CONSUMPTION} A problem occurred while accessing teleinfo in the cache : cache_teleinfo_data = {cache_teleinfo_data}"
+        )
+        return None
+
+
+def get_subscribed_power(cache_teleinfo_data: dict) -> int | None:
+    """
+    Retrieves the subscribed power (in kVA) from teleinfo cache data.
+
+    The function looks up the ISOUC value (intensity in amps) in a mapping to
+    convert it to the corresponding subscribed power in kVA.
+
+    Args:
+        cache_teleinfo_data: A dictionary containing teleinfo fields, including the 'ISOUSC' value.
+
+    Returns:
+        The subscribed power in kVA as an integer, or None if the ISOUC key is missing or invalid.
+    """
+    try:
+        return ISOUC_TO_SUBSCRIBED_POWER[cache_teleinfo_data[TeleinfoLabel.ISOUSC]]
+    except KeyError:
+        logger.warning(
+            f"{LoggerLabel.CONSUMPTION} A problem occurred while accessing the subscribed power in the cache : cache_teleinfo_data = {cache_teleinfo_data}"
+        )
+        return
+
+
+def get_tarif_period(cache_teleinfo_data: dict) -> str | None:
+    """
+    Retrieves the current tarif period from teleinfo cache data.
+
+    The tarif period is indicated by the 'PTEC' field, which contains values like
+    'HC..', 'HP..', 'HN', etc. depending on the current time and subscribed option.
+
+    Args:
+        cache_teleinfo_data: A dictionary containing teleinfo fields, including 'PTEC'.
+
+    Returns:
+        The current tarif period as a string, or None if the field is missing.
+    """
+    try:
+        return cache_teleinfo_data[TeleinfoLabel.PTEC]
+    except KeyError:
+        logger.warning(
+            f"{LoggerLabel.CONSUMPTION} A problem occurred while accessing the tarif period in the cache : cache_teleinfo_data = {cache_teleinfo_data}"
+        )
+        return None
+
+
+def get_indexes_in_teleinfo(cache_teleinfo_data: dict | None) -> dict[str, int] | None:
+    """
+    Extracts index values from teleinfo cache data and converts them to integers.
+
+    Only keys listed in TELEINFO_INDEX_LABELS are retained. If the cache is None,
+    logs a warning and returns None.
+
+    Args:
+        cache_teleinfo_data: A dictionary containing raw teleinfo values (as strings),
+                             or None if the cache is missing.
+
+    Returns:
+        A dictionary mapping index labels (e.g. 'HCHC', 'HCHP') to integer values,
+        or None if input cache data is None.
+    """
+    if cache_teleinfo_data is None:
+        logger.warning(
+            f"{LoggerLabel.CONSUMPTION} A problem occurred while accessing the indexes in the cache : cache_teleinfo_data = {cache_teleinfo_data}"
+        )
+        return None
+
+    return {
+        key: int(value)
+        for key, value in cache_teleinfo_data.items()
+        if key in TELEINFO_INDEX_LABELS
+    }
+
+
+def add_new_tarif_period(
+    tarif_periods: dict[str, str | None],
+    now_minute_str: str,
+    new_tarif_period: str,
+) -> dict[str, str | None]:
+    """
+    Updates the daily tarif period mapping with a new value at a given minute.
+
+    If the `tarif_periods` dict is missing or incomplete (< 1441 entries), a fresh
+    full-day index structure is generated.
+
+    If `now_minute_str` is None, logs a warning and returns the input dict unmodified.
+
+    According to EDF rules, tarif period changes occur exactly on the hour (e.g. 07:00).
+    Due to possible teleinfo timing delays, a new period may be observed at 07:01
+    while 07:00 still shows the old period. This function corrects this by replacing
+    the value at `:00` with the new period at `:01` when they differ.
+
+    Args:
+        tarif_periods: A dict mapping time strings ("HH:MM") to tarif period strings or None.
+        now_minute_str: The current time as a string "HH:MM".
+        new_tarif_period: The new tarif period string to assign at `now_minute_str`.
+
+    Returns:
+        The updated `tarif_periods` dict with the new period inserted and corrections applied.
+    """
+    if not tarif_periods or len(tarif_periods) < 1441:
+        tarif_periods = generate_daily_index_structure()
+
+    if now_minute_str is None:
+        logger.warning(
+            f"{LoggerLabel.CONSUMPTION} A problem occurred while adding the new tarif period : "
+            f"now_minute_str = {now_minute_str}"
+        )
+        return tarif_periods
+
+    tarif_periods[now_minute_str] = new_tarif_period
+
+    # EDF guarantees that tarif changes always happen exactly on the hour (e.g. 07:00, 08:00).
+    # However, due to timing delays in teleinfo reading, it's possible to observe the new period
+    # at 07:01 while 07:00 still reflects the old one. We fix that by aligning 07:00 with 07:01 if needed.
+    hour_start = now_minute_str[:-2] + "00"
+    if (
+        now_minute_str[-2:] == "01"
+        and tarif_periods[now_minute_str] is not None
+        and tarif_periods[now_minute_str] != tarif_periods.get(hour_start)
+    ):
+        tarif_periods[hour_start] = tarif_periods[now_minute_str]
+
+    return tarif_periods
+
+
+def add_new_values(
+    today_indexes: DailyIndexes,
+    new_indexes_in_teleinfo: dict[str, int],
+    now_minute_str: str,
+) -> DailyIndexes:
+    """
+    Adds new teleinfo index values to the current day's index structure.
+
+    If the label doesn't exist yet in today's data, it initializes the full day structure
+    before inserting the new value. This ensures data consistency across time slots.
+
+    Args:
+        today_indexes: A DailyIndexes object containing the .values attribute
+                       as a dict of labels mapping to minute-indexed values.
+        new_indexes_in_teleinfo: A dictionary of label -> value (e.g. 'HCHC' -> 12345678)
+                                 representing the latest teleinfo values.
+        now_minute_str: The current time in 'HH:MM' format, used as key.
+
+    Returns:
+        The updated DailyIndexes object with new values inserted at the given minute.
+    """
+    if not all([today_indexes, new_indexes_in_teleinfo, now_minute_str]):
+        logger.warning(
+            f"{LoggerLabel.CONSUMPTION} A problem occurred while adding the new values : "
+            f"today_indexes = {today_indexes}, new_indexes_in_teleinfo = {new_indexes_in_teleinfo}, now_minute_str = {now_minute_str}"
+        )
+        return today_indexes
+
+    for label, value in new_indexes_in_teleinfo.items():
+        try:
+            today_indexes.values[label][now_minute_str] = value
+        except KeyError:
+            today_indexes.values[label] = generate_daily_index_structure()
+            today_indexes.values[label][now_minute_str] = value
+
+    return today_indexes

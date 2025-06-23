@@ -2,8 +2,18 @@ import pytest
 from copy import deepcopy
 from datetime import datetime
 from consumption.constants import ALLOWED_CONSUMPTION_STEPS
-from teleinfo.constants import TarifPeriods, TeleinfoLabel
+from teleinfo.constants import (
+    ISOUC_TO_SUBSCRIBED_POWER,
+    TELEINFO_INDEX_LABELS,
+    TarifPeriods,
+    TeleinfoLabel,
+)
+from unittest.mock import patch
+
+
 from consumption.utils import (
+    add_new_tarif_period,
+    add_new_values,
     compute_indexes_missing_values,
     compute_totals,
     compute_watt_hours,
@@ -11,8 +21,12 @@ from consumption.utils import (
     fill_missing_values,
     find_all_missing_value_zones,
     generate_daily_index_structure,
+    get_cache_teleinfo_data,
     get_human_readable_tarif_period,
     get_index_label,
+    get_indexes_in_teleinfo,
+    get_subscribed_power,
+    get_tarif_period,
     get_wh_of_index_label,
     interpolate_missing_values,
     is_interpolated,
@@ -108,9 +122,6 @@ def test_generate_daily_index_structure_invalid_step():
 def test_compute_watt_hours(indexes, expected):
     result = compute_watt_hours(indexes)
     assert result == expected
-
-
-import pytest
 
 
 @pytest.mark.parametrize(
@@ -671,9 +682,6 @@ def test_is_interpolated(current_time_str, current_index, missing_indexes, expec
     assert is_interpolated(current_time_str, current_index, missing_indexes) == expected
 
 
-import pytest
-
-
 @pytest.mark.parametrize(
     "input_period, expected",
     [
@@ -693,3 +701,219 @@ import pytest
 )
 def test_get_human_readable_tarif_period(input_period, expected):
     assert get_human_readable_tarif_period(input_period) == expected
+
+
+import pytest
+
+
+@pytest.mark.parametrize(
+    "cached_time, now, expected",
+    [
+        (
+            datetime(2024, 5, 1, 10, 30),
+            datetime(2024, 5, 1, 10, 30),
+            {"last_read": datetime(2024, 5, 1, 10, 30), "some_data": "ok"},
+        ),
+        (
+            datetime(2024, 5, 1, 10, 29),
+            datetime(2024, 5, 1, 10, 30),
+            None,
+        ),
+    ],
+)
+@patch("consumption.utils.timezone.localtime")
+@patch("django.core.cache.cache.get")
+def test_get_cache_teleinfo_data_valid(
+    mock_cache_get, mock_localtime, cached_time, now, expected
+):
+    fake_data = {"last_read": cached_time, "some_data": "ok"}
+    mock_cache_get.return_value = fake_data
+    mock_localtime.return_value = cached_time.replace(second=0, microsecond=0)
+
+    result = get_cache_teleinfo_data(now)
+    assert result == expected
+
+
+@patch("django.core.cache.cache.get")
+def test_get_cache_teleinfo_data_none_last_read(mock_cache_get):
+    mock_cache_get.return_value = {"last_read": None}
+
+    result = get_cache_teleinfo_data(datetime(2024, 5, 1, 10, 30))
+    assert result is None
+
+
+@patch("django.core.cache.cache.get")
+def test_get_cache_teleinfo_data_empty_cache(mock_cache_get):
+    mock_cache_get.return_value = {}
+
+    result = get_cache_teleinfo_data(datetime(2024, 5, 1, 10, 30))
+    assert result is None
+
+
+@pytest.mark.parametrize(
+    "cache_data, expected",
+    [
+        # Cas nominal : valeur ISOUC connue
+        ({TeleinfoLabel.ISOUSC: "15"}, ISOUC_TO_SUBSCRIBED_POWER["15"]),
+        ({TeleinfoLabel.ISOUSC: "60"}, ISOUC_TO_SUBSCRIBED_POWER["60"]),
+        # Cas erreur : ISOUC absent
+        ({}, None),
+        # Cas erreur : ISOUC non dans la map
+        ({TeleinfoLabel.ISOUSC: "999"}, None),
+        # Cas erreur : ISOUC présent mais None
+        ({TeleinfoLabel.ISOUSC: None}, None),
+    ],
+)
+def test_get_subscribed_power(cache_data, expected):
+    result = get_subscribed_power(cache_data)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "cache_data, expected",
+    [
+        # Cas nominal : PTEC présent avec différentes valeurs
+        ({TeleinfoLabel.PTEC: "HC.."}, "HC.."),
+        ({TeleinfoLabel.PTEC: "HP.."}, "HP.."),
+        ({TeleinfoLabel.PTEC: "HN"}, "HN"),
+        # Cas erreur : PTEC absent → None
+        ({}, None),
+        # Cas erreur : PTEC présent mais None
+        ({TeleinfoLabel.PTEC: None}, None),
+    ],
+)
+def test_get_tarif_period(cache_data, expected):
+    result = get_tarif_period(cache_data)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "cache_data, expected",
+    [
+        # Cas nominal : données complètes avec clés valides
+        (
+            {"HCHC": "123", "HCHP": "456", "OTHER": "999"},
+            {"HCHC": 123, "HCHP": 456},
+        ),
+        # Cas : cache_data None → retourne None
+        (
+            None,
+            None,
+        ),
+        # Cas : cache_data vide → retourne dict vide
+        (
+            {},
+            {},
+        ),
+        # Cas : clés valides mais valeurs non convertibles → ValueError attendue
+        # (on ne gère pas cette erreur dans la fonction, donc on le teste ici)
+    ],
+)
+def test_get_indexes_in_teleinfo(cache_data, expected):
+    if cache_data is not None and any(
+        key in TELEINFO_INDEX_LABELS and not value.isdigit()
+        for key, value in cache_data.items()
+    ):
+        # On attend une exception si conversion impossible
+        with pytest.raises(ValueError):
+            get_indexes_in_teleinfo(cache_data)
+    else:
+        result = get_indexes_in_teleinfo(cache_data)
+        assert result == expected
+
+
+SAMPLE_PERIODS = {**generate_daily_index_structure(), "07:00": "HC"}
+
+
+@pytest.mark.parametrize(
+    "initial_tarif_periods, now_minute_str, new_tarif_period, expected_tarif_periods",
+    [
+        # cas normal
+        (SAMPLE_PERIODS, "07:01", "HC", {**SAMPLE_PERIODS, "07:01": "HC"}),
+        # Tarif_periods None ou trop court → génération structure complète
+        (None, "07:10", "HC", {**generate_daily_index_structure(), "07:10": "HC"}),
+        ({}, "07:10", "HC", {**generate_daily_index_structure(), "07:10": "HC"}),
+        # now_minute_str is None
+        (SAMPLE_PERIODS, None, "HC", SAMPLE_PERIODS),
+        # Cas décalage : 07:00 != 07:01 → correction de 07:00 à valeur 07:01
+        (
+            SAMPLE_PERIODS,
+            "07:01",
+            "HP",
+            {**SAMPLE_PERIODS, "07:00": "HP", "07:01": "HP"},
+        ),
+        # cas décalage avec :00 = None
+        (
+            generate_daily_index_structure(),
+            "07:01",
+            "HP",
+            {**generate_daily_index_structure(), "07:00": "HP", "07:01": "HP"},
+        ),
+    ],
+)
+def test_add_new_tarif_period(
+    initial_tarif_periods, now_minute_str, new_tarif_period, expected_tarif_periods
+):
+    tarif_periods = deepcopy(initial_tarif_periods)
+    result = add_new_tarif_period(tarif_periods, now_minute_str, new_tarif_period)
+    assert result == expected_tarif_periods
+    assert len(result) == 1441
+
+
+class DailyIndexes:
+    def __init__(self):
+        self.values: dict[str, dict[str, int | None]] = {}
+
+
+@pytest.mark.parametrize(
+    "initial_values, new_data, minute, expected_values",
+    [
+        # Cas simple : le label existe déjà
+        (
+            {"HCHC": {"07:00": 1000}},  # initial
+            {"HCHC": 1050},  # nouveau
+            "07:01",
+            {"HCHC": {"07:00": 1000, "07:01": 1050}},
+        ),
+        # Cas nouveau label → création du label avec structure complète
+        (
+            {},  # aucun label
+            {"HCHP": 2000},  # nouveau label
+            "08:30",
+            {"HCHP": {**generate_daily_index_structure(), "08:30": 2000}},
+        ),
+        # Cas plusieurs labels
+        (
+            {"HCHC": {"08:00": 4000}},
+            {"HCHC": 4050, "HCHP": 3100},
+            "08:15",
+            {
+                "HCHC": {"08:00": 4000, "08:15": 4050},
+                "HCHP": {**generate_daily_index_structure(), "08:15": 3100},
+            },
+        ),
+    ],
+)
+def test_add_new_values(initial_values, new_data, minute, expected_values):
+    today = DailyIndexes()
+    today.values = {label: dict(val) for label, val in initial_values.items()}
+
+    updated = add_new_values(today, new_data, minute)
+
+    for label, expected_dict in expected_values.items():
+        assert label in updated.values
+        for time, expected_val in expected_dict.items():
+            assert updated.values[label].get(time) == expected_val
+
+
+@pytest.mark.parametrize(
+    "today_indexes, new_data, minute",
+    [
+        (None, {"HCHC": 12345}, "07:00"),
+        (DailyIndexes(), None, "07:00"),
+        (DailyIndexes(), {"HCHC": 12345}, None),
+    ],
+)
+def test_add_new_values_invalid_inputs(today_indexes, new_data, minute):
+    result = add_new_values(today_indexes, new_data, minute)
+    assert result == today_indexes

@@ -1,14 +1,15 @@
 import logging
-from core.constants import LoggerLabel
-from consumption.utils import generate_daily_index_structure
-from teleinfo.constants import (
-    ISOUC_TO_SUBSCRIBED_POWER,
-    TELEINFO_INDEX_LABELS,
-    TeleinfoLabel,
+from consumption.utils import (
+    add_new_tarif_period,
+    add_new_values,
+    get_cache_teleinfo_data,
+    get_indexes_in_teleinfo,
+    get_subscribed_power,
+    get_tarif_period,
 )
 from consumption.models import DailyIndexes
 from django.utils import timezone
-from django.core.cache import cache
+
 
 logger = logging.getLogger("django")
 
@@ -18,30 +19,17 @@ def save_teleinfo_data():
     now_date = now.date()
     now_minute_str = now.strftime("%H:%M")
 
-    cache_teleinfo_data = cache.get("teleinfo_data", {})
-    cache_last_read = cache_teleinfo_data.get("last_read")
-    if cache_last_read:
-        cache_last_read = timezone.localtime(cache_last_read).replace(
-            second=0, microsecond=0
-        )
+    cache_teleinfo_data = get_cache_teleinfo_data(now)
 
-    if cache_last_read != now:
-        logger.warning(
-            f"{LoggerLabel.CONSUMPTION} The cache is not up to date, we do not save"
-        )
+    if cache_teleinfo_data is None:
         return
 
-    indexes_in_teleinfo = {
-        key: int(value)
-        for key, value in cache_teleinfo_data.items()
-        if key in TELEINFO_INDEX_LABELS
-    }
-
-    tarif_period = cache_teleinfo_data.get(TeleinfoLabel.PTEC)
-    subscribed_intensity = cache_teleinfo_data.get(TeleinfoLabel.ISOUSC)
+    indexes_in_teleinfo = get_indexes_in_teleinfo(cache_teleinfo_data)
+    tarif_period = get_tarif_period(cache_teleinfo_data)
+    subscribed_power = get_subscribed_power(cache_teleinfo_data)
 
     # Update current day
-    daily_indexes, _ = DailyIndexes.objects.get_or_create(
+    bdd_today_indexes, _ = DailyIndexes.objects.get_or_create(
         date=now_date,
         defaults={
             "values": {},
@@ -50,26 +38,22 @@ def save_teleinfo_data():
         },
     )
 
-    if subscribed_intensity:
-        daily_indexes.subscribed_power = ISOUC_TO_SUBSCRIBED_POWER[subscribed_intensity]
+    bdd_today_indexes.subscribed_power = subscribed_power
+    bdd_today_indexes.tarif_periods = add_new_tarif_period(
+        bdd_today_indexes.tarif_periods, now_minute_str, tarif_period
+    )
 
-    if len(daily_indexes.tarif_periods) < 1441:
-        daily_indexes.tarif_periods = generate_daily_index_structure()
-    daily_indexes.tarif_periods[now_minute_str] = tarif_period
+    bdd_today_indexes = add_new_values(
+        bdd_today_indexes, indexes_in_teleinfo, now_minute_str
+    )
 
-    for label, value in indexes_in_teleinfo.items():
-        try:
-            daily_indexes.values[label][now_minute_str] = value
-        except KeyError:
-            daily_indexes.values[label] = generate_daily_index_structure()
-            daily_indexes.values[label][now_minute_str] = value
-    daily_indexes.save()
+    bdd_today_indexes.save()
 
     # If it's midnight, update "24:00" of the previous day
     if now_minute_str == "00:00":
         previous_day = now_date - timezone.timedelta(days=1)
 
-        previous_day_indexes, _ = DailyIndexes.objects.get_or_create(
+        bdd_previous_day_indexes, _ = DailyIndexes.objects.get_or_create(
             date=previous_day,
             defaults={
                 "values": {},
@@ -78,19 +62,13 @@ def save_teleinfo_data():
             },
         )
 
-        if subscribed_intensity:
-            previous_day_indexes.subscribed_power = ISOUC_TO_SUBSCRIBED_POWER[
-                subscribed_intensity
-            ]
+        bdd_previous_day_indexes.subscribed_power = subscribed_power
+        bdd_previous_day_indexes.tarif_periods = add_new_tarif_period(
+            bdd_previous_day_indexes.tarif_periods, "24:00", tarif_period
+        )
 
-        if len(daily_indexes.tarif_periods) < 1441:
-            previous_day_indexes.tarif_periods = generate_daily_index_structure()
-        previous_day_indexes.tarif_periods["24:00"] = tarif_period
+        bdd_previous_day_indexes = add_new_values(
+            bdd_previous_day_indexes, indexes_in_teleinfo, "24:00"
+        )
 
-        for label, value in indexes_in_teleinfo.items():
-            try:
-                previous_day_indexes.values[label]["24:00"] = value
-            except KeyError:
-                previous_day_indexes.values[label] = generate_daily_index_structure()
-                previous_day_indexes.values[label]["24:00"] = value
-        previous_day_indexes.save()
+        bdd_previous_day_indexes.save()

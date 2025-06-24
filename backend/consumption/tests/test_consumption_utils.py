@@ -1,6 +1,6 @@
 import pytest
 from copy import deepcopy
-from datetime import datetime
+from datetime import date, datetime
 from consumption.constants import ALLOWED_CONSUMPTION_STEPS
 from teleinfo.constants import (
     ISOUC_TO_SUBSCRIBED_POWER,
@@ -15,6 +15,7 @@ from consumption.utils import (
     add_new_tarif_period,
     add_new_values,
     compute_indexes_missing_values,
+    compute_period_price,
     compute_totals,
     compute_watt_hours,
     downsample_indexes,
@@ -28,6 +29,7 @@ from consumption.utils import (
     get_indexes_in_teleinfo,
     get_subscribed_power,
     get_tarif_period,
+    get_tarif_period_label_from_index_label,
     get_wh_of_index_label,
     interpolate_missing_values,
     is_interpolated,
@@ -181,7 +183,7 @@ def test_compute_watt_hours(indexes, expected):
     ],
 )
 def test_compute_totals(values, expected):
-    result = compute_totals(values)
+    result = compute_totals(date(2025, 6, 24), values)
     wh_result = {label: result[label]["wh"] for label in result}
     assert wh_result == expected
 
@@ -935,3 +937,52 @@ def test_add_new_values(initial_values, new_data, minute, expected_values):
 def test_add_new_values_invalid_inputs(today_indexes, new_data, minute):
     result = add_new_values(today_indexes, new_data, minute)
     assert result == today_indexes
+
+
+@pytest.mark.parametrize(
+    "day, tarif_period, wh, expected",
+    [
+        # 50 Wh à 16.96 c€/kWh = 0.1696 €/kWh → 0.05 * 0.1696 = 0.00848 €
+        (date(2025, 2, 1), "HC..", 50, 0.00848),
+        # 100 Wh à 21.46 c€/kWh = 0.2146 €/kWh → 0.1 * 0.2146 = 0.02146 €
+        (date(2025, 2, 1), "HP..", 100, 0.02146),
+        # 1000 Wh à 0.2 c€/kWh = 0.002 €/kWh → 1 * 0.002 = 0.002 €
+        (date(2024, 2, 2), "HC..", 1000, 0.002),
+        # Tarif inconnu → prix = 0
+        (date(2025, 2, 1), "UNKNOWN", 100, 0.0),
+        # wh == 0 → None
+        (date(2025, 2, 1), "HC..", 0, 0),
+        # wh == None → None
+        (date(2025, 2, 1), "HC..", None, None),
+    ],
+)
+def test_compute_period_price(day, tarif_period, wh, expected):
+    result = compute_period_price(day, tarif_period, wh)
+
+    if expected is None:
+        assert result is None
+    elif expected == 0:
+        assert result == 0
+    else:
+        assert round(result, 5) == round(expected, 5)
+
+
+@pytest.mark.parametrize(
+    "index_label, expected",
+    [
+        (TeleinfoLabel.BASE, TarifPeriods.TH),
+        (TeleinfoLabel.HCHC, TarifPeriods.HC),
+        (TeleinfoLabel.HCHP, TarifPeriods.HP),
+        (TeleinfoLabel.EJPHN, TarifPeriods.HN),
+        (TeleinfoLabel.EJPHPM, TarifPeriods.PM),
+        (TeleinfoLabel.BBRHCJB, TarifPeriods.HCJB),
+        (TeleinfoLabel.BBRHCJW, TarifPeriods.HCJW),
+        (TeleinfoLabel.BBRHCJR, TarifPeriods.HCJR),
+        (TeleinfoLabel.BBRHPJB, TarifPeriods.HPJB),
+        (TeleinfoLabel.BBRHPJW, TarifPeriods.HPJW),
+        (TeleinfoLabel.BBRHPJR, TarifPeriods.HPJR),
+        ("UNKNOWN", None),  # test fallback case
+    ],
+)
+def test_get_tarif_period_label_from_index_label(index_label, expected):
+    assert get_tarif_period_label_from_index_label(index_label) == expected

@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./CustomTooltip.module.scss";
+import { formatEuro, formatWh } from "../utils/format";
 
 export default function CustomTooltip({ active, payload }) {
   if (!active || !payload || payload.length === 0) return null;
@@ -22,11 +23,11 @@ export default function CustomTooltip({ active, payload }) {
       </div>
 
       <div className={styles.row}>
-        Consommation : {point.wh != null ? `${point.wh} Wh` : "- Wh"}
+        Consommation : {point.wh != null ? formatWh(point.wh) : "- Wh"}
       </div>
 
       <div className={styles.row}>
-        Coût : {point.euros != null ? `${point.euros.toFixed(3)} €` : "- €"}
+        Coût : {point.euros != null ? formatEuro(point.euros) : "- €"}
       </div>
 
       <div className={styles.row}>

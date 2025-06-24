@@ -22,6 +22,7 @@ from consumption.utils import (
     find_all_missing_value_zones,
     generate_daily_index_structure,
     get_cache_teleinfo_data,
+    get_human_readable_index_label,
     get_human_readable_tarif_period,
     get_index_label,
     get_indexes_in_teleinfo,
@@ -130,58 +131,57 @@ def test_compute_watt_hours(indexes, expected):
         # Normal case
         (
             {
-                "hp": {"00:00": 1000, "12:00": 1500, "24:00": 1600},
-                "hc": {"00:00": 2000, "24:00": 2200},
+                "HCHP": {"00:00": 1000, "12:00": 1500, "24:00": 1600},
+                "HCHC": {"00:00": 2000, "24:00": 2200},
             },
-            {"hp": 600, "hc": 200},
+            {"Heures Pleines": 600, "Heures Creuses": 200, "Total": 800},
         ),
         # None values at the start or end
         (
             {
-                "hp": {"00:00": None, "06:00": 1200, "24:00": 1500},
-                "hc": {"00:00": 1200, "06:00": 1500, "24:00": None},
+                "HCHP": {"00:00": None, "06:00": 1200, "24:00": 1500},
+                "HCHC": {"00:00": 1200, "06:00": 1500, "24:00": None},
             },
-            {"hp": 300, "hc": 300},
+            {"Heures Pleines": 300, "Heures Creuses": 300, "Total": 600},
         ),
         # None values at the start and end
         (
             {
-                "hp": {"00:00": None, "06:00": 1200, "12:00": 1500, "24:00": None},
+                "HCHP": {"00:00": None, "06:00": 1200, "12:00": 1500, "24:00": None},
             },
-            {"hp": 300},
+            {"Heures Pleines": 300, "Total": 300},
         ),
         # Case where all values are None
         (
             {
-                "hp": {"00:00": None, "06:00": None},
+                "HCHP": {"00:00": None, "06:00": None},
             },
-            {"hp": None},
+            {"Heures Pleines": None, "Total": 0},
         ),
         # Index don't change
         (
             {
-                "hp": {},
-                "hc": {"00:00": 1234, "24:00": 1234},
+                "HCHP": {},
+                "HCHC": {"00:00": 1234, "24:00": 1234},
             },
-            {"hp": None, "hc": 0},
+            {"Heures Pleines": None, "Heures Creuses": 0, "Total": 0},
         ),
         # Not enough data
         (
             {
-                "hc": {"00:00": 1234, "06:00": None, "24:00": None},
+                "HCHC": {"00:00": 1234, "06:00": None, "24:00": None},
             },
-            {"hc": None},
+            {"Heures Creuses": None, "Total": 0},
         ),
         # Empty input
         (
             {},
-            {},
+            {"Total": 0},
         ),
     ],
 )
 def test_compute_totals(values, expected):
     result = compute_totals(values)
-    # only the wh for now, euro isn't implemented yet
     wh_result = {label: result[label]["wh"] for label in result}
     assert wh_result == expected
 
@@ -703,7 +703,25 @@ def test_get_human_readable_tarif_period(input_period, expected):
     assert get_human_readable_tarif_period(input_period) == expected
 
 
-import pytest
+@pytest.mark.parametrize(
+    "index_label, expected",
+    [
+        (TeleinfoLabel.BASE, "Toutes les Heures"),
+        (TeleinfoLabel.HCHC, "Heures Creuses"),
+        (TeleinfoLabel.HCHP, "Heures Pleines"),
+        (TeleinfoLabel.EJPHN, "Heures Normales"),
+        (TeleinfoLabel.EJPHPM, "Heures de Pointe Mobile"),
+        (TeleinfoLabel.BBRHCJB, "Heures Creuses Jours Bleus"),
+        (TeleinfoLabel.BBRHCJW, "Heures Creuses Jours Blancs"),
+        (TeleinfoLabel.BBRHCJR, "Heures Creuses Jours Rouges"),
+        (TeleinfoLabel.BBRHPJB, "Heures Pleines Jours Bleus"),
+        (TeleinfoLabel.BBRHPJW, "Heures Pleines Jours Blancs"),
+        (TeleinfoLabel.BBRHPJR, "Heures Pleines Jours Rouges"),
+        ("UNKNOWN", None),  # Test unknown key returns None
+    ],
+)
+def test_get_human_readable_index_label(index_label, expected):
+    assert get_human_readable_index_label(index_label) == expected
 
 
 @pytest.mark.parametrize(

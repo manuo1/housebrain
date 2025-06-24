@@ -42,6 +42,20 @@ class TeleinfoLabel(StrEnum):
     MOTDETAT = "MOTDETAT"  # Mot d'état du compteur
 
 
+class ReadableLabel(StrEnum):
+    TH = "Toutes les Heures"
+    HC = "Heures Creuses"
+    HP = "Heures Pleines"
+    HN = "Heures Normales"
+    PM = "Heures de Pointe Mobile"
+    HCJB = "Heures Creuses Jours Bleus"
+    HCJW = "Heures Creuses Jours Blancs"
+    HCJR = "Heures Creuses Jours Rouges"
+    HPJB = "Heures Pleines Jours Bleus"
+    HPJW = "Heures Pleines Jours Blancs"
+    HPJR = "Heures Pleines Jours Rouges"
+
+
 TELEINFO_LABEL_TRANSLATIONS = {
     TeleinfoLabel.ADCO: "Adresse du compteur",
     TeleinfoLabel.OPTARIF: "Option tarifaire choisie",
@@ -139,17 +153,31 @@ class TarifPeriods(StrEnum):
 
 
 TARIF_PERIODS_TRANSLATIONS = {
-    TarifPeriods.TH: "Toutes les Heures",
-    TarifPeriods.HC: "Heures Creuses",
-    TarifPeriods.HP: "Heures Pleines",
-    TarifPeriods.HN: "Heures Normales",
-    TarifPeriods.PM: "Heures de Pointe Mobile",
-    TarifPeriods.HCJB: "Heures Creuses Jours Bleus",
-    TarifPeriods.HCJW: "Heures Creuses Jours Blancs",
-    TarifPeriods.HCJR: "Heures Creuses Jours Rouges",
-    TarifPeriods.HPJB: "Heures Pleines Jours Bleus",
-    TarifPeriods.HPJW: "Heures Pleines Jours Blancs",
-    TarifPeriods.HPJR: "Heures Pleines Jours Rouges",
+    TarifPeriods.TH: ReadableLabel.TH,
+    TarifPeriods.HC: ReadableLabel.HC,
+    TarifPeriods.HP: ReadableLabel.HP,
+    TarifPeriods.HN: ReadableLabel.HN,
+    TarifPeriods.PM: ReadableLabel.PM,
+    TarifPeriods.HCJB: ReadableLabel.HCJB,
+    TarifPeriods.HCJW: ReadableLabel.HCJW,
+    TarifPeriods.HCJR: ReadableLabel.HCJR,
+    TarifPeriods.HPJB: ReadableLabel.HPJB,
+    TarifPeriods.HPJW: ReadableLabel.HPJW,
+    TarifPeriods.HPJR: ReadableLabel.HPJR,
+}
+
+INDEX_LABEL_TRANSLATIONS = {
+    TeleinfoLabel.BASE: ReadableLabel.TH,
+    TeleinfoLabel.HCHC: ReadableLabel.HC,
+    TeleinfoLabel.HCHP: ReadableLabel.HP,
+    TeleinfoLabel.EJPHN: ReadableLabel.HN,
+    TeleinfoLabel.EJPHPM: ReadableLabel.PM,
+    TeleinfoLabel.BBRHCJB: ReadableLabel.HCJB,
+    TeleinfoLabel.BBRHCJW: ReadableLabel.HCJW,
+    TeleinfoLabel.BBRHCJR: ReadableLabel.HCJR,
+    TeleinfoLabel.BBRHPJB: ReadableLabel.HPJB,
+    TeleinfoLabel.BBRHPJW: ReadableLabel.HPJW,
+    TeleinfoLabel.BBRHPJR: ReadableLabel.HPJR,
 }
 
 
@@ -165,4 +193,18 @@ TARIF_PERIOD_LABEL_TO_INDEX_LABEL = {
     TarifPeriods.HPJB: TeleinfoLabel.BBRHPJB,
     TarifPeriods.HPJW: TeleinfoLabel.BBRHPJW,
     TarifPeriods.HPJR: TeleinfoLabel.BBRHPJR,
+}
+
+INDEX_LABEL_TO_TARIF_PERIOD_LABEL = {
+    TeleinfoLabel.BASE: TarifPeriods.TH,
+    TeleinfoLabel.HCHC: TarifPeriods.HC,
+    TeleinfoLabel.HCHP: TarifPeriods.HP,
+    TeleinfoLabel.EJPHN: TarifPeriods.HN,
+    TeleinfoLabel.EJPHPM: TarifPeriods.PM,
+    TeleinfoLabel.BBRHCJB: TarifPeriods.HCJB,
+    TeleinfoLabel.BBRHCJW: TarifPeriods.HCJW,
+    TeleinfoLabel.BBRHCJR: TarifPeriods.HCJR,
+    TeleinfoLabel.BBRHPJB: TarifPeriods.HPJB,
+    TeleinfoLabel.BBRHPJW: TarifPeriods.HPJW,
+    TeleinfoLabel.BBRHPJR: TarifPeriods.HPJR,
 }

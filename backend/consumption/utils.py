@@ -7,6 +7,7 @@ from consumption.models import DailyIndexes
 from core.constants import LoggerLabel
 from consumption.constants import ALLOWED_CONSUMPTION_STEPS
 from teleinfo.constants import (
+    INDEX_LABEL_TRANSLATIONS,
     ISOUC_TO_SUBSCRIBED_POWER,
     TARIF_PERIOD_LABEL_TO_INDEX_LABEL,
     TARIF_PERIODS_TRANSLATIONS,
@@ -102,19 +103,28 @@ def compute_totals(
     Computes the total energy consumption per label based on the difference
     between the first and last available (non-null) index readings of the day.
 
+    For each label (e.g. HCHC / HCHP), the total Wh is computed as:
+        last_index_value - first_index_value (if both are defined and not at the same time).
+    All labels are then summed into a final "Globale" entry.
+
     Args:
         values: A dictionary where each key is a label (e.g., 'HCHC', 'HCHP'), and each value
                 is a dictionary mapping time strings ('HH:MM') to index readings (int or None).
 
     Returns:
-        A dictionary mapping each label to a dictionary with:
-            - "wh": total consumption (int) or None if insufficient data,
-            - "euros": None (placeholder, to be computed elsewhere).
+        A dictionary mapping each human-readable label (e.g., 'Heures Creuses') to:
+            - "wh": the total consumption in watt-hours, or None if data is insufficient,
+            - "euros": None (to be filled later).
+
+        Additionally, includes a "Globale" key summing the "wh" and "euros" of all other entries:
+            - "wh": sum of all individual "wh" where the value is not None,
+            - "euros": sum of all individual "euros" if all are defined, else None.
     """
     totals: dict[str, dict[str, int | None]] = {}
 
     for label, indexes in values.items():
-        totals[label] = {"wh": None, "euros": None}
+        readable_label = get_human_readable_index_label(label)
+        totals[readable_label] = {"wh": None, "euros": None}
 
         if not indexes:
             continue
@@ -140,7 +150,20 @@ def compute_totals(
                 break
 
         if first_val is not None and last_val is not None and first_key != last_key:
-            totals[label]["wh"] = last_val - first_val
+            totals[readable_label]["wh"] = last_val - first_val
+
+    total_wh = sum(
+        period["wh"] for period in totals.values() if period["wh"] is not None
+    )
+    total_euros = (
+        sum(
+            period["euros"] for period in totals.values() if period["euros"] is not None
+        )
+        if any(period["euros"] is not None for period in totals.values())
+        else None
+    )
+
+    totals["Total"] = {"wh": total_wh, "euros": total_euros}
 
     return totals
 
@@ -703,3 +726,19 @@ def add_new_values(
             today_indexes.values[label][now_minute_str] = value
 
     return today_indexes
+
+
+def get_human_readable_index_label(index_label: str) -> str | None:
+    """
+    Get the human-readable string for a given index label code.
+
+    Args:
+        index_label: The index label code string.
+
+    Returns:
+        The human-readable description of the index label, or None if not found.
+    """
+    try:
+        return INDEX_LABEL_TRANSLATIONS[index_label]
+    except KeyError:
+        return None

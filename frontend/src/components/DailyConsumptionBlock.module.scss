@@ -1,0 +1,21 @@
+.error {
+  color: #ff6b6b;
+  background-color: #1a1a1a;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  text-align: center;
+  margin: 1rem auto;
+  max-width: 600px;
+}
+
+.selectors {
+  display: flex;
+  justify-content: space-between;
+}
+
+.selectors > * {
+  flex: 1;
+  max-width: 33.33%;
+  box-sizing: border-box;
+  margin: 0.5rem auto;
+}

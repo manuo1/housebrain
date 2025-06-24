@@ -1,3 +1,7 @@
+.block {
+  position: relative;
+}
+
 .error {
   color: #ff6b6b;
   background-color: #1a1a1a;
@@ -18,4 +22,13 @@
   max-width: 33.33%;
   box-sizing: border-box;
   margin: 0.5rem auto;
+}
+
+.loaderOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
 }

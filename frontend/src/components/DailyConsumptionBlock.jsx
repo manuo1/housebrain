@@ -58,7 +58,11 @@ export default function DailyConsumptionBlock() {
       <div className={styles.data}>
         {data && renderChart()}
         {data && <TotalsDisplay totals={data.totals} />}
-        {loading && <Loader />}
+        {loading && (
+          <div className={styles.loaderOverlay}>
+            <Loader />
+          </div>
+        )}
         {error && <p className={styles.error}>Error: {error}</p>}
       </div>
     </div>

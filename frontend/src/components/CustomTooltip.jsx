@@ -26,7 +26,7 @@ export default function CustomTooltip({ active, payload }) {
       </div>
 
       <div className={styles.row}>
-        Coût : {point.euros != null ? `${point.euros.toFixed(2)} €` : "- €"}
+        Coût : {point.euros != null ? `${point.euros.toFixed(3)} €` : "- €"}
       </div>
 
       <div className={styles.row}>

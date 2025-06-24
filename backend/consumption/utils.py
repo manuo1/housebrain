@@ -1,12 +1,14 @@
 import logging
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.core.cache import cache
 from django.utils import timezone
+from consumption.edf_pricing import get_kwh_price
 from consumption.models import DailyIndexes
 from core.constants import LoggerLabel
 from consumption.constants import ALLOWED_CONSUMPTION_STEPS
 from teleinfo.constants import (
+    INDEX_LABEL_TO_TARIF_PERIOD_LABEL,
     INDEX_LABEL_TRANSLATIONS,
     ISOUC_TO_SUBSCRIBED_POWER,
     TARIF_PERIOD_LABEL_TO_INDEX_LABEL,
@@ -97,6 +99,7 @@ def compute_watt_hours(
 
 
 def compute_totals(
+    day: date,
     values: dict[str, dict[str, int | None]],
 ) -> dict[str, dict[str, int | None]]:
     """
@@ -122,9 +125,9 @@ def compute_totals(
     """
     totals: dict[str, dict[str, int | None]] = {}
 
-    for label, indexes in values.items():
-        readable_label = get_human_readable_index_label(label)
-        totals[readable_label] = {"wh": None, "euros": None}
+    for index_label, indexes in values.items():
+        readable_index_label = get_human_readable_index_label(index_label)
+        totals[readable_index_label] = {"wh": None, "euros": None}
 
         if not indexes:
             continue
@@ -150,7 +153,11 @@ def compute_totals(
                 break
 
         if first_val is not None and last_val is not None and first_key != last_key:
-            totals[readable_label]["wh"] = last_val - first_val
+            wh = last_val - first_val
+            totals[readable_index_label]["wh"] = wh
+            totals[readable_index_label]["euros"] = compute_period_price(
+                day, get_tarif_period_label_from_index_label(index_label), wh
+            )
 
     total_wh = sum(
         period["wh"] for period in totals.values() if period["wh"] is not None
@@ -455,7 +462,7 @@ def get_human_readable_tarif_period(tarif_period: str) -> str | None:
 
 def build_consumption_data(
     daily_indexes: DailyIndexes,
-    date: str,
+    day: date,
     step: int,
 ) -> list[dict[str, str | int | float | None | bool]]:
     """
@@ -467,7 +474,7 @@ def build_consumption_data(
     Args:
         daily_indexes: An object containing raw index values (daily_indexes.values)
                        and tariff periods (daily_indexes.tarif_periods).
-        date: The date of the data, in format 'YYYY-MM-DD'.
+        day: The date of the day
         step: The step size in minutes (e.g. 1, 15, 30) used to aggregate data.
 
     Returns:
@@ -507,12 +514,12 @@ def build_consumption_data(
 
         data.append(
             {
-                "date": date,
+                "date": day,
                 "start_time": curent_time_str,
                 "end_time": next_time_str,
                 "wh": wh,
                 "average_watt": wh_to_watt(wh, step),
-                "euros": None,
+                "euros": compute_period_price(day, tarif_period, wh),
                 "interpolated": (
                     is_interpolated(
                         curent_time_str,
@@ -740,5 +747,49 @@ def get_human_readable_index_label(index_label: str) -> str | None:
     """
     try:
         return INDEX_LABEL_TRANSLATIONS[index_label]
+    except KeyError:
+        return None
+
+
+def compute_period_price(
+    day: date,
+    tarif_period: str,
+    wh: int,
+) -> float:
+    """
+    Computes the cost in euros for a given consumption period.
+
+    Args:
+        d: The date of the measurement.
+        tarif_period: The applicable tarif period (e.g. HC.., HP.., etc.).
+        wh: Energy consumed during the period, in watt-hours.
+
+    Returns:
+        The cost in euros
+    """
+
+    if wh is None or wh < 0:
+        return None
+
+    kwh = wh / 1000
+    price_per_kwh = get_kwh_price(day, tarif_period)
+    return kwh * price_per_kwh
+
+
+def get_tarif_period_label_from_index_label(index_label: str) -> str | None:
+    """
+    Maps an index label from teleinfo to its corresponding tarif period label.
+
+    This function uses a predefined mapping to translate labels such as 'HCHC' or 'BBRHPJW'
+    into a tarif period string like 'HC..' or 'HPJW'.
+
+    Args:
+        index_label: A string label used in teleinfo index data.
+
+    Returns:
+        The corresponding tarif period label as a string, or None if no match is found.
+    """
+    try:
+        return INDEX_LABEL_TO_TARIF_PERIOD_LABEL[index_label]
     except KeyError:
         return None

@@ -38,7 +38,7 @@ class DailyConsumptionView(APIView):
             "date": requested_date,
             "step": step,
             "data": build_consumption_data(daily_indexes, requested_date, step),
-            "totals": compute_totals(daily_indexes.values),
+            "totals": compute_totals(requested_date, daily_indexes.values),
         }
 
         output_serializer = DailyConsumptionOutputSerializer(response_data)

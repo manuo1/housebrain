@@ -14,12 +14,11 @@ from .serializers import (
 
 
 class DailyConsumptionView(APIView):
-    def get(self, request, **kwargs):
+    def get(self, request):
 
-        data = request.query_params.copy()
-        data["date"] = kwargs.get("date")
-
-        query_serializer = DailyConsumptionQueryParamsSerializer(data=data)
+        query_serializer = DailyConsumptionQueryParamsSerializer(
+            data=request.query_params
+        )
         query_serializer.is_valid(raise_exception=True)
         params = query_serializer.validated_data
 

@@ -11,10 +11,10 @@ async function fetchDailyIndexes(date, step = 1) {
     );
   }
 
-  const params = new URLSearchParams({ step: step.toString() });
+  const params = new URLSearchParams({ date, step: step.toString() });
 
   try {
-    const data = await fetchJson(`/api/consumption/${date}/?${params}`);
+    const data = await fetchJson(`/api/consumption/daily/?${params}`);
 
     // Validation de la structure de la réponse
     if (!data || typeof data !== "object") {

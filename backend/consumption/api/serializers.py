@@ -5,7 +5,6 @@ from consumption.constants import ALLOWED_CONSUMPTION_STEPS
 
 class DailyConsumptionQueryParamsSerializer(serializers.Serializer):
     date = serializers.DateField(
-        required=False,
         help_text="Date of consumption in YYYY-MM-DD format. Defaults to today if not provided.",
     )
     step = serializers.IntegerField(

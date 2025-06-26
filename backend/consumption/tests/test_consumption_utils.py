@@ -1,7 +1,7 @@
 import pytest
 from copy import deepcopy
 from datetime import date, datetime
-from consumption.constants import ALLOWED_CONSUMPTION_STEPS
+from consumption.constants import ALLOWED_CONSUMPTION_STEPS, ConsumptionPeriod
 from teleinfo.constants import (
     ISOUC_TO_SUBSCRIBED_POWER,
     TELEINFO_INDEX_LABELS,
@@ -16,17 +16,21 @@ from consumption.utils import (
     add_new_values,
     compute_indexes_missing_values,
     compute_period_price,
-    compute_totals,
+    compute_totals_for_a_day,
+    compute_totals_for_multiple_periods,
     compute_watt_hours,
     downsample_indexes,
     fill_missing_values,
     find_all_missing_value_zones,
     generate_daily_index_structure,
     get_cache_teleinfo_data,
+    get_consumption_by_day_data,
+    get_end_date_according_to_period,
     get_human_readable_index_label,
     get_human_readable_tarif_period,
     get_index_label,
     get_indexes_in_teleinfo,
+    get_start_date_according_to_period,
     get_subscribed_power,
     get_tarif_period,
     get_tarif_period_label_from_index_label,
@@ -158,7 +162,7 @@ def test_compute_watt_hours(indexes, expected):
             {
                 "HCHP": {"00:00": None, "06:00": None},
             },
-            {"Heures Pleines": None, "Total": 0},
+            {"Heures Pleines": None, "Total": None},
         ),
         # Index don't change
         (
@@ -173,17 +177,17 @@ def test_compute_watt_hours(indexes, expected):
             {
                 "HCHC": {"00:00": 1234, "06:00": None, "24:00": None},
             },
-            {"Heures Creuses": None, "Total": 0},
+            {"Heures Creuses": None, "Total": None},
         ),
         # Empty input
         (
             {},
-            {"Total": 0},
+            {"Total": None},
         ),
     ],
 )
 def test_compute_totals(values, expected):
-    result = compute_totals(date(2025, 6, 24), values)
+    result = compute_totals_for_a_day(date(2025, 6, 24), values)
     wh_result = {label: result[label]["wh"] for label in result}
     assert wh_result == expected
 
@@ -986,3 +990,125 @@ def test_compute_period_price(day, tarif_period, wh, expected):
 )
 def test_get_tarif_period_label_from_index_label(index_label, expected):
     assert get_tarif_period_label_from_index_label(index_label) == expected
+
+
+@pytest.mark.parametrize(
+    "period, requested, expected",
+    [
+        (ConsumptionPeriod.DAY, date(2025, 6, 25), date(2025, 6, 25)),
+        (
+            ConsumptionPeriod.WEEK,
+            date(2025, 6, 26),
+            date(2025, 6, 23),
+        ),  # mercredi → lundi
+        (
+            ConsumptionPeriod.MONTH,
+            date(2025, 6, 26),
+            date(2025, 6, 1),
+        ),  # n'importe quel jour → premier du mois
+    ],
+)
+def test_get_start_date_according_to_period(period, requested, expected):
+    assert get_start_date_according_to_period(requested, period) == expected
+
+
+@pytest.mark.parametrize(
+    "period, requested, expected",
+    [
+        (ConsumptionPeriod.DAY, date(2025, 6, 25), date(2025, 6, 25)),
+        (
+            ConsumptionPeriod.WEEK,
+            date(2025, 6, 26),
+            date(2025, 6, 30),
+        ),  # mercredi → lundi suivant
+        (
+            ConsumptionPeriod.MONTH,
+            date(2025, 6, 26),
+            date(2025, 7, 1),
+        ),  # → premier jour du mois suivant
+        (
+            ConsumptionPeriod.MONTH,
+            date(2025, 12, 26),
+            date(2026, 1, 1),
+        ),  # passage d'année
+    ],
+)
+def test_get_end_date_according_to_period(period, requested, expected):
+    assert get_end_date_according_to_period(requested, period) == expected
+
+
+def test_compute_totals_for_multiple_periods():
+    data = [
+        {
+            "consumption": {
+                "Heures Creuses": {"wh": 100, "euros": 2},
+                "Heures Pleines": {"wh": 200, "euros": 4},
+            }
+        },
+        {
+            "consumption": {
+                "Heures Creuses": {"wh": 50, "euros": 1},
+                "Heures Pleines": {"wh": 100, "euros": 2},
+            }
+        },
+        {
+            # Period without "consumption" key should be ignored
+        },
+        {
+            "consumption": {
+                "Heures Creuses": {"wh": None, "euros": None},
+                "Heures Pleines": {"wh": 30, "euros": 0.5},
+            }
+        },
+    ]
+
+    expected = {
+        "Heures Creuses": {"wh": 150, "euros": 3},
+        "Heures Pleines": {"wh": 330, "euros": 6.5},
+    }
+
+    result = compute_totals_for_multiple_periods(data)
+    assert result == expected
+
+
+mock_consumption_result = {
+    "Heures Creuses": {"kwh": 10.0, "euros": 2.0},
+    "Heures Pleines": {"kwh": 20.0, "euros": 4.0},
+    "Total": {"kwh": 30.0, "euros": 6.0},
+}
+
+
+def test_get_consumption_by_day_data():
+    # fake DailyIndexes
+    idx1 = DailyIndexes()
+    idx1.date = date(2025, 6, 25)
+    idx1.values = {"HCHC": 100, "HCHP": 200}
+    idx1.tarif_periods = {"HC": 1, "HP": 2}
+    idx1.subscribed_power = 6.0
+
+    idx2 = DailyIndexes()
+    idx2.date = date(2025, 6, 26)
+    idx2.values = {"HCHC": 150, "HCHP": 250}
+    idx2.tarif_periods = {"HC": 1, "HP": 2}
+    idx2.subscribed_power = 6.0
+
+    daily_indexes_list = [idx1, idx2]
+
+    start_date = date(2025, 6, 25)
+    end_date = date(2025, 6, 27)  # exclu
+
+    # Patch compute_totals_for_a_day
+    with patch(
+        "consumption.utils.compute_totals_for_a_day",
+        return_value=mock_consumption_result,
+    ):
+        result = get_consumption_by_day_data(start_date, end_date, daily_indexes_list)
+
+    assert len(result) == 2
+    assert result[0]["start_date"] == "2025-06-25"
+    assert result[0]["end_date"] == "2025-06-26"
+    assert result[0]["consumption"] == mock_consumption_result
+
+    assert result[1]["start_date"] == "2025-06-26"
+    assert result[1]["end_date"] == "2025-06-27"
+    assert result[1]["consumption"] == mock_consumption_result

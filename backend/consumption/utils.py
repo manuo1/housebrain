@@ -6,7 +6,7 @@ from django.utils import timezone
 from consumption.edf_pricing import get_kwh_price
 from consumption.models import DailyIndexes
 from core.constants import LoggerLabel
-from consumption.constants import ALLOWED_CONSUMPTION_STEPS
+from consumption.constants import ALLOWED_CONSUMPTION_STEPS, ConsumptionPeriod
 from teleinfo.constants import (
     INDEX_LABEL_TO_TARIF_PERIOD_LABEL,
     INDEX_LABEL_TRANSLATIONS,
@@ -16,7 +16,13 @@ from teleinfo.constants import (
     TELEINFO_INDEX_LABELS,
     TeleinfoLabel,
 )
-from core.utils.utils import wh_to_watt
+from core.utils.utils import (
+    get_first_curent_month_day_date,
+    get_first_next_month_day_date,
+    get_next_monday_date,
+    get_previous_monday_date,
+    wh_to_watt,
+)
 
 logger = logging.getLogger("django")
 
@@ -98,7 +104,7 @@ def compute_watt_hours(
     return watt_hours
 
 
-def compute_totals(
+def compute_totals_for_a_day(
     day: date,
     values: dict[str, dict[str, int | None]],
 ) -> dict[str, dict[str, int | None]]:
@@ -123,7 +129,7 @@ def compute_totals(
             - "wh": sum of all individual "wh" where the value is not None,
             - "euros": sum of all individual "euros" if all are defined, else None.
     """
-    totals: dict[str, dict[str, int | None]] = {}
+    totals = {}
 
     for index_label, indexes in values.items():
         readable_index_label = get_human_readable_index_label(index_label)
@@ -159,9 +165,12 @@ def compute_totals(
                 day, get_tarif_period_label_from_index_label(index_label), wh
             )
 
-    total_wh = sum(
-        period["wh"] for period in totals.values() if period["wh"] is not None
+    total_wh = (
+        sum(period["wh"] for period in totals.values() if period["wh"] is not None)
+        if any(period["wh"] is not None for period in totals.values())
+        else None
     )
+
     total_euros = (
         sum(
             period["euros"] for period in totals.values() if period["euros"] is not None
@@ -793,3 +802,162 @@ def get_tarif_period_label_from_index_label(index_label: str) -> str | None:
         return INDEX_LABEL_TO_TARIF_PERIOD_LABEL[index_label]
     except KeyError:
         return None
+
+
+def get_start_date_according_to_period(
+    requested_start_date: date, period: ConsumptionPeriod
+) -> date:
+    """
+    Returns the normalized start date based on the requested period.
+
+    Args:
+        requested_start_date: The reference date.
+        period: The aggregation period (day, week, month).
+
+    Returns:
+        A date representing the beginning of the period that includes the requested date:
+            - If period is DAY: same date.
+            - If WEEK: Monday of the same week.
+            - If MONTH: First day of the same month.
+    """
+    match period:
+        case ConsumptionPeriod.DAY:
+            return requested_start_date
+        case ConsumptionPeriod.WEEK:
+            return get_previous_monday_date(requested_start_date)
+        case ConsumptionPeriod.MONTH:
+            return get_first_curent_month_day_date(requested_start_date)
+        case _:
+            return requested_start_date
+
+
+def get_end_date_according_to_period(
+    requested_end_date: date, period: ConsumptionPeriod
+) -> date:
+    """
+    Returns the normalized exclusive end date based on the aggregation period.
+
+    Args:
+        requested_end_date: The reference date.
+        period: The aggregation period (day, week, month).
+
+    Returns:
+        A date representing the exclusive end of the period:
+            - DAY: same date
+            - WEEK: the Monday following the week of requested_end_date
+            - MONTH: the first day of the next month
+    """
+    match period:
+        case ConsumptionPeriod.DAY:
+            return requested_end_date
+        case ConsumptionPeriod.WEEK:
+            return get_next_monday_date(requested_end_date)
+        case ConsumptionPeriod.MONTH:
+            return get_first_next_month_day_date(requested_end_date)
+        case _:
+            return requested_end_date
+
+
+def compute_totals_for_multiple_periods(
+    data: list[dict],
+) -> dict[str, dict[str, int | None]]:
+    """
+    Computes cumulative totals of watt-hours (wh) and euros over multiple periods.
+
+    Args:
+        data: List of period dictionaries, each containing a "consumption" dict
+              mapping tarif_period_label to dicts with keys "wh" and "euros".
+
+    Returns:
+        A dict mapping each tarif_period_label to a dict with cumulative "wh" and "euros".
+        Values can be int or None if no valid data found.
+    """
+    totals: dict[str, dict[str, int | None]] = {}
+
+    for period in data:
+        consumptions = period.get("consumption")
+        if not consumptions:
+            continue
+
+        for tarif_period_label, new_values in consumptions.items():
+            if tarif_period_label not in totals:
+                totals[tarif_period_label] = {
+                    "wh": new_values.get("wh"),
+                    "euros": new_values.get("euros"),
+                }
+                continue
+
+            previous_wh_value = totals[tarif_period_label].get("wh")
+            previous_euros_value = totals[tarif_period_label].get("euros")
+
+            try:
+                wh = previous_wh_value + new_values["wh"]
+            except (TypeError, KeyError):
+                wh = previous_wh_value
+
+            try:
+                euros = previous_euros_value + new_values["euros"]
+            except (TypeError, KeyError):
+                euros = previous_euros_value
+
+            totals[tarif_period_label] = {"wh": wh, "euros": euros}
+
+    return totals
+
+
+def get_consumption_by_day_data(
+    start_date: date,
+    end_date: date,
+    daily_indexes_list: list[DailyIndexes],
+) -> list[dict[str, str | dict[str, dict[str, float]]]]:
+    """
+    Generates daily consumption data between two dates.
+
+    For each day in the interval [start_date, end_date[, this function finds the
+    corresponding `DailyIndexes` entry, and computes consumption using
+    `compute_totals_for_a_day`.
+
+    Args:
+        start_date: First day (inclusive).
+        end_date: Last day (exclusive).
+        daily_indexes_list: List of DailyIndexes entries.
+
+    Returns:
+        A list of dictionaries with:
+            - "start_date": the day
+            - "end_date": the next day
+            - "consumption": per-period and total consumption (kwh and euros)
+    """
+    data = []
+    current = start_date
+    while current < end_date:
+        values = {}
+        for daily_index in daily_indexes_list:
+            if current == daily_index.date:
+                values = daily_index.values
+
+        data.append(
+            {
+                "start_date": f"{current:%Y-%m-%d}",
+                "end_date": f"{(current + timedelta(days=1)):%Y-%m-%d}",
+                "consumption": compute_totals_for_a_day(current, values),
+            }
+        )
+
+        current += timedelta(days=1)
+
+    return data
+
+
+# not yet implemented
+def get_consumption_by_week_data(
+    start_date: date, end_date: date, daily_indexes_list: list[DailyIndexes]
+):
+    return []
+
+
+# not yet implemented
+def get_consumption_by_month_data(
+    start_date: date, end_date: date, daily_indexes_list: list[DailyIndexes]
+):
+    return []

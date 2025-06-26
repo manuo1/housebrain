@@ -1,6 +1,10 @@
 import pytest
 from core.utils.utils import (
     colored_text,
+    get_first_curent_month_day_date,
+    get_first_next_month_day_date,
+    get_next_monday_date,
+    get_previous_monday_date,
     watt_to_ampere,
     ampere_to_watt,
     is_new_hour,
@@ -8,7 +12,7 @@ from core.utils.utils import (
     wh_to_watt,
 )
 from core.constants import DEFAULT_VOLTAGE, TerminalColor
-from datetime import datetime
+from datetime import date, datetime
 
 
 @pytest.mark.parametrize(
@@ -112,3 +116,59 @@ def test_decode_byte(byte_data, expected):
 )
 def test_wh_to_watt(wh, duration_minutes, expected):
     assert wh_to_watt(wh, duration_minutes) == expected
+
+
+@pytest.mark.parametrize(
+    "input_date, expected_date",
+    [
+        (date(2025, 6, 25), date(2025, 6, 1)),
+        (date(2024, 2, 15), date(2024, 2, 1)),
+        (date(2023, 1, 1), date(2023, 1, 1)),  # already the first day
+        (date(2022, 12, 31), date(2022, 12, 1)),
+    ],
+)
+def test_get_first_curent_month_day_date(input_date, expected_date):
+    assert get_first_curent_month_day_date(input_date) == expected_date
+
+
+@pytest.mark.parametrize(
+    "input_date, expected_date",
+    [
+        (date(2025, 6, 25), date(2025, 7, 1)),
+        (date(2025, 1, 1), date(2025, 2, 1)),
+        (date(2025, 12, 31), date(2026, 1, 1)),
+        (date(2023, 2, 28), date(2023, 3, 1)),
+        (date(2024, 2, 29), date(2024, 3, 1)),  # année bissextile
+    ],
+)
+def test_get_first_next_month_day_date(input_date, expected_date):
+    assert get_first_next_month_day_date(input_date) == expected_date
+
+
+@pytest.mark.parametrize(
+    "input_date, expected_date",
+    [
+        (date(2025, 6, 24), date(2025, 6, 23)),  # Mardi → Lundi
+        (date(2025, 6, 23), date(2025, 6, 23)),  # Lundi → Lundi
+        (date(2025, 6, 29), date(2025, 6, 23)),  # Dimanche → Lundi
+        (
+            date(2025, 1, 1),
+            date(2024, 12, 30),
+        ),  # Mercredi → Lundi de la semaine précédente
+    ],
+)
+def test_get_previous_monday_date(input_date, expected_date):
+    assert get_previous_monday_date(input_date) == expected_date
+
+
+@pytest.mark.parametrize(
+    "input_date, expected_date",
+    [
+        (date(2025, 6, 24), date(2025, 6, 30)),  # Mardi
+        (date(2025, 6, 23), date(2025, 6, 30)),  # Lundi
+        (date(2025, 6, 29), date(2025, 6, 30)),  # Dimanche
+        (date(2024, 12, 30), date(2025, 1, 6)),  # Fin d'année
+    ],
+)
+def test_get_next_monday_date(input_date, expected_date):
+    assert get_next_monday_date(input_date) == expected_date

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import fetchTeleinfoData from "../services/fetchTeleinfoData";
-import TeleinfoTable from "../components/TeleinfoTable";
-import PowerGauge from "../components/PowerGauge";
+import TeleinfoTable from "../components/LiveTeleinfoPage/TeleinfoTable";
+import PowerGauge from "../components/LiveTeleinfoPage/PowerGauge";
 import styles from "./LiveTeleinfoPage.module.scss";
 //import mockTeleinfoData from "../mocks/mockTeleinfoData";
 

@@ -1,11 +1,6 @@
 import React from "react";
 import styles from "./StepSelector.module.scss";
-
-export const STEP_OPTIONS = [
-  { value: 1, label: "1 min" },
-  { value: 30, label: "30 min" },
-  { value: 60, label: "1 h" },
-];
+import { STEP_OPTIONS } from "../../../constants/consumptionConstants";
 
 export default function StepSelector({ step, onChange }) {
   return (

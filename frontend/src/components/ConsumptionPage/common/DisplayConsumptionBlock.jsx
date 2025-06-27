@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import DatePicker from "../components/DatePicker";
-import ValueSelector from "../components/ValueSelector";
-import StepSelector from "../components/StepSelector";
-import TotalsDisplay from "../components/TotalsDisplay";
-import DailyConsumptionChart from "../components/DailyConsumptionChart";
-import Loader from "../components/Loader";
-import fetchDailyConsumption from "../services/fetchDailyConsumption";
-import styles from "./DailyConsumptionBlock.module.scss";
+import DatePicker from "../../common/DatePicker";
+import ValueSelector from "../common/ValueSelector";
+import StepSelector from "../common/StepSelector";
+import TotalsDisplay from "../common/TotalsDisplay";
+import DailyConsumptionChart from "../DailyConsumptionChart/DailyConsumptionChart";
+import Loader from "../../common/Loader";
+import fetchDailyConsumption from "../../../services/fetchDailyConsumption";
+import styles from "./DisplayConsumptionBlock.module.scss";
 
-export default function DailyConsumptionBlock() {
+export default function DisplayConsumptionBlock() {
   const today = new Date().toISOString().slice(0, 10);
 
   const [date, setDate] = useState(today);

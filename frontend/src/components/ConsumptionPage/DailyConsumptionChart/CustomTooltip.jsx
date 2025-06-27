@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./CustomTooltip.module.scss";
-import { formatEuro, formatWh } from "../utils/format";
+import { formatEuro, formatWh } from "../../../utils/format";
 
 export default function CustomTooltip({ active, payload }) {
   if (!active || !payload || payload.length === 0) return null;

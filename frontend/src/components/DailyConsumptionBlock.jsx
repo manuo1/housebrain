@@ -5,7 +5,7 @@ import StepSelector from "../components/StepSelector";
 import TotalsDisplay from "../components/TotalsDisplay";
 import DailyConsumptionChart from "../components/DailyConsumptionChart";
 import Loader from "../components/Loader";
-import fetchDailyIndexes from "../services/fetchDailyIndexes";
+import fetchDailyConsumption from "../services/fetchDailyConsumption";
 import styles from "./DailyConsumptionBlock.module.scss";
 
 export default function DailyConsumptionBlock() {
@@ -23,7 +23,7 @@ export default function DailyConsumptionBlock() {
       setLoading(true);
       setError(null);
       try {
-        const result = await fetchDailyIndexes(date, step);
+        const result = await fetchDailyConsumption(date, step);
         setData(result);
       } catch (err) {
         setError(err.message || "Unknown error");

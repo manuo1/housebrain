@@ -1,6 +1,3 @@
-/**
- * Represents a single consumption data point
- */
 class DailyConsumptionElement {
   constructor({
     date,
@@ -23,9 +20,6 @@ class DailyConsumptionElement {
   }
 }
 
-/**
- * Represents totals for a specific label/category
- */
 class TotalByLabel {
   constructor({ wh, euros }) {
     this.wh = wh;
@@ -33,11 +27,7 @@ class TotalByLabel {
   }
 }
 
-/**
- * Main model for daily consumption data
- */
 class DailyIndexes {
-  // Allowed step values (matching backend constants)
   static ALLOWED_STEPS = [1, 30, 60];
 
   constructor(date, step, data, totals = {}) {
@@ -47,11 +37,6 @@ class DailyIndexes {
     this.totals = this._parseTotals(totals);
   }
 
-  /**
-   * Parse raw data array into DailyConsumptionElement instances
-   * @param {Array} rawData
-   * @returns {Array<DailyConsumptionElement>}
-   */
   _parseData(rawData) {
     if (!Array.isArray(rawData)) {
       console.warn("Data is not an array:", rawData);
@@ -60,11 +45,6 @@ class DailyIndexes {
     return rawData.map((item) => new DailyConsumptionElement(item));
   }
 
-  /**
-   * Parse raw totals object into TotalByLabel instances
-   * @param {Object} rawTotals
-   * @returns {Object}
-   */
   _parseTotals(rawTotals) {
     const parsedTotals = {};
     for (const [label, total] of Object.entries(rawTotals)) {
@@ -73,10 +53,6 @@ class DailyIndexes {
     return parsedTotals;
   }
 
-  /**
-   * Validate step value
-   * @returns {boolean}
-   */
   isValidStep() {
     return DailyIndexes.ALLOWED_STEPS.includes(this.step);
   }

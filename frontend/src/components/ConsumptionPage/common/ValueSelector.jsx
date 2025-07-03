@@ -1,11 +1,6 @@
 import React from "react";
 import styles from "./ValueSelector.module.scss";
-
-const VALUE_TYPES = [
-  { key: "wh", label: "Consommation (Wh)" },
-  { key: "average_watt", label: "Puissance Moyenne (w)" },
-  { key: "euros", label: "Coût (€)" },
-];
+import { VALUE_TYPES } from "../../../constants/consumptionConstants";
 
 export default function ValueSelector({ value, onChange }) {
   return (

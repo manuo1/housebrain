@@ -6,3 +6,9 @@ export const STEP_OPTIONS = [
   { value: "week", label: "Semaine" },
   { value: "month", label: "Mois" },
 ];
+
+export const VALUE_TYPES = [
+  { key: "wh", label: "Consommation (Wh)" },
+  { key: "average_watt", label: "Puissance Moyenne (w)" },
+  { key: "euros", label: "Coût (€)" },
+];

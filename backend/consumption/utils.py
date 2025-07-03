@@ -6,7 +6,11 @@ from django.utils import timezone
 from consumption.edf_pricing import get_kwh_price
 from consumption.models import DailyIndexes
 from core.constants import LoggerLabel
-from consumption.constants import ALLOWED_CONSUMPTION_STEPS, ConsumptionPeriod
+from consumption.constants import (
+    ALLOWED_CONSUMPTION_PERIODS,
+    ALLOWED_CONSUMPTION_STEPS,
+    ConsumptionPeriod,
+)
 from teleinfo.constants import (
     INDEX_LABEL_TO_TARIF_PERIOD_LABEL,
     INDEX_LABEL_TRANSLATIONS,
@@ -929,22 +933,24 @@ def get_consumption_by_day_data(
             - "consumption": per-period and total consumption (kwh and euros)
     """
     data = []
-    current = start_date
-    while current < end_date:
-        values = {}
+    current_date = start_date
+    while current_date < end_date:
+        daily_index_list = []
         for daily_index in daily_indexes_list:
-            if current == daily_index.date:
-                values = daily_index.values
+            if current_date == daily_index.date:
+                daily_index_list = [daily_index]
 
         data.append(
             {
-                "start_date": f"{current:%Y-%m-%d}",
-                "end_date": f"{(current + timedelta(days=1)):%Y-%m-%d}",
-                "consumption": compute_totals_for_a_day(current, values),
+                "start_date": f"{current_date:%Y-%m-%d}",
+                "end_date": f"{(current_date + timedelta(days=1)):%Y-%m-%d}",
+                "consumption": compute_totals_for_period(
+                    current_date, daily_index_list, ConsumptionPeriod.DAY
+                ),
             }
         )
 
-        current += timedelta(days=1)
+        current_date += timedelta(days=1)
 
     return data
 
@@ -961,3 +967,79 @@ def get_consumption_by_month_data(
     start_date: date, end_date: date, daily_indexes_list: list[DailyIndexes]
 ):
     return []
+
+
+# not full implemented in progress
+def compute_totals_for_period(
+    day: date, daily_index_list: list[DailyIndexes], period: ConsumptionPeriod
+) -> dict[str, dict[str, int | None]]:
+
+    if not daily_index_list or period not in ALLOWED_CONSUMPTION_PERIODS:
+        return {}
+
+    totals = {}
+    first_daily_index = daily_index_list[0]
+    last_daily_index = daily_index_list[-1]
+
+    for index_label, indexes in first_daily_index.values.items():
+        readable_index_label = get_human_readable_index_label(index_label)
+        totals[readable_index_label] = {"wh": None, "euros": None, "average_watt": None}
+
+        if not indexes:
+            continue
+
+        sorted_times = sorted(indexes.keys())
+
+        # Find first non-null index
+        first_key = None
+        first_val = None
+        for t in sorted_times:
+            if indexes[t] is not None:
+                first_key = t
+                first_val = indexes[t]
+                break
+
+    for index_label, indexes in last_daily_index.values.items():
+        readable_index_label = get_human_readable_index_label(index_label)
+        totals[readable_index_label] = {"wh": None, "euros": None, "average_watt": None}
+
+        if not indexes:
+            continue
+
+        sorted_times = sorted(indexes.keys())
+
+        # Find last non-null index
+        last_val = None
+        last_key = None
+        for t in reversed(sorted_times):
+            if indexes[t] is not None:
+                last_key = t
+                last_val = indexes[t]
+                break
+
+        if first_val is not None and last_val is not None and first_key != last_key:
+            wh = last_val - first_val
+            totals[readable_index_label]["wh"] = wh
+            totals[readable_index_label]["average_watt"] = wh
+
+            totals[readable_index_label]["euros"] = compute_period_price(
+                day, get_tarif_period_label_from_index_label(index_label), wh
+            )
+
+    total_wh = (
+        sum(period["wh"] for period in totals.values() if period["wh"] is not None)
+        if any(period["wh"] is not None for period in totals.values())
+        else None
+    )
+
+    total_euros = (
+        sum(
+            period["euros"] for period in totals.values() if period["euros"] is not None
+        )
+        if any(period["euros"] is not None for period in totals.values())
+        else None
+    )
+
+    totals["Total"] = {"wh": total_wh, "euros": total_euros}
+
+    return totals

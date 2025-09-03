@@ -2,6 +2,21 @@ from datetime import date
 from teleinfo.constants import TarifPeriods
 
 pricing = {
+    date(2025, 7, 10): {
+        "kwh": {
+            TarifPeriods.TH: 20.16,
+            TarifPeriods.HC: 14.1854,
+            TarifPeriods.HP: 17.8754,
+            TarifPeriods.HN: 0,
+            TarifPeriods.PM: 0,
+            TarifPeriods.HCJB: 12.88,
+            TarifPeriods.HPJB: 15.52,
+            TarifPeriods.HCJW: 14.47,
+            TarifPeriods.HPJW: 17.92,
+            TarifPeriods.HCJR: 15.18,
+            TarifPeriods.HPJR: 65.86,
+        }
+    },
     date(2025, 2, 1): {
         "kwh": {
             TarifPeriods.TH: 20.16,

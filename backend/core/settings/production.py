@@ -4,18 +4,21 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-RASPBERRYPI_LOCAL_IP = os.environ.get("RASPBERRYPI_LOCAL_IP")
-RASPBERRYPI_PUBLIC_IP = os.environ.get("RASPBERRYPI_PUBLIC_IP")
+LOCAL_IP = os.environ.get("LOCAL_IP")
+PUBLIC_IP = os.environ.get("PUBLIC_IP")
+DOMAINS = os.environ.get("DOMAINS")
 
 DEBUG = False
-ALLOWED_HOSTS = ["housebrain", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-if RASPBERRYPI_LOCAL_IP:
-    ALLOWED_HOSTS.append(RASPBERRYPI_LOCAL_IP)
+if LOCAL_IP:
+    ALLOWED_HOSTS.append(LOCAL_IP)
 
-if RASPBERRYPI_PUBLIC_IP:
-    ALLOWED_HOSTS.append(RASPBERRYPI_PUBLIC_IP)
+if PUBLIC_IP:
+    ALLOWED_HOSTS.append(PUBLIC_IP)
 
+if DOMAINS:
+    ALLOWED_HOSTS.extend(DOMAINS.split(","))
 
 CACHES = {
     "default": {

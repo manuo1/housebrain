@@ -10,9 +10,9 @@ fi
 
 # Ajout de l'adresse IP dans le .env
 ip=$(hostname -I | awk '{print $1}')
-if ! grep -q "^RASPBERRYPI_LOCAL_IP=" ".env"; then
+if ! grep -q "^LOCAL_IP=" ".env"; then
     echo -e "\n# Adresse IP locale du Raspberry Pi" >> ".env"
-    echo "RASPBERRYPI_LOCAL_IP=$ip" >> ".env"
+    echo "LOCAL_IP=$ip" >> ".env"
     echo "IP ajoutée dans .env"
 else
     echo "IP déjà présente dans .env"
@@ -20,9 +20,9 @@ fi
 
 # Ajout de l'adresse IP publique dans le .env
 ip_public=$(curl -4 -s ifconfig.me)
-if ! grep -q "^RASPBERRYPI_PUBLIC_IP=" ".env"; then
+if ! grep -q "^PUBLIC_IP=" ".env"; then
     echo -e "\n# Adresse IP publique du Raspberry Pi" >> ".env"
-    echo "RASPBERRYPI_PUBLIC_IP=$ip_public" >> ".env"
+    echo "PUBLIC_IP=$ip_public" >> ".env"
     echo "Adresse IP publique ajoutée dans .env"
 else
     echo "Adresse IP publique déjà présente dans .env"

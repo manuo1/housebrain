@@ -1,0 +1,82 @@
+.dropdown {
+  position: relative;
+
+  .dropdownToggle {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+
+    &:hover {
+      background-color: rgba(74, 158, 255, 0.1);
+      color: #4a9eff;
+      transform: translateY(-1px);
+    }
+
+    &.active {
+      background-color: rgba(74, 158, 255, 0.2);
+      color: #4a9eff;
+
+      .arrow {
+        transform: rotate(180deg);
+      }
+    }
+
+    .titleIcon {
+      font-size: 1rem;
+    }
+
+    .arrow {
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+      opacity: 0.7;
+    }
+  }
+
+  .dropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
+    border: 1px solid #444;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 220px;
+    backdrop-filter: blur(20px);
+    padding: 0.5rem 0;
+
+    &.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      right: 20px;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+      border: 1px solid #444;
+      border-bottom: none;
+      border-right: none;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+  }
+}

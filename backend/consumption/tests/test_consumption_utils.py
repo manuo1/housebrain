@@ -1,7 +1,7 @@
 import pytest
 from copy import deepcopy
 from datetime import date, datetime
-from consumption.constants import ALLOWED_CONSUMPTION_STEPS
+from consumption.constants import STEP_1MIN_DICT, STEP_30MIN_DICT, STEP_60MIN_DICT
 from teleinfo.constants import (
     ISOUC_TO_SUBSCRIBED_POWER,
     TELEINFO_INDEX_LABELS,
@@ -21,7 +21,7 @@ from consumption.utils import (
     downsample_indexes,
     fill_missing_values,
     find_all_missing_value_zones,
-    generate_daily_index_structure,
+    get_daily_index_structure,
     get_cache_teleinfo_data,
     get_human_readable_index_label,
     get_human_readable_tarif_period,
@@ -36,37 +36,23 @@ from consumption.utils import (
 )
 
 
-@pytest.mark.parametrize("step", ALLOWED_CONSUMPTION_STEPS)
-def test_generate_daily_index_structure_valid_steps(step):
-    result = generate_daily_index_structure(step)
-
-    # Check that result is a dict
-    assert isinstance(result, dict)
-
-    # Check the expected number of time keys + "24:00"
-    expected_keys = (24 * 60) // step + 1
-    assert len(result) == expected_keys
-
-    # Check that all keys except the last are spaced by `step` minutes
-    time_keys = list(result.keys())
-    for i in range(len(time_keys) - 2):  # exclude last which is "24:00"
-        t1 = datetime.strptime(time_keys[i], "%H:%M")
-        t2 = datetime.strptime(time_keys[i + 1], "%H:%M")
-        delta = (t2 - t1).total_seconds() / 60
-        assert delta == step
-
-    assert time_keys[-1] == "24:00"
-    assert result["24:00"] is None
+@pytest.mark.parametrize(
+    "step, expected_dict",
+    [
+        (1, STEP_1MIN_DICT),
+        (30, STEP_30MIN_DICT),
+        (60, STEP_60MIN_DICT),
+    ],
+)
+def test_get_daily_index_structure_valid_steps(step, expected_dict):
+    result = get_daily_index_structure(step)
+    assert result == expected_dict
 
 
-def test_generate_daily_index_structure_invalid_type():
-    with pytest.raises(TypeError):
-        generate_daily_index_structure("30")
-
-
-def test_generate_daily_index_structure_invalid_step():
+@pytest.mark.parametrize("invalid_step", ["1", 15, 0, 61, 1.0, None, [], {}])
+def test_get_daily_index_structure_invalid_steps(invalid_step):
     with pytest.raises(ValueError):
-        generate_daily_index_structure(15)
+        get_daily_index_structure(invalid_step)
 
 
 @pytest.mark.parametrize(
@@ -842,7 +828,7 @@ def test_get_indexes_in_teleinfo(cache_data, expected):
         assert result == expected
 
 
-SAMPLE_PERIODS = {**generate_daily_index_structure(), "07:00": "HC"}
+SAMPLE_PERIODS = {**get_daily_index_structure(1), "07:00": "HC"}
 
 
 @pytest.mark.parametrize(
@@ -851,8 +837,8 @@ SAMPLE_PERIODS = {**generate_daily_index_structure(), "07:00": "HC"}
         # cas normal
         (SAMPLE_PERIODS, "07:01", "HC", {**SAMPLE_PERIODS, "07:01": "HC"}),
         # Tarif_periods None ou trop court → génération structure complète
-        (None, "07:10", "HC", {**generate_daily_index_structure(), "07:10": "HC"}),
-        ({}, "07:10", "HC", {**generate_daily_index_structure(), "07:10": "HC"}),
+        (None, "07:10", "HC", {**get_daily_index_structure(1), "07:10": "HC"}),
+        ({}, "07:10", "HC", {**get_daily_index_structure(1), "07:10": "HC"}),
         # now_minute_str is None
         (SAMPLE_PERIODS, None, "HC", SAMPLE_PERIODS),
         # Cas décalage : 07:00 != 07:01 → correction de 07:00 à valeur 07:01
@@ -864,10 +850,10 @@ SAMPLE_PERIODS = {**generate_daily_index_structure(), "07:00": "HC"}
         ),
         # cas décalage avec :00 = None
         (
-            generate_daily_index_structure(),
+            get_daily_index_structure(1),
             "07:01",
             "HP",
-            {**generate_daily_index_structure(), "07:00": "HP", "07:01": "HP"},
+            {**get_daily_index_structure(1), "07:00": "HP", "07:01": "HP"},
         ),
     ],
 )
@@ -900,7 +886,7 @@ class DailyIndexes:
             {},  # aucun label
             {"HCHP": 2000},  # nouveau label
             "08:30",
-            {"HCHP": {**generate_daily_index_structure(), "08:30": 2000}},
+            {"HCHP": {**get_daily_index_structure(1), "08:30": 2000}},
         ),
         # Cas plusieurs labels
         (
@@ -909,7 +895,7 @@ class DailyIndexes:
             "08:15",
             {
                 "HCHC": {"08:00": 4000, "08:15": 4050},
-                "HCHP": {**generate_daily_index_structure(), "08:15": 3100},
+                "HCHP": {**get_daily_index_structure(1), "08:15": 3100},
             },
         ),
     ],

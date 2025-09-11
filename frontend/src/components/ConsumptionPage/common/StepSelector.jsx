@@ -8,6 +8,7 @@ export default function StepSelector({ step, onChange }) {
       {STEP_OPTIONS.map(({ value, label }) => (
         <button
           key={value}
+          type="button"
           className={`${styles.button} ${step === value ? styles.active : ""}`}
           onClick={() => onChange(value)}
         >

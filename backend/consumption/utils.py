@@ -1,6 +1,6 @@
 import logging
 from copy import deepcopy
-from datetime import datetime, timedelta, date
+from datetime import datetime, date
 from django.core.cache import cache
 from django.utils import timezone
 from consumption.edf_pricing import get_kwh_price
@@ -8,6 +8,9 @@ from consumption.models import DailyIndexes
 from core.constants import LoggerLabel
 from consumption.constants import (
     ALLOWED_CONSUMPTION_STEPS,
+    STEP_1MIN_DICT,
+    STEP_30MIN_DICT,
+    STEP_60MIN_DICT,
 )
 from teleinfo.constants import (
     INDEX_LABEL_TO_TARIF_PERIOD_LABEL,
@@ -25,40 +28,20 @@ from core.utils.utils import (
 logger = logging.getLogger("django")
 
 
-def generate_daily_index_structure(step: int = 1) -> dict[str, None]:
-    """
-    Generates a daily index structure as a dictionary with time keys
-    at a specified step interval (in minutes), covering the whole day.
+def get_daily_index_structure(step: int) -> dict[str, None]:
+    error = f"Step {step} is not allowed. Must be an integer in Allowed steps: {ALLOWED_CONSUMPTION_STEPS}."
 
-    Args:
-        step (int): Step size in minutes between each time entry (default is 1).
-                    Must be one of ALLOWED_CONSUMPTION_STEPS.
-
-    Returns:
-        dict[str, None]: Dictionary with time strings in "HH:MM" format as keys,
-                         and None as values. Includes "24:00" as final key.
-
-    Raises:
-        TypeError: If step is not an integer.
-        ValueError: If step is not in ALLOWED_CONSUMPTION_STEPS.
-    """
-    if not isinstance(step, int):
-        raise TypeError("Step must be an integer.")
-
-    if step not in ALLOWED_CONSUMPTION_STEPS:
-        raise ValueError(
-            f"Step {step} is not allowed. Allowed steps: {ALLOWED_CONSUMPTION_STEPS}"
-        )
-
-    minutes = {
-        (datetime.strptime("00:00", "%H:%M") + timedelta(minutes=i)).strftime(
-            "%H:%M"
-        ): None
-        for i in range(0, 24 * 60, step)
-    }
-
-    minutes["24:00"] = None
-    return minutes
+    match step:
+        case _ if not isinstance(step, int):
+            raise ValueError(error)
+        case 1:
+            return STEP_1MIN_DICT.copy()
+        case 30:
+            return STEP_30MIN_DICT.copy()
+        case 60:
+            return STEP_60MIN_DICT.copy()
+        case _:
+            raise ValueError(error)
 
 
 def compute_watt_hours(
@@ -511,7 +494,7 @@ def build_consumption_data(
 
     watt_hours_data = compute_watt_hours(indexes)
 
-    minute_keys = list(generate_daily_index_structure(step).keys())
+    minute_keys = list(get_daily_index_structure(step).keys())
     for curent_time_str, next_time_str in zip(minute_keys, minute_keys[1:]):
         tarif_period = tarif_periods[curent_time_str]
         curent_index_label = get_index_label(tarif_period)
@@ -679,7 +662,7 @@ def add_new_tarif_period(
         The updated `tarif_periods` dict with the new period inserted and corrections applied.
     """
     if not tarif_periods or len(tarif_periods) < 1441:
-        tarif_periods = generate_daily_index_structure()
+        tarif_periods = get_daily_index_structure(1)
 
     if now_minute_str is None:
         logger.warning(
@@ -736,7 +719,7 @@ def add_new_values(
         try:
             today_indexes.values[label][now_minute_str] = value
         except KeyError:
-            today_indexes.values[label] = generate_daily_index_structure()
+            today_indexes.values[label] = get_daily_index_structure(1)
             today_indexes.values[label][now_minute_str] = value
 
     return today_indexes

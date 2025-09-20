@@ -1,3 +1,4 @@
+import os
 from enum import StrEnum
 
 
@@ -19,3 +20,6 @@ class LoggerLabel(StrEnum):
     SYSTEMD = "[Systemd]"
     PERIODIC_TASKS = "[Periodic Tasks]"
     CONSUMPTION = "[Consumption]"
+
+
+UNPLUGGED_MODE = os.getenv("UNPLUGGED_MODE", "False") == "True"

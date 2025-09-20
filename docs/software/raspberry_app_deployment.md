@@ -11,6 +11,7 @@
 sudo raspi-config
 ```
 Choisir : 
+
     - 3 Interface Options    Configure connections to peripherals
     - I6 Serial Port Enable/disable shell messages on the serial connection
     - Would you like a login shell to be accessible over serial?   => ⚠️ Répondre No ⚠️
@@ -28,6 +29,23 @@ Redémarrer le Raspberry
 ```bash
 sudo reboot 
 ```
+
+---
+## Activer le Port I²C (Indispensable pour piloter les MCP23017)
+
+Toujours dans raspi-config :
+
+```bash
+sudo raspi-config
+```
+Choisir :
+
+    - 3 Interface Options Configure connections to peripherals
+
+    - I5 I2C Enable/disable automatic loading of I2C kernel module
+
+    - Would you like the ARM I2C interface to be enabled? => ⚠️ Répondre Yes ⚠️
+
 
 ---
 

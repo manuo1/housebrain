@@ -22,7 +22,6 @@ class TeleinfoListener:
         self.buffer = {}
         self.teleinfo = {}
         cache.set("teleinfo_data", {"last_read": None}, timeout=None)
-        cache.set("teleinfo_data_last_saved_at", None, timeout=None)
 
     def start(self) -> None:
         """Starts the listener process."""

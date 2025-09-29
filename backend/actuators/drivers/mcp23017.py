@@ -137,6 +137,28 @@ class MCP23017Driver:
             else:
                 raise MCP23017Error(f"Unexpected error reading pin {pin_number}: {e}")
 
+    def get_all_pins_state(self) -> list[dict]:
+        """
+        Return a list of dicts with the state and error for each pin:
+        [
+            {"pin": 0, "state": MCP23017PinState, "error": str | None},
+            ...
+        ]
+        """
+        pins_state = []
+
+        for pin in range(16):
+            try:
+                pin_value = self.get_pin(pin)
+                state = MCP23017PinState.ON if pin_value else MCP23017PinState.OFF
+                pins_state.append({"pin": pin, "state": state, "error": None})
+            except Exception as e:
+                pins_state.append(
+                    {"pin": pin, "state": MCP23017PinState.UNDEFINED, "error": str(e)}
+                )
+
+        return pins_state
+
 
 # Global driver instance (singleton)
 _mcp_driver = None

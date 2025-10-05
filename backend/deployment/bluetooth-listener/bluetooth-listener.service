@@ -11,7 +11,7 @@ Restart=always
 Environment="DJANGO_SETTINGS_MODULE=core.settings.production"
 
 # Configuration du Watchdog
-WatchdogSec=15s  
+WatchdogSec=120s  
 RestartSec=5s  
 Type=simple  
 

@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "authentication",
     "consumption",
     "rest_framework",
+    "rooms",
     "scheduler",
     "sensors",
     "teleinfo",

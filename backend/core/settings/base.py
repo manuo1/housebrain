@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "actuators",
     "authentication",
     "consumption",
+    "heating",
     "rest_framework",
     "rooms",
     "scheduler",

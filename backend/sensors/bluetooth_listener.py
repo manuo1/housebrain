@@ -43,7 +43,7 @@ class BluetoothListener:
         """Called every time a BLE packet is received."""
         for _, payload in advertisement_data.service_data.items():
             measurements = decode_bthome_payload(payload)
-            if not measurements:
+            if not (measurements and measurements.get("temperature")):
                 continue
 
             self.buffered_sensors[device.address] = {

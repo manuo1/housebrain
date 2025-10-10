@@ -13,6 +13,10 @@ ExecStart=/home/admin/housebrain/backend/.venv/bin/gunicorn \
           --workers 3 \
           --bind unix:/run/gunicorn.sock \
           core.wsgi:application
+          
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target

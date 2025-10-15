@@ -3,6 +3,7 @@ from copy import deepcopy
 from datetime import datetime, date
 from django.core.cache import cache
 from django.utils import timezone
+from core.utils.energy_utils import wh_to_watt
 from consumption.edf_pricing import get_kwh_price
 from consumption.models import DailyIndexes
 from core.constants import LoggerLabel
@@ -21,9 +22,7 @@ from teleinfo.constants import (
     TELEINFO_INDEX_LABELS,
     TeleinfoLabel,
 )
-from core.utils.utils import (
-    wh_to_watt,
-)
+
 
 logger = logging.getLogger("django")
 

@@ -11,6 +11,7 @@ load_dotenv()
 api_patterns = [
     path("consumption/", include("consumption.api.urls")),
     path("teleinfo/", include("teleinfo.api.urls")),
+    path("rooms/", include("rooms.api.urls")),
 ]
 
 backend_patterns = [

@@ -1,10 +1,12 @@
-import logging
 import asyncio
-from core.utils.systemd_utils import notify_watchdog
+import logging
+
 from bleak import BleakScanner
+from core.utils.systemd_utils import notify_watchdog
 from django.core.cache import caches
 from django.utils import timezone
 from sensors.services.bthome import decode_bthome_payload
+from sensors.utils.cache_sensors_data import get_sensors_data_in_cache
 
 cache = caches["default"]
 logger = logging.getLogger("django")
@@ -56,7 +58,7 @@ class BluetoothListener:
     def update_cache_with_buffered_data(self):
         """Update the cache only once per scan cycle."""
         notify_watchdog()
-        sensors_data = cache.get("sensors_data") or {}
+        sensors_data = get_sensors_data_in_cache()
 
         for mac, data in self.buffered_sensors.items():
             previous = sensors_data.get(mac, {})

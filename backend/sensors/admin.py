@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib import admin
 from django.core.cache import caches
+from sensors.utils.cache_sensors_data import get_sensors_data_in_cache
+
 from .models import TemperatureSensor
 
 cache = caches["default"]
@@ -10,7 +12,7 @@ class TemperatureSensorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        sensors_data = cache.get("sensors_data") or {}
+        sensors_data = get_sensors_data_in_cache()
         macs_in_cache = sorted(sensors_data.keys())
 
         macs_already_in_db = TemperatureSensor.objects.exclude(

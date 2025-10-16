@@ -1,4 +1,13 @@
-from rooms.api.services import add_temperature_measurements_to_rooms
+import pytest
+from actuators.models import Radiator
+from freezegun import freeze_time
+from rooms.api.constants import ApiRadiatorState, TemperatureTrend
+from rooms.api.services import (
+    _transform_heating,
+    _transform_radiator,
+    _transform_temperature,
+    add_temperature_measurements_to_rooms,
+)
 
 ROOMS_DATA = [
     {
@@ -108,3 +117,287 @@ def test_room_without_sensor_mac_address():
     sensors_cache = SENSORS_CACHE
     add_temperature_measurements_to_rooms(rooms_data, sensors_cache)
     assert rooms_data[0]["temperature_sensor__rssi"] is None
+
+
+@pytest.mark.parametrize(
+    "requested, actual, expected_state",
+    [
+        # --- cas standards ---
+        (Radiator.RequestedState.ON, Radiator.ActualState.ON, ApiRadiatorState.ON),
+        (
+            Radiator.RequestedState.ON,
+            Radiator.ActualState.OFF,
+            ApiRadiatorState.TURNING_ON,
+        ),
+        (Radiator.RequestedState.OFF, Radiator.ActualState.OFF, ApiRadiatorState.OFF),
+        (
+            Radiator.RequestedState.OFF,
+            Radiator.ActualState.ON,
+            ApiRadiatorState.SHUTTING_DOWN,
+        ),
+        (
+            Radiator.RequestedState.LOAD_SHED,
+            Radiator.ActualState.OFF,
+            ApiRadiatorState.LOAD_SHED,
+        ),
+        (
+            Radiator.RequestedState.LOAD_SHED,
+            Radiator.ActualState.ON,
+            ApiRadiatorState.SHUTTING_DOWN,
+        ),
+        # --- cas indéfinis ---
+        (
+            Radiator.RequestedState.ON,
+            Radiator.ActualState.UNDEFINED,
+            ApiRadiatorState.UNDEFINED,
+        ),
+        (None, Radiator.ActualState.OFF, None),
+        (Radiator.RequestedState.ON, None, None),
+        (None, None, None),
+    ],
+)
+def test_transform_radiator_various_states(requested, actual, expected_state):
+    room_dict = {
+        "radiator__id": 1,
+        "radiator__requested_state": requested,
+        "radiator__actual_state": actual,
+    }
+
+    result = _transform_radiator(room_dict)
+
+    assert result["id"] == 1
+    assert result["state"] == expected_state
+
+
+def test_transform_radiator_missing_id():
+    """Si l'id du radiateur est absent, on doit quand même retourner state."""
+    room_dict = {
+        "radiator__requested_state": Radiator.RequestedState.ON,
+        "radiator__actual_state": Radiator.ActualState.OFF,
+    }
+
+    result = _transform_radiator(room_dict)
+
+    assert result["id"] is None
+    assert result["state"] == ApiRadiatorState.TURNING_ON
+
+
+def test_transform_radiator_extra_fields_are_ignored():
+    """Les champs inutiles dans le dict ne doivent pas interférer."""
+    room_dict = {
+        "radiator__id": 3,
+        "radiator__requested_state": Radiator.RequestedState.OFF,
+        "radiator__actual_state": Radiator.ActualState.ON,
+        "temperature_sensor__id": 99,  # bruit
+    }
+
+    result = _transform_radiator(room_dict)
+
+    assert result == {
+        "id": 3,
+        "state": ApiRadiatorState.SHUTTING_DOWN,
+    }
+
+
+@pytest.mark.parametrize(
+    "room_dict, expected_mode, expected_value",
+    [
+        # --- mode thermostat ---
+        (
+            {"heating_control_mode": "thermostat", "current_setpoint": 21.5},
+            "thermostat",
+            21.5,
+        ),
+        (
+            {"heating_control_mode": "thermostat", "current_setpoint": None},
+            "thermostat",
+            None,
+        ),
+        # --- mode manuel ---
+        (
+            {"heating_control_mode": "manual", "current_on_off_state": "on"},
+            "manual",
+            "on",
+        ),
+        (
+            {"heating_control_mode": "manual", "current_on_off_state": None},
+            "manual",
+            None,
+        ),
+        # --- mode inconnu ---
+        (
+            {"heating_control_mode": "on_off", "current_setpoint": 19.0},
+            "on_off",
+            None,
+        ),
+        (
+            {"heating_control_mode": None, "current_setpoint": 20.0},
+            None,
+            None,
+        ),
+        # --- dictionnaire vide ---
+        ({}, None, None),
+    ],
+)
+def test_transform_heating_various_modes(room_dict, expected_mode, expected_value):
+    """Vérifie la logique de sélection mode/value selon le mode de chauffage."""
+    result = _transform_heating(room_dict)
+
+    assert result == {
+        "mode": expected_mode,
+        "value": expected_value,
+    }
+
+
+def test_transform_heating_ignores_extra_fields():
+    """Les champs inutiles ne doivent pas interférer."""
+    room_dict = {
+        "heating_control_mode": "manual",
+        "current_on_off_state": "off",
+        "random_field": 123,
+        "temperature_sensor__id": 99,
+    }
+
+    result = _transform_heating(room_dict)
+
+    assert result == {"mode": "manual", "value": "off"}
+
+
+BASE_ROOM_DATA = {
+    "temperature_sensor__id": 10,
+    "temperature_sensor__mac_address": "AA:BB:CC:DD:EE:FF",
+    "temperature_sensor__rssi": -75,
+}
+
+
+@pytest.mark.parametrize(
+    "now_iso, current_dt, delta_ok, expected_temp, expected_trend",
+    [
+        # --- Cas 1 : mesure récente (<1 min) + trend positive ---
+        (
+            "2025-10-16T10:00:00Z",
+            "2025-10-16T09:59:30Z",  # 30s avant
+            True,
+            21.0,
+            TemperatureTrend.UP,
+        ),
+        # --- Cas 2 : mesure récente mais trend quasi stable (diff < 0.1) ---
+        (
+            "2025-10-16T10:00:00Z",
+            "2025-10-16T09:59:30Z",
+            True,
+            20.05,
+            TemperatureTrend.SAME,
+        ),
+        # --- Cas 3 : mesure récente mais trend descendante ---
+        (
+            "2025-10-16T10:00:00Z",
+            "2025-10-16T09:59:30Z",
+            True,
+            19.5,
+            TemperatureTrend.DOWN,
+        ),
+        # --- Cas 4 : mesure trop ancienne (>1 min) → pas de temperature ---
+        (
+            "2025-10-16T10:00:00Z",
+            "2025-10-16T09:58:30Z",  # 1m30 avant
+            False,
+            None,
+            None,
+        ),
+    ],
+)
+@freeze_time("2025-10-16T10:00:00Z")
+def test_transform_temperature_with_various_deltas(
+    now_iso, current_dt, delta_ok, expected_temp, expected_trend
+):
+    """Teste la logique complète de température : fraicheur et tendance."""
+    room_dict = {
+        **BASE_ROOM_DATA,
+        "temperature_sensor__current_temperature": expected_temp
+        if expected_temp
+        else 20.0,
+        "temperature_sensor__current_dt": current_dt,
+        "temperature_sensor__previous_temperature": 20.0,
+        "temperature_sensor__previous_dt": "2025-10-16T09:59:00Z",
+    }
+
+    result = _transform_temperature(room_dict)
+
+    assert result["id"] == 10
+    assert result["mac_short"].endswith("EE:FF")  # get_mac_short = 3 derniers segments
+    assert isinstance(result["signal_strength"], int)
+
+    if not delta_ok:
+        # Trop ancien → aucun relevé
+        assert result["measurements"]["temperature"] is None
+        assert result["measurements"]["trend"] is None
+    else:
+        # Relevé récent
+        assert result["measurements"]["temperature"] == pytest.approx(
+            expected_temp, 0.01
+        )
+        assert result["measurements"]["trend"] == expected_trend
+
+
+@freeze_time("2025-10-16T10:00:00Z")
+def test_transform_temperature_missing_current_temperature():
+    """Aucune temperature actuelle → pas de mesures."""
+    room_dict = {
+        **BASE_ROOM_DATA,
+        "temperature_sensor__current_temperature": None,
+    }
+
+    result = _transform_temperature(room_dict)
+
+    assert result["measurements"] == {"temperature": None, "trend": None}
+
+
+@freeze_time("2025-10-16T10:00:00Z")
+def test_transform_temperature_missing_previous_values():
+    """Pas de valeur précédente → trend non calculée."""
+    room_dict = {
+        **BASE_ROOM_DATA,
+        "temperature_sensor__current_temperature": 21.0,
+        "temperature_sensor__current_dt": "2025-10-16T09:59:40Z",
+        "temperature_sensor__previous_temperature": None,
+        "temperature_sensor__previous_dt": None,
+    }
+
+    result = _transform_temperature(room_dict)
+
+    assert result["measurements"]["temperature"] == 21.0
+    assert result["measurements"]["trend"] is None
+
+
+@freeze_time("2025-10-16T10:00:00Z")
+def test_transform_temperature_invalid_datetime():
+    """Datetime invalide doit être ignorée."""
+    room_dict = {
+        **BASE_ROOM_DATA,
+        "temperature_sensor__current_temperature": 21.0,
+        "temperature_sensor__current_dt": "BAD_FORMAT",
+    }
+
+    result = _transform_temperature(room_dict)
+
+    assert result["measurements"]["temperature"] is None
+    assert result["measurements"]["trend"] is None
+
+
+def test_transform_temperature_rssi_signal_strength_levels():
+    """Vérifie la conversion du RSSI en barres de signal."""
+    rssi_values = [-45, -55, -65, -75, -85]
+    room_ids = []
+
+    for idx, rssi in enumerate(rssi_values, start=1):
+        room_dict = {
+            **BASE_ROOM_DATA,
+            "temperature_sensor__id": idx,
+            "temperature_sensor__rssi": rssi,
+        }
+        result = _transform_temperature(room_dict)
+        room_ids.append(result["id"])
+        assert 1 <= result["signal_strength"] <= 5
+
+    assert len(room_ids) == len(rssi_values)

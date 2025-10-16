@@ -52,7 +52,7 @@ class BluetoothListener:
                 "mac_address": device.address,
                 "name": device.name or "Unknown",
                 "rssi": advertisement_data.rssi,
-                "measurements": {**measurements, "dt": timezone.now()},
+                "measurements": {**measurements, "dt": timezone.now().isoformat()},
             }
 
     def update_cache_with_buffered_data(self):

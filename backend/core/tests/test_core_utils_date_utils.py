@@ -1,7 +1,8 @@
-import pytest
 from datetime import datetime, timedelta, timezone
-from freezegun import freeze_time
+
+import pytest
 from core.utils.date_utils import is_delta_within_one_minute, parse_iso_datetime
+from freezegun import freeze_time
 
 
 @pytest.mark.parametrize(
@@ -30,6 +31,7 @@ def test_is_delta_within_one_minute_param(delta, expected):
         (None, None),
         ("", None),
         ("invalid", None),
+        (datetime(2025, 10, 16), None),
         (
             "2025-12-31T23:59:59.999Z",
             datetime(2025, 12, 31, 23, 59, 59, 999000, tzinfo=timezone.utc),

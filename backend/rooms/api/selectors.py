@@ -1,3 +1,5 @@
+from core.utils.env_utils import environment_is_development
+from mock_data.rooms import MOCKED_ROOMS_DATA_FOR_API
 from rooms.models import Room
 
 
@@ -5,6 +7,9 @@ def get_rooms_data_for_api():
     """
     Fetch all rooms with only the fields needed for the API.
     """
+    if environment_is_development():
+        return MOCKED_ROOMS_DATA_FOR_API
+
     return list(
         Room.objects.values(
             # Room fields

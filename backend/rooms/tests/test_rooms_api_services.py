@@ -297,10 +297,10 @@ BASE_ROOM_DATA = {
             19.5,
             TemperatureTrend.DOWN,
         ),
-        # --- Cas 4 : mesure trop ancienne (>1 min) → pas de temperature ---
+        # --- Cas 4 : mesure trop ancienne (>2 min) → pas de temperature ---
         (
             "2025-10-16T10:00:00Z",
-            "2025-10-16T09:58:30Z",  # 1m30 avant
+            "2025-10-16T09:57:30Z",  # 2m30 avant
             False,
             None,
             None,

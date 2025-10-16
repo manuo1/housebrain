@@ -1,4 +1,4 @@
-from core.utils.date_utils import is_delta_within_one_minute, parse_iso_datetime
+from core.utils.date_utils import is_delta_within_two_minute, parse_iso_datetime
 from django.utils import timezone
 from rooms.api.utils import (
     calculate_radiator_state,
@@ -103,7 +103,7 @@ def _transform_temperature(room_dict: dict) -> dict:
         room_dict.get("temperature_sensor__current_dt")
     )
 
-    if current_temperature_dt is None or not is_delta_within_one_minute(
+    if current_temperature_dt is None or not is_delta_within_two_minute(
         current_temperature_dt, timezone.now()
     ):
         return temperature_data
@@ -118,7 +118,7 @@ def _transform_temperature(room_dict: dict) -> dict:
     if (
         not previous_temperature_dt
         or not previous_temperature
-        or not is_delta_within_one_minute(
+        or not is_delta_within_two_minute(
             current_temperature_dt, previous_temperature_dt
         )
     ):

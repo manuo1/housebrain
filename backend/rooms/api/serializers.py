@@ -7,8 +7,8 @@ class HeatingSerializer(serializers.Serializer):
     mode = serializers.CharField(
         help_text="Heating control mode: 'thermostat' or 'on_off'"
     )
-    value = serializers.JSONField(
-        help_text="Current setpoint (float for thermostat) or state (string for on_off)"
+    value = serializers.CharField(
+        help_text="Current setpoint string for thermostat or state"
     )
 
 

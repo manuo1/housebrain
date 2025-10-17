@@ -33,8 +33,8 @@ class Room {
     this.id = id;
     this.name = name;
     this.heating = new Heating(heating);
-    this.temperature = temperature ? new Temperature(temperature) : null;
-    this.radiator = radiator ? new Radiator(radiator) : null;
+    this.temperature = new Temperature(temperature);
+    this.radiator = new Radiator(radiator);
   }
 }
 

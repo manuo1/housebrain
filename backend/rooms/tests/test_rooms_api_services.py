@@ -8,6 +8,7 @@ from rooms.api.services import (
     _transform_temperature,
     add_temperature_measurements_to_rooms,
 )
+from rooms.models import Room
 
 ROOMS_DATA = [
     {
@@ -204,30 +205,45 @@ def test_transform_radiator_extra_fields_are_ignored():
     [
         # --- mode thermostat ---
         (
-            {"heating_control_mode": "thermostat", "current_setpoint": 21.5},
-            "thermostat",
+            {
+                "heating_control_mode": Room.HeatingControlMode.THERMOSTAT,
+                "current_setpoint": 21.5,
+            },
+            Room.HeatingControlMode.THERMOSTAT,
             21.5,
         ),
         (
-            {"heating_control_mode": "thermostat", "current_setpoint": None},
-            "thermostat",
+            {
+                "heating_control_mode": Room.HeatingControlMode.THERMOSTAT,
+                "current_setpoint": None,
+            },
+            Room.HeatingControlMode.THERMOSTAT,
             None,
         ),
         # --- mode manuel ---
         (
-            {"heating_control_mode": "manual", "current_on_off_state": "on"},
-            "manual",
-            "on",
+            {
+                "heating_control_mode": Room.HeatingControlMode.ONOFF,
+                "current_on_off_state": Room.CurrentHeatingState.ON,
+            },
+            Room.HeatingControlMode.ONOFF,
+            Room.CurrentHeatingState.ON,
         ),
         (
-            {"heating_control_mode": "manual", "current_on_off_state": None},
-            "manual",
+            {
+                "heating_control_mode": Room.HeatingControlMode.ONOFF,
+                "current_on_off_state": None,
+            },
+            Room.HeatingControlMode.ONOFF,
             None,
         ),
         # --- mode inconnu ---
         (
-            {"heating_control_mode": "on_off", "current_setpoint": 19.0},
-            "on_off",
+            {
+                "heating_control_mode": Room.HeatingControlMode.ONOFF,
+                "current_on_off_state": None,
+            },
+            Room.HeatingControlMode.ONOFF,
             None,
         ),
         (
@@ -252,7 +268,7 @@ def test_transform_heating_various_modes(room_dict, expected_mode, expected_valu
 def test_transform_heating_ignores_extra_fields():
     """Les champs inutiles ne doivent pas interférer."""
     room_dict = {
-        "heating_control_mode": "manual",
+        "heating_control_mode": "on_off",
         "current_on_off_state": "off",
         "random_field": 123,
         "temperature_sensor__id": 99,
@@ -260,7 +276,7 @@ def test_transform_heating_ignores_extra_fields():
 
     result = _transform_heating(room_dict)
 
-    assert result == {"mode": "manual", "value": "off"}
+    assert result == {"mode": "on_off", "value": "off"}
 
 
 BASE_ROOM_DATA = {

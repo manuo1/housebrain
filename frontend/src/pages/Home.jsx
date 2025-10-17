@@ -1,12 +1,23 @@
-import React from "react";
-import styles from "./Home.module.scss";
+import React from 'react';
+import RoomsPanel from '../components/Rooms/RoomsPanel';
+import styles from './Home.module.scss';
 
 export default function Home() {
   return (
     <div className={styles.home}>
-      <h1>HouseBrain</h1>
-      <p>🚧 Page en construction… Le futur dashboard arrive bientôt !</p>
-      <p>Vous pouvez consulter les infos de consommation</p>
+      <div className={styles.dashboardGrid}>
+        <div className={styles.roomsSection}>
+          <RoomsPanel />
+        </div>
+
+        <div className={styles.statsSection}>
+          <div className={styles.placeholder}>
+            <span className={styles.icon}>📊</span>
+            <h2>Dashboard consommation</h2>
+            <p>🚧 En construction…</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

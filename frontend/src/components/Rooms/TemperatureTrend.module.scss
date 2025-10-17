@@ -1,0 +1,17 @@
+.trend {
+  font-size: 16px;
+  color: #999;
+  transition: color 0.3s ease;
+
+  &.up {
+    color: #ff6b6b;
+  }
+
+  &.down {
+    color: #4a9eff;
+  }
+
+  &.same {
+    color: #999;
+  }
+}

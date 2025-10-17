@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import fetchRoomsData from '../../services/fetchRoomsData';
 import RoomCard from './RoomCard';
-import styles from './RoomsPanel.module.scss';
+import styles from './RoomsList.module.scss';
 
-export default function RoomsPanel() {
+export default function RoomsList() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,7 +30,7 @@ export default function RoomsPanel() {
 
   if (loading) {
     return (
-      <div className={styles.roomsPanel}>
+      <div className={styles.roomsList}>
         <div className={styles.loading}>
           <div className={styles.spinner}></div>
         </div>
@@ -40,7 +40,7 @@ export default function RoomsPanel() {
 
   if (error) {
     return (
-      <div className={styles.roomsPanel}>
+      <div className={styles.roomsList}>
         <div className={styles.error}>
           <span className={styles.errorIcon}>⚠️</span>
           <p>{error}</p>
@@ -53,7 +53,7 @@ export default function RoomsPanel() {
   }
 
   return (
-    <div className={styles.roomsPanel}>
+    <div className={styles.roomsList}>
       {rooms.length === 0 ? (
         <p className={styles.noRooms}>Aucune pièce configurée</p>
       ) : (

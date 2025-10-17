@@ -1,5 +1,5 @@
 import React from 'react';
-import RoomsPanel from '../components/Rooms/RoomsPanel';
+import RoomsList from '../components/Rooms/RoomsList';
 import styles from './Home.module.scss';
 
 export default function Home() {
@@ -7,7 +7,7 @@ export default function Home() {
     <div className={styles.home}>
       <div className={styles.dashboardGrid}>
         <div className={styles.roomsSection}>
-          <RoomsPanel />
+          <RoomsList />
         </div>
 
         <div className={styles.statsSection}>

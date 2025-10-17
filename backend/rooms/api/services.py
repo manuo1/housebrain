@@ -5,6 +5,7 @@ from rooms.api.utils import (
     calculate_temperature_trend,
     get_mac_short,
 )
+from rooms.models import Room
 from sensors.services.rssi import rssi_to_signal_strength
 
 
@@ -70,9 +71,9 @@ def _transform_heating(room_dict: dict) -> dict:
     mode = room_dict.get("heating_control_mode")
     value = None
 
-    if mode == "thermostat":
+    if mode == Room.HeatingControlMode.THERMOSTAT:
         value = room_dict.get("current_setpoint")
-    elif mode == "manual":
+    elif mode == Room.HeatingControlMode.ONOFF:
         value = room_dict.get("current_on_off_state")
 
     return {"mode": mode, "value": value}

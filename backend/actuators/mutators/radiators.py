@@ -1,5 +1,6 @@
-from django.db import transaction
 from actuators.models import Radiator
+from django.db import transaction
+from django.utils import timezone
 
 
 def update_radiators_state(radiators_to_update: list[dict]) -> int:
@@ -22,3 +23,13 @@ def update_radiators_state(radiators_to_update: list[dict]) -> int:
             Radiator.objects.bulk_update(to_update, ["actual_state", "error"])
 
     return len(to_update)
+
+
+def apply_load_shedding_to_radiators(radiator_ids: list[int]) -> None:
+    """
+    Set requested_state = LOAD_SHED for all radiators with the given IDs.
+    """
+    Radiator.objects.filter(id__in=radiator_ids).update(
+        requested_state=Radiator.RequestedState.LOAD_SHED,
+        last_requested=timezone.now(),
+    )

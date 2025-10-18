@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import RoomsList from '../components/Rooms/RoomsList';
 import styles from './Home.module.scss';
 
@@ -9,12 +10,26 @@ export default function Home() {
         <div className={styles.roomsSection}>
           <RoomsList />
         </div>
-
         <div className={styles.statsSection}>
           <div className={styles.placeholder}>
             <span className={styles.icon}>📊</span>
             <h2>Dashboard consommation</h2>
-            <p>🚧 En construction…</p>
+            <p className={styles.constructionText}>🚧 En construction…</p>
+            <div className={styles.linksContainer}>
+              <p className={styles.infoText}>
+                En attendant, vous pouvez consulter :
+              </p>
+              <div className={styles.links}>
+                <Link to="/teleinfo" className={styles.link}>
+                  <span className={styles.linkIcon}>⚡</span>
+                  Téléinfo Live
+                </Link>
+                <Link to="/consumption" className={styles.link}>
+                  <span className={styles.linkIcon}>📈</span>
+                  Historique de consommation
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

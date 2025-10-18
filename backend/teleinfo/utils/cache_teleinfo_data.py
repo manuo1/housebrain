@@ -1,3 +1,4 @@
+from core.constants import DEFAULT_VOLTAGE
 from core.utils.date_utils import is_delta_within_five_seconds, parse_iso_datetime
 from core.utils.env_utils import environment_is_development
 from django.core.cache import cache
@@ -22,3 +23,18 @@ def get_teleinfo_data_in_cache_if_up_to_date() -> dict | None:
 
 def set_teleinfo_data_in_cache(data: dict) -> None:
     cache.set("teleinfo_data", data, timeout=None)
+
+
+def get_instant_available_power() -> int:
+    teleinfo_data = get_teleinfo_data_in_cache_if_up_to_date()
+
+    try:
+        max_available_ampere = int(teleinfo_data.get("ISOUSC"))
+        used_ampere = int(teleinfo_data.get("IINST"))
+    except (TypeError, ValueError):
+        return None
+
+    if used_ampere >= max_available_ampere:
+        return 0
+
+    return int((max_available_ampere - used_ampere) * DEFAULT_VOLTAGE)

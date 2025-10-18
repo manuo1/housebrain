@@ -10,6 +10,7 @@ from teleinfo.constants import SerialConfig
 from teleinfo.services import (
     buffer_can_accept_new_data,
     buffer_is_complete,
+    ensure_power_not_exceeded,
     get_data_in_line,
 )
 from teleinfo.utils.cache_teleinfo_data import set_teleinfo_data_in_cache
@@ -65,3 +66,4 @@ class TeleinfoListener:
             self.buffer.clear()
             set_teleinfo_data_in_cache(self.teleinfo)
             notify_watchdog()
+            ensure_power_not_exceeded()

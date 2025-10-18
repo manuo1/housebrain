@@ -1,14 +1,18 @@
+from unittest.mock import patch
+
 import pytest
+from actuators.constants import POWER_SAFETY_MARGIN
+from teleinfo.constants import FIRST_TELEINFO_FRAME_KEY, REQUIRED_TELEINFO_KEYS
 from teleinfo.services import (
+    buffer_can_accept_new_data,
     buffer_is_complete,
     calculate_checksum,
     clean_data,
-    split_data,
     data_is_valid,
+    ensure_power_not_exceeded,
     get_data_in_line,
-    buffer_can_accept_new_data,
+    split_data,
 )
-from teleinfo.constants import FIRST_TELEINFO_FRAME_KEY, REQUIRED_TELEINFO_KEYS
 
 
 @pytest.mark.parametrize(
@@ -162,3 +166,36 @@ def test_buffer_can_accept_new_data(key, buffer, expected):
 def test_buffer_is_complete(buffer, expected):
     """Test if the buffer is complete with all required teleinfo keys."""
     assert buffer_is_complete(buffer) == expected
+
+
+def test_load_shedding_triggered():
+    """Doit appeler manage_load_shedding si la puissance est trop basse"""
+    with (
+        patch("teleinfo.services.get_instant_available_power", return_value=0.5),
+        patch("teleinfo.services.manage_load_shedding") as mock_shed,
+    ):
+        ensure_power_not_exceeded()
+        mock_shed.assert_called_once_with(0.5)
+
+
+def test_load_shedding_not_triggered():
+    """Ne doit pas appeler manage_load_shedding si la puissance est suffisante"""
+    with (
+        patch(
+            "teleinfo.services.get_instant_available_power",
+            return_value=POWER_SAFETY_MARGIN + 1,
+        ),
+        patch("teleinfo.services.manage_load_shedding") as mock_shed,
+    ):
+        ensure_power_not_exceeded()
+        mock_shed.assert_not_called()
+
+
+def test_load_shedding_none_power():
+    """Doit appeler manage_load_shedding si get_instant_available_power retourne None"""
+    with (
+        patch("teleinfo.services.get_instant_available_power", return_value=None),
+        patch("teleinfo.services.manage_load_shedding") as mock_shed,
+    ):
+        ensure_power_not_exceeded()
+        mock_shed.assert_called_once_with(None)

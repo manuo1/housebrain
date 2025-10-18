@@ -1,17 +1,18 @@
 import logging
-import serial
 import time
+
+import serial
+from core.constants import LoggerLabel
 from core.utils.systemd_utils import notify_watchdog
+from django.core.cache import caches
+from django.utils import timezone
+from teleinfo.constants import SerialConfig
 from teleinfo.services import (
     buffer_can_accept_new_data,
-    get_data_in_line,
     buffer_is_complete,
+    get_data_in_line,
 )
-from core.constants import LoggerLabel
-from teleinfo.constants import SerialConfig
-from django.utils import timezone
-from django.core.cache import caches
-
+from teleinfo.utils.cache_teleinfo_data import set_teleinfo_data_in_cache
 
 cache = caches["default"]
 logger = logging.getLogger("django")
@@ -21,7 +22,7 @@ class TeleinfoListener:
     def __init__(self) -> None:
         self.buffer = {}
         self.teleinfo = {}
-        cache.set("teleinfo_data", {"last_read": None}, timeout=None)
+        set_teleinfo_data_in_cache({"last_read": None})
 
     def start(self) -> None:
         """Starts the listener process."""
@@ -60,7 +61,7 @@ class TeleinfoListener:
         if buffer_is_complete(self.buffer):
             self.teleinfo.clear()
             self.teleinfo = self.buffer.copy()
-            self.teleinfo.update({"last_read": timezone.now()})
+            self.teleinfo.update({"last_read": timezone.now().isoformat()})
             self.buffer.clear()
-            cache.set("teleinfo_data", self.teleinfo, timeout=None)
+            set_teleinfo_data_in_cache(self.teleinfo)
             notify_watchdog()

@@ -1,18 +1,17 @@
 import logging
 from copy import deepcopy
-from datetime import datetime, date
-from django.core.cache import cache
-from django.utils import timezone
-from core.utils.energy_utils import wh_to_watt
-from consumption.edf_pricing import get_kwh_price
-from consumption.models import DailyIndexes
-from core.constants import LoggerLabel
+from datetime import date
+
 from consumption.constants import (
     ALLOWED_CONSUMPTION_STEPS,
     STEP_1MIN_DICT,
     STEP_30MIN_DICT,
     STEP_60MIN_DICT,
 )
+from consumption.edf_pricing import get_kwh_price
+from consumption.models import DailyIndexes
+from core.constants import LoggerLabel
+from core.utils.energy_utils import wh_to_watt
 from teleinfo.constants import (
     INDEX_LABEL_TO_TARIF_PERIOD_LABEL,
     INDEX_LABEL_TRANSLATIONS,
@@ -22,7 +21,6 @@ from teleinfo.constants import (
     TELEINFO_INDEX_LABELS,
     TeleinfoLabel,
 )
-
 
 logger = logging.getLogger("django")
 
@@ -523,43 +521,6 @@ def build_consumption_data(
         )
 
     return data
-
-
-def get_cache_teleinfo_data(now: datetime) -> dict | None:
-    """
-    Retrieves teleinfo data from the cache if it's valid for the current minute.
-
-    The cache is expected to store a dictionary under the "teleinfo_data" key,
-    with a "last_read" datetime. If the timestamp matches the current `now`
-    (to the minute), the data is returned. Otherwise, a warning is logged and None is returned.
-
-    Args:
-        now: The current datetime (timezone-aware), rounded to minute precision.
-
-    Returns:
-        The teleinfo data dictionary if it was last read at the current minute,
-        otherwise None.
-    """
-    cache_teleinfo_data = cache.get("teleinfo_data", {})
-    cache_last_read = cache_teleinfo_data.get("last_read")
-
-    try:
-        cache_last_read = timezone.localtime(cache_last_read).replace(
-            second=0, microsecond=0
-        )
-    except AttributeError:
-        logger.warning(
-            f"{LoggerLabel.CONSUMPTION} A problem occurred while accessing teleinfo in the cache : cache_teleinfo_data = {cache_teleinfo_data}"
-        )
-        return None
-
-    if cache_last_read == now:
-        return cache_teleinfo_data
-    else:
-        logger.warning(
-            f"{LoggerLabel.CONSUMPTION} A problem occurred while accessing teleinfo in the cache : cache_teleinfo_data = {cache_teleinfo_data}"
-        )
-        return None
 
 
 def get_subscribed_power(cache_teleinfo_data: dict) -> int | None:

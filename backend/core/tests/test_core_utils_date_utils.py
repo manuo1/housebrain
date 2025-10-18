@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from core.utils.date_utils import (
+    is_delta_within_five_seconds,
     is_delta_within_one_minute,
     is_delta_within_two_minute,
     parse_iso_datetime,
@@ -66,3 +67,19 @@ def test_parse_iso_datetime(dt_str, expected):
     else:
         assert isinstance(dt, datetime)
         assert dt == expected
+
+
+@pytest.mark.parametrize(
+    "delta, expected",
+    [
+        (timedelta(seconds=10), False),
+        (timedelta(seconds=5), True),
+        (timedelta(seconds=1), True),
+        (timedelta(minutes=1), False),
+    ],
+)
+@freeze_time("2025-10-15 12:00:00")
+def test_is_delta_within_five_seconds(delta, expected):
+    now = datetime.now()
+    other_dt = now - delta
+    assert is_delta_within_five_seconds(now, other_dt) is expected

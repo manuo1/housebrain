@@ -1,14 +1,13 @@
+from datetime import datetime, timezone
 from unittest.mock import patch
+
 import pytest
 import serial
+from freezegun import freeze_time
 from teleinfo.constants import REQUIRED_TELEINFO_KEYS
 from teleinfo.listener import TeleinfoListener
-from freezegun import freeze_time
-from datetime import datetime
-from zoneinfo import ZoneInfo
-from core.settings.base import TIME_ZONE
 
-NOW_DATETIME = datetime(2025, 5, 12, 10, tzinfo=ZoneInfo(TIME_ZONE))
+NOW_DATETIME = datetime(2025, 5, 12, 10, tzinfo=timezone.utc)
 START_BUFFER = {"ADCO": "021728123456"}
 COMPLETE_BUFFER = {key: "value" for key in REQUIRED_TELEINFO_KEYS}
 INCOMPLETE_BUFFER = {key: "value" for key in REQUIRED_TELEINFO_KEYS if key != "ISOUSC"}
@@ -64,7 +63,7 @@ def test_process_data_when_buffer_is_not_empty(
             {
                 **INCOMPLETE_BUFFER,
                 "ISOUSC": "45",
-                "last_read": NOW_DATETIME,
+                "last_read": NOW_DATETIME.isoformat(),
             },
         ),
         # Adding new key (not a REQUIRED_TELEINFO_KEYS)
@@ -86,7 +85,7 @@ def test_process_data_when_buffer_is_not_empty(
 @freeze_time(NOW_DATETIME)
 @patch("teleinfo.listener.cache")
 @patch("teleinfo.listener.notify_watchdog")
-def test_process_data_when__buffer_is_only_missing_one_key_to_be_complete(
+def test_process_data_when_buffer_is_only_missing_one_key_to_be_complete(
     mock_notify_watchdog, mock_cache, new_serial, excepted_buffer, excepted_teleinfo
 ):
     listener = TeleinfoListener()

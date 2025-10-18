@@ -3,7 +3,6 @@ from django.utils import timezone
 
 
 class Radiator(models.Model):
-
     class Importance(models.IntegerChoices):
         """Heating importance level (higher importance = use last for load shedding)"""
 
@@ -79,7 +78,7 @@ class Radiator(models.Model):
     # from services. Services should explicitly update this field when changing
     # requested_state to maintain accurate traceability of system decisions.
     last_requested = models.DateTimeField(
-        default=timezone.now,
+        default=timezone.now(),
         verbose_name="Dernière demande",
         help_text="Horodatage de la dernière modification de requested_state",
     )

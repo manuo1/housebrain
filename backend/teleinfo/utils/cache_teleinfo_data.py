@@ -34,7 +34,4 @@ def get_instant_available_power() -> int:
     except (TypeError, ValueError):
         return None
 
-    if used_ampere >= max_available_ampere:
-        return 0
-
     return int((max_available_ampere - used_ampere) * DEFAULT_VOLTAGE)

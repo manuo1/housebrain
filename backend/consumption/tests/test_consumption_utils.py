@@ -1,16 +1,8 @@
-import pytest
 from copy import deepcopy
-from datetime import date, datetime
+from datetime import date
+
+import pytest
 from consumption.constants import STEP_1MIN_DICT, STEP_30MIN_DICT, STEP_60MIN_DICT
-from teleinfo.constants import (
-    ISOUC_TO_SUBSCRIBED_POWER,
-    TELEINFO_INDEX_LABELS,
-    TarifPeriods,
-    TeleinfoLabel,
-)
-from unittest.mock import patch
-
-
 from consumption.utils import (
     add_new_tarif_period,
     add_new_values,
@@ -22,7 +14,6 @@ from consumption.utils import (
     fill_missing_values,
     find_all_missing_value_zones,
     get_daily_index_structure,
-    get_cache_teleinfo_data,
     get_human_readable_index_label,
     get_human_readable_tarif_period,
     get_index_label,
@@ -33,6 +24,12 @@ from consumption.utils import (
     get_wh_of_index_label,
     interpolate_missing_values,
     is_interpolated,
+)
+from teleinfo.constants import (
+    ISOUC_TO_SUBSCRIBED_POWER,
+    TELEINFO_INDEX_LABELS,
+    TarifPeriods,
+    TeleinfoLabel,
 )
 
 
@@ -710,50 +707,6 @@ def test_get_human_readable_tarif_period(input_period, expected):
 )
 def test_get_human_readable_index_label(index_label, expected):
     assert get_human_readable_index_label(index_label) == expected
-
-
-@pytest.mark.parametrize(
-    "cached_time, now, expected",
-    [
-        (
-            datetime(2024, 5, 1, 10, 30),
-            datetime(2024, 5, 1, 10, 30),
-            {"last_read": datetime(2024, 5, 1, 10, 30), "some_data": "ok"},
-        ),
-        (
-            datetime(2024, 5, 1, 10, 29),
-            datetime(2024, 5, 1, 10, 30),
-            None,
-        ),
-    ],
-)
-@patch("consumption.utils.timezone.localtime")
-@patch("django.core.cache.cache.get")
-def test_get_cache_teleinfo_data_valid(
-    mock_cache_get, mock_localtime, cached_time, now, expected
-):
-    fake_data = {"last_read": cached_time, "some_data": "ok"}
-    mock_cache_get.return_value = fake_data
-    mock_localtime.return_value = cached_time.replace(second=0, microsecond=0)
-
-    result = get_cache_teleinfo_data(now)
-    assert result == expected
-
-
-@patch("django.core.cache.cache.get")
-def test_get_cache_teleinfo_data_none_last_read(mock_cache_get):
-    mock_cache_get.return_value = {"last_read": None}
-
-    result = get_cache_teleinfo_data(datetime(2024, 5, 1, 10, 30))
-    assert result is None
-
-
-@patch("django.core.cache.cache.get")
-def test_get_cache_teleinfo_data_empty_cache(mock_cache_get):
-    mock_cache_get.return_value = {}
-
-    result = get_cache_teleinfo_data(datetime(2024, 5, 1, 10, 30))
-    assert result is None
 
 
 @pytest.mark.parametrize(

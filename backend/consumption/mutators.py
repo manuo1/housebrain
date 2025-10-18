@@ -1,15 +1,15 @@
 import logging
+
+from consumption.models import DailyIndexes
 from consumption.utils import (
     add_new_tarif_period,
     add_new_values,
-    get_cache_teleinfo_data,
     get_indexes_in_teleinfo,
     get_subscribed_power,
     get_tarif_period,
 )
-from consumption.models import DailyIndexes
 from django.utils import timezone
-
+from teleinfo.utils.cache_teleinfo_data import get_teleinfo_data_in_cache_if_up_to_date
 
 logger = logging.getLogger("django")
 
@@ -19,7 +19,7 @@ def save_teleinfo_data():
     now_date = now.date()
     now_minute_str = now.strftime("%H:%M")
 
-    cache_teleinfo_data = get_cache_teleinfo_data(now)
+    cache_teleinfo_data = get_teleinfo_data_in_cache_if_up_to_date()
 
     if cache_teleinfo_data is None:
         return

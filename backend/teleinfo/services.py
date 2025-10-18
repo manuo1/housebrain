@@ -1,9 +1,12 @@
+from actuators.constants import POWER_SAFETY_MARGIN
+from actuators.services.load_shedding import manage_load_shedding
+from core.utils.bytes_utils import decode_byte
 from teleinfo.constants import (
     FIRST_TELEINFO_FRAME_KEY,
     REQUIRED_TELEINFO_KEYS,
     UNUSED_CHARS_IN_TELEINFO,
 )
-from core.utils.bytes_utils import decode_byte
+from teleinfo.utils.cache_teleinfo_data import get_instant_available_power
 
 
 def clean_data(data: str) -> str | None:
@@ -108,3 +111,10 @@ def buffer_is_complete(buffer: dict[str, str]) -> bool:
     if not isinstance(buffer, dict):
         return False
     return all(key in buffer for key in REQUIRED_TELEINFO_KEYS)
+
+
+def ensure_power_not_exceeded() -> None:
+    """Monitors the power consumed to avoid exceeding the authorized power"""
+    available_power = get_instant_available_power()
+    if available_power is None or available_power < POWER_SAFETY_MARGIN:
+        manage_load_shedding(available_power)

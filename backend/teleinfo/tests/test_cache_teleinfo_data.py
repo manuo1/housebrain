@@ -104,7 +104,7 @@ def test_set_teleinfo_data_in_cache():
         # No power left
         ({"ISOUSC": "45", "IINST": "45"}, 0),
         # Exceeded power
-        ({"ISOUSC": "45", "IINST": "50"}, 0),
+        ({"ISOUSC": "45", "IINST": "50"}, (45 - 50) * DEFAULT_VOLTAGE),
         # Missing required field
         ({"NOTUSED": "45", "IINST": "50"}, None),
         ({"ISOUSC": "45", "NOTUSED": "50"}, None),

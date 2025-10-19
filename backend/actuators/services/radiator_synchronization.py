@@ -1,9 +1,12 @@
 import logging
-from actuators.drivers.mcp23017 import MCP23017Driver, get_mcp_driver
-from actuators.selectors.radiators import get_radiators_state_in_database
-from actuators.mappers import RadiatorStateMapper
+
 from actuators.constants import MCP23017PinState
+from actuators.drivers.mcp23017 import MCP23017Driver, get_mcp_driver
+from actuators.mappers import RadiatorStateMapper
 from actuators.mutators.radiators import update_radiators_state
+from actuators.selectors.radiators import (
+    get_radiators_data_for_hardware_synchronization,
+)
 
 logger = logging.getLogger("django")
 
@@ -17,7 +20,7 @@ class RadiatorSyncService:
     def synchronize_database_and_hardware(cls) -> None:
         mcp23017_driver = get_mcp_driver()
 
-        db_radiators_state = get_radiators_state_in_database()
+        db_radiators_state = get_radiators_data_for_hardware_synchronization()
         cls.apply_db_request_to_hardware(db_radiators_state, mcp23017_driver)
 
         hardware_pins_state = mcp23017_driver.get_all_pins_state()

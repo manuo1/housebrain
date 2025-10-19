@@ -1,7 +1,7 @@
 from actuators.models import Radiator
 
 
-def get_radiators_state_in_database() -> list[dict]:
+def get_radiators_data_for_hardware_synchronization() -> list[dict]:
     """
     Return the minimum info needed for driver synchronization:
     """
@@ -24,4 +24,15 @@ def get_radiators_data_for_load_shedding() -> list[dict]:
         Radiator.objects.filter(actual_state=Radiator.ActualState.ON, power__gt=0)
         .order_by("-importance", "-power")
         .values("id", "power", "importance")
+    )
+
+
+def get_radiators_data_for_on_off_heating_control(id_list: list[int]) -> list[dict]:
+    """
+    Return the minimum radiators info needed for the On/Off heating mode control"""
+    return list(
+        Radiator.objects.filter(id__in=id_list).values(
+            "id",
+            "requested_state",
+        )
     )

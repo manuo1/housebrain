@@ -20,6 +20,10 @@ class LoggerLabel(StrEnum):
     SYSTEMD = "[Systemd]"
     PERIODIC_TASKS = "[Periodic Tasks]"
     CONSUMPTION = "[Consumption]"
+    MONITORING = "[Monitoring]"
 
 
 UNPLUGGED_MODE = os.getenv("UNPLUGGED_MODE", "False") == "True"
+
+
+MICROSECONDS_PER_SECOND = 1_000_000

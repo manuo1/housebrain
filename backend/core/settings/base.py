@@ -1,5 +1,6 @@
-from pathlib import Path
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     "authentication",
     "consumption",
     "heating",
+    "monitoring",
     "rest_framework",
     "rooms",
     "scheduler",

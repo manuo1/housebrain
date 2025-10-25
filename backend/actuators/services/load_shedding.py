@@ -1,14 +1,20 @@
+import logging
+
 from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
 from actuators.mutators.radiators import apply_load_shedding_to_radiators
 from actuators.selectors.radiators import get_radiators_data_for_load_shedding
 from actuators.services.radiator_synchronization import RadiatorSyncService
+from core.constants import LoggerLabel
+
+logger = logging.getLogger("django")
 
 
-def manage_load_shedding(available_power: int) -> None:
+def manage_load_shedding(available_power: int | None) -> None:
     """
     Manage load shedding to avoid exceeding the authorized power
     """
+
     radiators_on = get_radiators_data_for_load_shedding()
     radiators_id_for_load_shedding = select_radiators_for_load_shedding(
         available_power, radiators_on
@@ -29,6 +35,10 @@ def select_radiators_for_load_shedding(
     except CRITICAL and HIGH importance.
     """
     if available_power is None:
+        logger.warning(
+            f"{LoggerLabel.LOADSHEDDING} Available power is unknown. Low-value heaters will be turned off."
+        )
+
         return [
             radiator["id"]
             for radiator in radiators_on
@@ -48,5 +58,9 @@ def select_radiators_for_load_shedding(
         power_recovered += radiator["power"]
         if power_recovered >= power_needed:
             break
+
+    logger.warning(
+        f"{LoggerLabel.LOADSHEDDING} Available power is too low ({available_power}W). {len(radiators_to_turn_off)} heaters will be turned off."
+    )
 
     return radiators_to_turn_off

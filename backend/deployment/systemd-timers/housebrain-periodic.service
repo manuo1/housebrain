@@ -1,0 +1,23 @@
+[Unit]
+Description=HouseBrain Periodic Tasks
+After=network.target
+
+[Service]
+Type=oneshot
+User=admin
+Group=admin
+WorkingDirectory=/home/admin/housebrain/backend
+Environment="PATH=/home/admin/housebrain/backend/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/admin/housebrain/backend/.venv/bin/python manage.py periodic_tasks
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=housebrain-periodic
+
+# Sécurité
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

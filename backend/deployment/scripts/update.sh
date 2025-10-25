@@ -1,6 +1,5 @@
 #!/bin/bash
 # Script de mise à jour pour HouseBrain
-
 # Arrêter en cas d'erreur
 set -e
 
@@ -19,17 +18,14 @@ function print_error() {
 
 print_step "Mise à jour de HouseBrain..."
 
-# Gestion du cron
-print_step "Suppression du cron..."
-
-# Supprimer de la tâche cron
-if crontab -l | grep -q "manage.py periodic_tasks"; then
-    crontab -l | grep -v "manage.py periodic_tasks" | crontab -
-    print_step "Ancienne tâche cron supprimée."
+# Gestion du systemd timer
+print_step "Arrêt du systemd timer..."
+if systemctl is-active --quiet housebrain-periodic.timer; then
+    sudo systemctl stop housebrain-periodic.timer
+    print_step "Timer arrêté."
 else
-    print_step "Aucune tâche cron existante trouvée."
+    print_step "Timer déjà arrêté ou non configuré."
 fi
-
 
 # Arrêt des services
 print_step "Arrêt des services..."
@@ -66,6 +62,7 @@ sudo systemctl start nginx
 sudo systemctl start gunicorn
 sudo systemctl start teleinfo-listener.service
 sudo systemctl start bluetooth-listener.service
+sudo systemctl start housebrain-periodic.timer
 
 # Vérification des statuts
 print_step "Vérification des statuts des services..."
@@ -73,10 +70,6 @@ sudo systemctl status nginx --no-pager
 sudo systemctl status gunicorn --no-pager
 sudo systemctl status teleinfo-listener.service --no-pager
 sudo systemctl status bluetooth-listener.service --no-pager
-
-# Recréer la tâche cron
-(crontab -l 2>/dev/null; echo "* * * * * cd /home/admin/housebrain/backend && /home/admin/housebrain/backend/.venv/bin/python manage.py periodic_tasks 2>&1 | sed \"s/^/$(date +\%Y-\%m-\%d\ \%H:\%M:\%S) /\" >> /home/admin/housebrain/backend/scheduler/logs/cron_tasks.log") | crontab -
-
-print_step "Tâche cron configurée."
+sudo systemctl status housebrain-periodic.timer --no-pager
 
 print_step "Mise à jour de HouseBrain terminée avec succès !"

@@ -24,15 +24,29 @@ sudo journalctl -u teleinfo-listener -f
 
 ---
 
+### **Bluetooth Listener :**
+Affiche les logs du listener Bluetooth.
+```bash
+sudo journalctl -u bluetooth-listener -f
+```
+
+---
+
 ### **Redis :**
 Affiche les logs du serveur Redis.
 ```bash
 sudo journalctl -u redis-server -f
 ```
+
 ---
 
-### **Scheduler (taches périodiques) :**
+### **Scheduler (tâches périodiques) :**
 Affiche les logs du Scheduler.
 ```bash
- nano /home/admin/housebrain/backend/scheduler/logs/cron_tasks.log
- ```
+sudo journalctl -u housebrain-periodic -f
+```
+
+**Voir la prochaine exécution du timer** :
+```bash
+systemctl list-timers housebrain-periodic.timer
+```

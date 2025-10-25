@@ -24,6 +24,7 @@ class LoggerLabel(StrEnum):
     MCPDRIVER = "[MCP23017 Driver]"
     RADIATORSYNC = "[Radiator Synchronisation]"
     BLUETOOTHLISTENER = "[BluetoothListener]"
+    LOADSHEDDING = "[loadShedding]"
 
 
 UNPLUGGED_MODE = os.getenv("UNPLUGGED_MODE", "False") == "True"

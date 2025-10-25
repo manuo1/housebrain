@@ -98,7 +98,7 @@ def get_logged_at(service: str, line_data: dict) -> datetime:
         return django_timezone.now()
 
 
-def collect_logs() -> list[dict]:
+def collect_journalctl_logs() -> list[dict]:
     """
     Collects systemd logs from the 5 fixed services over the last 2 minutes.
     """

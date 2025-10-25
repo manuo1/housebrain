@@ -9,7 +9,7 @@ from freezegun import freeze_time
 from monitoring.services.journalctl_log_collector import (
     PRIORITY_MAP,
     SERVICES,
-    collect_logs,
+    collect_journalctl_logs,
     get_log_level,
     get_logged_at,
     get_message,
@@ -124,7 +124,7 @@ def test_get_logged_at(line_data, expected):
 
 
 @freeze_time(DT_NOW)
-def test_collect_logs():
+def test_collect_journalctl_logs():
     LOGS_DICT_1 = {
         "__REALTIME_TIMESTAMP": DT1_MICRO_TIMESTAMP,
         "PRIORITY": "1",
@@ -145,7 +145,7 @@ def test_collect_logs():
     ) as mock_get_service_logs:
         mock_get_service_logs.return_value = fake_output
 
-        result = collect_logs()
+        result = collect_journalctl_logs()
         expected = []
         for service in SERVICES:
             for log_dict, dt in zip([LOGS_DICT_1, LOGS_DICT_2], [DT1, DT2]):

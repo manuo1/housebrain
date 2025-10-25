@@ -1,0 +1,14 @@
+[Unit]
+Description=HouseBrain Periodic Tasks Timer
+Requires=housebrain-periodic.service
+
+[Timer]
+# Exécution toutes les minutes
+OnCalendar=*:0/1
+# Lance immédiatement si le système était éteint au moment prévu
+Persistent=true
+# Précision
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

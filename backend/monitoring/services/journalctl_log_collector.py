@@ -14,6 +14,7 @@ SERVICES = [
     "nginx.service",
     "redis-server.service",
     "teleinfo-listener.service",
+    "housebrain-periodic.service",
 ]
 
 PRIORITY_MAP = {

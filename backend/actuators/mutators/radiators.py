@@ -33,3 +33,25 @@ def apply_load_shedding_to_radiators(radiator_ids: list[int]) -> None:
         requested_state=Radiator.RequestedState.LOAD_SHED,
         last_requested=timezone.now(),
     )
+
+
+def set_radiators_requested_state_to_on(radiator_ids: list[int]) -> None:
+    """
+    Set requested_state = ON for all radiators with the given IDs.
+    """
+
+    Radiator.objects.filter(id__in=radiator_ids).update(
+        requested_state=Radiator.RequestedState.ON,
+        last_requested=timezone.now(),
+    )
+
+
+def set_radiators_requested_state_to_off(radiator_ids: list[int]) -> None:
+    """
+    Set requested_state = OFF for all radiators with the given IDs.
+    """
+
+    Radiator.objects.filter(id__in=radiator_ids).update(
+        requested_state=Radiator.RequestedState.OFF,
+        last_requested=timezone.now(),
+    )

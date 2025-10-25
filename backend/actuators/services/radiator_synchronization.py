@@ -7,6 +7,7 @@ from actuators.mutators.radiators import update_radiators_state
 from actuators.selectors.radiators import (
     get_radiators_data_for_hardware_synchronization,
 )
+from core.constants import LoggerLabel
 
 logger = logging.getLogger("django")
 
@@ -29,7 +30,9 @@ class RadiatorSyncService:
         )
         updated_count = update_radiators_state(radiators_to_update)
         if len(radiators_to_update) != updated_count:
-            logger.error(f"Unable to synchronize all radiators : {radiators_to_update}")
+            logger.error(
+                f"{LoggerLabel.RADIATORSYNC} Unable to synchronize all radiators : {radiators_to_update}"
+            )
 
     @staticmethod
     def apply_db_request_to_hardware(

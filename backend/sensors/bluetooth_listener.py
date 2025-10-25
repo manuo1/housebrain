@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from bleak import BleakScanner
+from core.constants import LoggerLabel
 from core.utils.systemd_utils import notify_watchdog
 from django.core.cache import caches
 from django.utils import timezone
@@ -24,7 +25,9 @@ class BluetoothListener:
     async def start_scanner(self):
         """Starts the Bluetooth listener process."""
         try:
-            logger.info("BluetoothListener: Listening for BTHome sensors...")
+            logger.info(
+                f"{LoggerLabel.BLUETOOTHLISTENER} Listening for BTHome sensors..."
+            )
 
             while True:
                 self.buffered_sensors.clear()
@@ -39,7 +42,7 @@ class BluetoothListener:
                 await asyncio.sleep(PAUSE_DURATION)
 
         except Exception as e:
-            logger.error(f"BluetoothListener: Error in listener - {e}")
+            logger.error(f"{LoggerLabel.BLUETOOTHLISTENER} Error in listener - {e}")
 
     def detection_callback(self, device, advertisement_data):
         """Called every time a BLE packet is received."""

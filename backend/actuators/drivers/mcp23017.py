@@ -3,11 +3,12 @@ Driver to control MCP23017 via I2C
 """
 
 import logging
+
 import board
 import busio
-from adafruit_mcp230xx.mcp23017 import MCP23017
-from core.constants import UNPLUGGED_MODE
 from actuators.constants import MCP23017PinState
+from adafruit_mcp230xx.mcp23017 import MCP23017
+from core.constants import UNPLUGGED_MODE, LoggerLabel
 
 logger = logging.getLogger("django")
 
@@ -31,15 +32,15 @@ class MCP23017Driver:
     def _connect(self):
         """Initialize I2C connection and MCP23017"""
         if UNPLUGGED_MODE:
-            logger.info("UNPLUGGED mode: MCP23017 simulation")
+            logger.info(f"{LoggerLabel.MCPDRIVER}UNPLUGGED mode: MCP23017 simulation")
             return
 
         try:
             self.i2c = busio.I2C(board.SCL, board.SDA)
             self.mcp = MCP23017(self.i2c)
-            logger.debug("MCP23017 connected successfully")
+            logger.debug(f"{LoggerLabel.MCPDRIVER} MCP23017 connected successfully")
         except ValueError as e:
-            logger.error(f"I2C connection error: {e}")
+            logger.error(f"{LoggerLabel.MCPDRIVER} I2C connection error: {e}")
             self.i2c = None
             self.mcp = None
 
@@ -65,7 +66,9 @@ class MCP23017Driver:
             MCP23017Error: On error with pin state details
         """
         if UNPLUGGED_MODE:
-            logger.debug(f"UNPLUGGED mode: set_pin({pin_number}, {state})")
+            logger.debug(
+                f"{LoggerLabel.MCPDRIVER} UNPLUGGED mode: set_pin({pin_number}, {state})"
+            )
             return
 
         self._ensure_connection()
@@ -90,7 +93,9 @@ class MCP23017Driver:
                     pin_state=pin_state_str,
                 )
 
-            logger.debug(f"Pin {pin_number} set to {'ON' if state else 'OFF'}")
+            logger.debug(
+                f"{LoggerLabel.MCPDRIVER} Pin {pin_number} set to {'ON' if state else 'OFF'}"
+            )
 
         except ValueError as e:
             # MCP23017 error (invalid pin, etc.)
@@ -116,7 +121,9 @@ class MCP23017Driver:
             MCP23017Error: On read error
         """
         if UNPLUGGED_MODE:
-            logger.debug(f"UNPLUGGED mode: get_pin({pin_number}) -> False")
+            logger.debug(
+                f"{LoggerLabel.MCPDRIVER} UNPLUGGED mode: get_pin({pin_number}) -> False"
+            )
             return False
 
         self._ensure_connection()
@@ -124,7 +131,9 @@ class MCP23017Driver:
         try:
             mcp_pin = self.mcp.get_pin(pin_number)
             state = mcp_pin.value
-            logger.debug(f"Pin {pin_number} state: {'ON' if state else 'OFF'}")
+            logger.debug(
+                f"{LoggerLabel.MCPDRIVER} Pin {pin_number} state: {'ON' if state else 'OFF'}"
+            )
             return state
 
         except ValueError as e:

@@ -34,5 +34,7 @@ def get_radiators_data_for_on_off_heating_control(id_list: list[int]) -> list[di
         Radiator.objects.filter(id__in=id_list).values(
             "id",
             "requested_state",
+            "power",
+            "importance",
         )
     )

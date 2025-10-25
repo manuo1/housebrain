@@ -21,6 +21,9 @@ class LoggerLabel(StrEnum):
     PERIODIC_TASKS = "[Periodic Tasks]"
     CONSUMPTION = "[Consumption]"
     MONITORING = "[Monitoring]"
+    MCPDRIVER = "[MCP23017 Driver]"
+    RADIATORSYNC = "[Radiator Synchronisation]"
+    BLUETOOTHLISTENER = "[BluetoothListener]"
 
 
 UNPLUGGED_MODE = os.getenv("UNPLUGGED_MODE", "False") == "True"

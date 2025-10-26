@@ -1,0 +1,53 @@
+@use 'variables' as *;
+
+// ============================================
+// COLOR FUNCTIONS
+// ============================================
+
+// Convertir une couleur en rgba avec opacité
+@function rgba-color($color, $opacity) {
+  @return rgba($color, $opacity);
+}
+
+// ============================================
+// SPACING FUNCTIONS
+// ============================================
+
+// Multiplier un spacing de base
+@function spacing($multiplier) {
+  @return $spacing-base * $multiplier;
+}
+
+// ============================================
+// CLAMP FUNCTIONS
+// ============================================
+
+// Fonction pour créer des valeurs fluides (comme ta width de table)
+@function fluid-size($min, $max, $min-vw: 375px, $max-vw: 1440px) {
+  $slope: ($max - $min) / ($max-vw - $min-vw);
+  $intercept: $min - ($slope * $min-vw);
+
+  @return clamp(#{$min}px, #{$intercept}px + #{$slope * 100}vw, #{$max}px);
+}
+
+// ============================================
+// Z-INDEX MANAGEMENT
+// ============================================
+
+// Map pour gérer les z-index de façon centralisée
+$z-layers: (
+  'base': 1,
+  'dropdown': 1000,
+  'navbar': 1000,
+  'overlay': 10,
+  'modal': 2000,
+  'tooltip': 3000,
+);
+
+@function z($layer) {
+  @if map-has-key($z-layers, $layer) {
+    @return map-get($z-layers, $layer);
+  }
+  @warn "No z-index found for `#{$layer}`. Using 1 as default.";
+  @return 1;
+}

@@ -1,0 +1,126 @@
+@use '../abstracts/variables' as *;
+
+// ============================================
+// DARK THEME
+// ============================================
+
+.dark-theme,
+:root {
+  // Réassigner les variables de couleurs si besoin d'un toggle theme plus tard
+  --color-bg-darkest: #{$bg-darkest};
+  --color-bg-darker: #{$bg-darker};
+  --color-bg-dark: #{$bg-dark};
+  --color-text-primary: #{$text-primary};
+  --color-primary: #{$color-primary};
+}
+
+// ============================================
+// GLOBAL DARK THEME STYLES
+// ============================================
+
+body {
+  background-color: $bg-darker;
+  color: $text-primary;
+}
+
+// ============================================
+// SELECTION
+// ============================================
+
+::selection {
+  background-color: rgba($color-primary, 0.3);
+  color: $text-primary;
+}
+
+::-moz-selection {
+  background-color: rgba($color-primary, 0.3);
+  color: $text-primary;
+}
+
+// ============================================
+// FOCUS STYLES
+// ============================================
+
+:focus-visible {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}
+
+// ============================================
+// PLACEHOLDER STYLES
+// ============================================
+
+::placeholder {
+  color: $text-placeholder;
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: $text-placeholder;
+}
+
+::-ms-input-placeholder {
+  color: $text-placeholder;
+}
+
+// ============================================
+// DISABLED STATES
+// ============================================
+
+:disabled,
+.disabled {
+  opacity: $opacity-disabled;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// ============================================
+// ANIMATIONS KEYFRAMES
+// ============================================
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: $opacity-disabled;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

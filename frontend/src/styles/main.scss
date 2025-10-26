@@ -1,7 +1,42 @@
-body {
-  margin: 0;
+// ============================================
+// MAIN STYLESHEET
+// Import order matters!
+// ============================================
+
+// 1. Abstracts (variables, functions, mixins)
+@use 'abstracts/variables';
+@use 'abstracts/functions';
+@use 'abstracts/mixins';
+
+// 2. Base styles
+@use 'base/reset';
+@use 'base/typography';
+
+// 3. Theme
+@use 'themes/dark';
+
+// ============================================
+// GLOBAL UTILITIES
+// ============================================
+
+.container {
+  max-width: variables.$max-width-container;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   padding: 0;
-  background-color: #121212;
-  color: #f0f0f0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

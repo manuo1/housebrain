@@ -1,0 +1,204 @@
+// ============================================
+// COLORS
+// ============================================
+
+// --- Base Colors ---
+$color-primary: #4a9eff;
+$color-primary-dark: #357abd;
+$color-primary-light: #6ab0ff;
+
+// --- State Colors ---
+$color-success: #198754;
+$color-success-light: #82ca9d;
+$color-info: #0d6efd;
+$color-warning: #ffcc00;
+$color-danger: #ff6b6b;
+
+// --- Specific Colors ---
+$color-gold: #ffd700;
+$color-cyan: #6fffc2;
+$color-orange: #ff9966;
+
+// --- Background Colors ---
+$bg-darkest: #0f0f0f;
+$bg-darker: #121212;
+$bg-dark: #1a1a1a;
+$bg-medium-dark: #1e1e1e;
+$bg-medium: #222222;
+$bg-card: #252525;
+$bg-light: #2a2a2a;
+$bg-lighter: #333333;
+
+// --- Border Colors ---
+$border-dark: #333333;
+$border-medium: #444444;
+$border-light: #555555;
+$border-lighter: #666666;
+$border-hover: #888888;
+
+// --- Text Colors ---
+$text-primary: #f0f0f0;
+$text-secondary: #e0e0e0;
+$text-tertiary: #dddddd;
+$text-muted: #bbbbbb;
+$text-disabled: #999999;
+$text-placeholder: #888888;
+$text-dark: #666666;
+
+// ============================================
+// TYPOGRAPHY
+// ============================================
+
+$font-family-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$font-family-mono: 'Courier New', Courier, monospace;
+
+// --- Font Sizes ---
+$font-size-xs: 0.75rem; // 12px
+$font-size-sm: 0.85rem; // 13.6px
+$font-size-base: 0.95rem; // 15.2px
+$font-size-md: 1rem; // 16px
+$font-size-lg: 1.125rem; // 18px
+$font-size-xl: 1.25rem; // 20px
+$font-size-2xl: 1.4rem; // 22.4px
+$font-size-3xl: 1.5rem; // 24px
+$font-size-4xl: 1.8rem; // 28.8px
+$font-size-5xl: 6rem; // 96px
+
+// --- Font Weights ---
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ============================================
+// SPACING
+// ============================================
+
+$spacing-xs: 0.25rem; // 4px
+$spacing-sm: 0.5rem; // 8px
+$spacing-md: 0.75rem; // 12px
+$spacing-base: 1rem; // 16px
+$spacing-lg: 1.25rem; // 20px
+$spacing-xl: 1.5rem; // 24px
+$spacing-2xl: 2rem; // 32px
+$spacing-3xl: 3rem; // 48px
+
+// --- Gaps ---
+$gap-xs: 0.25rem;
+$gap-sm: 0.5rem;
+$gap-md: 0.75rem;
+$gap-base: 1rem;
+$gap-lg: 1.5rem;
+$gap-xl: 2rem;
+
+// ============================================
+// BORDER RADIUS
+// ============================================
+
+$radius-sm: 6px;
+$radius-base: 8px;
+$radius-md: 10px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+$radius-round: 50%;
+
+// ============================================
+// SHADOWS
+// ============================================
+
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+$shadow-base: 0 4px 12px rgba(0, 0, 0, 0.4);
+$shadow-md: 0 6px 16px rgba(0, 0, 0, 0.4);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+$shadow-xl: 0 0 12px rgba(0, 0, 0, 0.5);
+
+// --- Glow Effects ---
+$glow-primary: 0 0 8px rgba(74, 158, 255, 0.3);
+$glow-primary-md: 0 0 12px rgba(74, 158, 255, 0.4);
+$glow-primary-lg: 0 0 12px rgba(74, 158, 255, 0.5);
+$glow-primary-xl: 0 0 6px rgba(0, 0, 0, 0.5);
+
+$glow-success: 0 0 6px rgba(25, 135, 84, 0.6);
+$glow-info: 0 0 6px rgba(13, 110, 253, 0.6);
+$glow-danger: 0 0 8px rgba(255, 100, 100, 0.4);
+
+// --- Box Shadows with Color ---
+$shadow-primary: 0 6px 20px rgba(74, 158, 255, 0.3);
+$shadow-primary-hover: 0 6px 16px rgba(74, 158, 255, 0.2);
+$shadow-primary-button: 0 4px 12px rgba(74, 158, 255, 0.4);
+
+// ============================================
+// TRANSITIONS
+// ============================================
+
+$transition-fast: 0.2s ease;
+$transition-base: 0.3s ease;
+$transition-slow: 0.5s ease;
+
+$transition-all: all 0.3s ease;
+$transition-bg: background-color 0.25s ease;
+$transition-color: color 0.25s ease;
+$transition-border: border-color 0.25s ease;
+$transition-transform: transform 0.3s ease;
+
+// ============================================
+// GRADIENTS
+// ============================================
+
+$gradient-dark: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+$gradient-card: linear-gradient(145deg, #252525 0%, #1a1a1a 100%);
+$gradient-bg: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
+$gradient-button-primary: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+$gradient-hover: linear-gradient(
+  90deg,
+  rgba(74, 158, 255, 0.1) 0%,
+  rgba(74, 158, 255, 0.05) 100%
+);
+
+// ============================================
+// BREAKPOINTS
+// ============================================
+
+$breakpoint-xs: 400px;
+$breakpoint-sm: 480px;
+$breakpoint-md: 500px;
+$breakpoint-tablet: 768px;
+$breakpoint-lg: 1200px;
+$breakpoint-xl: 1440px;
+
+// ============================================
+// LAYOUT
+// ============================================
+
+$max-width-container: 1440px;
+$max-width-content: 800px;
+$max-width-tooltip: 240px;
+$max-width-error: 600px;
+
+$navbar-height: 65px;
+$navbar-height-mobile: 60px;
+$navbar-height-sm: 55px;
+$navbar-height-xs: 50px;
+
+// ============================================
+// Z-INDEX
+// ============================================
+
+$z-index-dropdown: 1000;
+$z-index-navbar: 1000;
+$z-index-overlay: 10;
+
+// ============================================
+// OPACITY
+// ============================================
+
+$opacity-disabled: 0.2;
+$opacity-muted: 0.7;
+$opacity-hover: 0.8;
+
+// ============================================
+// ANIMATIONS
+// ============================================
+
+$animation-spin: spin 1s linear infinite;
+$animation-pulse: pulse 2s infinite;

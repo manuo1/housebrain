@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name housebrain;
+    server_name housebrain.emmanuel-oudot.fr;
 
     # Frontend : servir les fichiers statiques React (build)
     root /var/www/housebrain-frontend;

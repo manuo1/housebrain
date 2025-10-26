@@ -28,7 +28,53 @@ PRIORITY_MAP = {
     "7": "DEBUG",
 }
 
-NOT_CRITICAL_LEVELS = {"INFO", "DEBUG"}
+
+IMPORTANT_KEYWORDS = [
+    # technical errors
+    "error",
+    "fail",
+    "failed",
+    "exception",
+    "traceback",
+    "timeout",
+    "critical",
+    "crash",
+    "unreachable",
+    "disconnect",
+    "killed",
+    "panic",
+    # startup/service problems
+    "restart",
+    "restarting",
+    "booting",
+    "worker",
+    "stopped",
+    "unhealthy",
+    # HTTP error codes
+    "400",
+    "401",
+    "403",
+    "404",
+    "408",
+    "409",
+    "500",
+    "502",
+    "503",
+    "504",
+    *[label.value.lower() for label in LoggerLabel],
+]
+
+
+def is_important_log(message: str) -> bool:
+    """
+    Keep only logs that contain at least one interesting keyword or code.
+    """
+    if not message or not isinstance(message, str):
+        return False
+
+    msg = message.lower()
+
+    return any(keyword in msg for keyword in IMPORTANT_KEYWORDS)
 
 
 def get_service_logs(service: str) -> str:
@@ -121,12 +167,9 @@ def collect_journalctl_logs() -> list[dict]:
 
             log_level = get_log_level(service, line_data)
 
-            if log_level in NOT_CRITICAL_LEVELS:
-                continue
-
             message = get_message(service, line_data)
 
-            if not message:
+            if not message or not is_important_log(message):
                 continue
 
             logged_at = get_logged_at(service, line_data)

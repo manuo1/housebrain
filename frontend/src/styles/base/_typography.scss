@@ -1,0 +1,144 @@
+@use '../abstracts/variables' as *;
+
+// ============================================
+// TYPOGRAPHY STYLES
+// ============================================
+
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-md;
+  font-weight: $font-weight-normal;
+  line-height: 1.6;
+  color: $text-primary;
+}
+
+// ============================================
+// HEADINGS
+// ============================================
+
+h1 {
+  font-size: $font-size-5xl;
+  font-weight: $font-weight-bold;
+  color: $text-secondary;
+}
+
+h2 {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-semibold;
+  color: $text-secondary;
+}
+
+h3 {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-semibold;
+  color: $text-secondary;
+}
+
+h4 {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+}
+
+h5 {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+}
+
+h6 {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+}
+
+// ============================================
+// PARAGRAPHS
+// ============================================
+
+p {
+  font-size: $font-size-md;
+  color: $text-muted;
+  margin-bottom: $spacing-base;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ============================================
+// TEXT UTILITIES
+// ============================================
+
+.text-muted {
+  color: $text-muted;
+}
+
+.text-disabled {
+  color: $text-disabled;
+}
+
+.text-primary-color {
+  color: $color-primary;
+}
+
+.text-success {
+  color: $color-success;
+}
+
+.text-danger {
+  color: $color-danger;
+}
+
+.text-warning {
+  color: $color-warning;
+}
+
+// ============================================
+// FONT WEIGHT UTILITIES
+// ============================================
+
+.font-normal {
+  font-weight: $font-weight-normal;
+}
+
+.font-medium {
+  font-weight: $font-weight-medium;
+}
+
+.font-semibold {
+  font-weight: $font-weight-semibold;
+}
+
+.font-bold {
+  font-weight: $font-weight-bold;
+}
+
+// ============================================
+// TEXT TRANSFORM
+// ============================================
+
+.text-uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.text-italic {
+  font-style: italic;
+}
+
+// ============================================
+// TEXT ALIGNMENT
+// ============================================
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}

@@ -1,17 +1,19 @@
 import os
-from django.contrib import admin
-from django.urls import path, include
+
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
 api_patterns = [
+    path("auth/", include("authentication.api.urls")),
     path("consumption/", include("consumption.api.urls")),
-    path("teleinfo/", include("teleinfo.api.urls")),
     path("rooms/", include("rooms.api.urls")),
+    path("teleinfo/", include("teleinfo.api.urls")),
 ]
 
 backend_patterns = [

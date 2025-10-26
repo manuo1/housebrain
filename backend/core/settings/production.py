@@ -1,6 +1,8 @@
 import os
-from .base import *
+
 from dotenv import load_dotenv
+
+from .base import *
 
 load_dotenv()
 
@@ -26,3 +28,20 @@ CACHES = {
         "LOCATION": "redis://127.0.0.1:6379/1",
     }
 }
+
+# ============================================
+# SÉCURITÉ HTTPS
+# ============================================
+
+# Force HTTPS
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Cookies sécurisés
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# HSTS (HTTP Strict Transport Security) - 1 an
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True

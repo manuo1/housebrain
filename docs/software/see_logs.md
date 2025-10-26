@@ -50,3 +50,9 @@ sudo journalctl -u housebrain-periodic -f
 ```bash
 systemctl list-timers housebrain-periodic.timer
 ```
+
+
+Version détaillée des logs.
+```bash
+sudo journalctl -u gunicorn -f -o json-pretty --no-pager
+```

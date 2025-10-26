@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from unittest.mock import patch
 
 import pytest
-from core.constants import MICROSECONDS_PER_SECOND
+from core.constants import MICROSECONDS_PER_SECOND, LoggerLabel
 from freezegun import freeze_time
 from monitoring.services.journalctl_log_collector import (
     PRIORITY_MAP,
@@ -14,8 +14,27 @@ from monitoring.services.journalctl_log_collector import (
     get_logged_at,
     get_message,
     get_service_logs,
+    is_important_log,
     parse_json_line,
 )
+
+
+@pytest.mark.parametrize(
+    "message, expected",
+    [
+        ("excepti", False),
+        ("exception", True),
+        (f"{LoggerLabel.CONSUMPTION} something", True),
+        ("aa bb cc exception", True),
+        ("aa", False),
+        ("", False),
+        (None, False),
+        (["exception"], False),
+        ({"exception": "a"}, False),
+    ],
+)
+def test_is_important_log(message, expected):
+    assert is_important_log(message) == expected
 
 
 def test_get_service_logs_normal():
@@ -128,12 +147,12 @@ def test_collect_journalctl_logs():
     LOGS_DICT_1 = {
         "__REALTIME_TIMESTAMP": DT1_MICRO_TIMESTAMP,
         "PRIORITY": "1",
-        "MESSAGE": "a message",
+        "MESSAGE": "a message error",
     }
     LOGS_DICT_2 = {
         "__REALTIME_TIMESTAMP": DT2_MICRO_TIMESTAMP,
         "PRIORITY": "3",
-        "MESSAGE": "another message",
+        "MESSAGE": "another message error",
     }
 
     fake_output = (

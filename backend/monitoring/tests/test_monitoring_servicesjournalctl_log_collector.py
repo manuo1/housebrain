@@ -22,6 +22,7 @@ from monitoring.services.journalctl_log_collector import (
 @pytest.mark.parametrize(
     "message, expected",
     [
+        (".service: Consumed 3.504s CPU time.", False),
         ("excepti", False),
         ("exception", True),
         (f"{LoggerLabel.CONSUMPTION} something", True),

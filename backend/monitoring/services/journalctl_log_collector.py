@@ -29,7 +29,7 @@ PRIORITY_MAP = {
 }
 
 
-IMPORTANT_KEYWORDS = [
+IMPORTANT_KEYWORDS = {
     # technical errors
     "error",
     "fail",
@@ -62,7 +62,11 @@ IMPORTANT_KEYWORDS = [
     "503",
     "504",
     *[label.value.lower() for label in LoggerLabel],
-]
+}
+
+NOT_IMPORTANT_KEYWORDS = {
+    ".service: consumed",
+}
 
 
 def is_important_log(message: str) -> bool:
@@ -73,6 +77,11 @@ def is_important_log(message: str) -> bool:
         return False
 
     msg = message.lower()
+    # Case when messages cen contain fake important keyword
+    # ex: ".service: Consumed 3.504s CPU time."
+    # Message contain 504 but it's not an HTTP error
+    if any(keyword in msg for keyword in NOT_IMPORTANT_KEYWORDS):
+        return False
 
     return any(keyword in msg for keyword in IMPORTANT_KEYWORDS)
 

@@ -1,17 +1,20 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
 .trend {
   font-size: 16px;
-  color: #999;
-  transition: color 0.3s ease;
+  color: $text-disabled;
+  transition: $transition-color;
 
   &.up {
-    color: #ff6b6b;
+    color: $color-danger;
   }
 
   &.down {
-    color: #4a9eff;
+    color: $color-primary;
   }
 
   &.same {
-    color: #999;
+    color: $text-disabled;
   }
 }

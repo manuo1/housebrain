@@ -1,60 +1,50 @@
-.radiatorState {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1px;
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
 
-  border-radius: 6px;
+.radiatorState {
+  @include flex-center;
+  padding: 1px;
+  border-radius: $radius-sm;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
+  transition: $transition-all;
 
   .label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #999;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: $text-disabled;
   }
 
   &.on {
-    background: rgba(255, 100, 50, 0.15);
-    border-color: rgba(255, 100, 50, 0.3);
-    .label {
-      color: #ff9966;
-    }
+    @include state-badge(
+      rgba(255, 100, 50, 0.15),
+      rgba(255, 100, 50, 0.3),
+      #ff9966
+    );
   }
 
   &.off {
-    background: rgba(100, 150, 255, 0.15);
-    border-color: rgba(100, 150, 255, 0.3);
-    .label {
-      color: #88bbff;
-    }
+    @include state-badge(
+      rgba(100, 150, 255, 0.15),
+      rgba(100, 150, 255, 0.3),
+      #88bbff
+    );
   }
 
   &.turning {
-    background: rgba(255, 200, 50, 0.15);
-    border-color: rgba(255, 200, 50, 0.3);
-    animation: pulse 2s infinite;
-    .label {
-      color: #ffcc66;
-    }
+    @include state-badge(
+      rgba(255, 200, 50, 0.15),
+      rgba(255, 200, 50, 0.3),
+      #ffcc66
+    );
+    @include pulse-animation;
   }
 
   &.loadShed {
-    background: rgba(255, 200, 0, 0.15);
-    border-color: rgba(255, 200, 0, 0.3);
-    .label {
-      color: #ffcc00;
-    }
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
+    @include state-badge(
+      rgba(255, 200, 0, 0.15),
+      rgba(255, 200, 0, 0.3),
+      $color-warning
+    );
   }
 }

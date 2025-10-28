@@ -1,30 +1,32 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
 .card {
-  display: flex;
-  background: #2a2a2a;
-  justify-content: space-between;
+  @include flex-between;
+  background: $bg-light;
   text-align: center;
-  color: #f0f0f0;
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  color: $text-primary;
+  padding: $spacing-sm $spacing-base;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
   min-width: 120px;
-  gap: 0.5rem;
+  gap: $gap-sm;
 }
 
 .label {
-  font-size: 1rem;
-  color: #aaa;
+  font-size: $font-size-md;
+  color: $text-disabled;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .kwh {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #ffd700;
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-gold;
 }
 
 .euros {
-  font-size: 1rem;
-  color: #6fffc2;
+  font-size: $font-size-md;
+  color: $color-cyan;
 }

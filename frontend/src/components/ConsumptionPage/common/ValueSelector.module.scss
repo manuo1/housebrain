@@ -1,32 +1,16 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
 .valueSelector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  @include flex-center;
+  gap: $gap-sm;
+  margin-top: $spacing-base;
 }
 
 .button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #444;
-  background: #222;
-  color: #ccc;
-  cursor: pointer;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background-color 0.25s ease, color 0.25s ease,
-    border-color 0.25s ease;
-}
-
-.button:hover {
-  background: #333;
-  color: #fff;
-  border-color: #666;
+  @include button-base;
 }
 
 .active {
-  background: #0d6efd;
-  color: white;
-  border-color: #0d6efd;
-  box-shadow: 0 0 6px #0d6efd99;
+  @include button-active($color-info, $glow-info);
 }

@@ -1,23 +1,25 @@
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
 .container {
-  background-color: #121212;
-  color: #e0e0e0;
+  background-color: $bg-darker;
+  color: $text-secondary;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   align-items: center;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: $font-family-base;
 }
 
 .error {
-  color: #ff6b6b;
+  color: $color-danger;
   background-color: #2a0000;
-  padding: 1rem 1.5rem;
-  border-radius: 6px;
-  border: 1px solid #ff6b6b;
-  margin-top: 1rem;
+  padding: $spacing-base $spacing-xl;
+  border-radius: $radius-sm;
+  border: 1px solid $color-danger;
+  margin-top: $spacing-base;
 }
 
 p {
-  font-size: 1rem;
-  color: #bbbbbb;
+  font-size: $font-size-md;
+  color: $text-muted;
 }

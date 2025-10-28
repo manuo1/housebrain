@@ -1,25 +1,25 @@
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
 .notFound {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  @include flex-column-center;
   height: 80vh;
   text-align: center;
 
   h1 {
-    font-size: 6rem;
-    margin-bottom: 1rem;
+    font-size: $font-size-5xl;
+    margin-bottom: $spacing-base;
   }
 
   p {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
+    font-size: $font-size-3xl;
+    margin-bottom: $spacing-2xl;
   }
 
   a {
-    color: #007bff;
+    color: $color-info;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: $font-weight-bold;
 
     &:hover {
       text-decoration: underline;

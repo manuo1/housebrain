@@ -1,103 +1,92 @@
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
 .home {
-  max-width: 1440px;
+  max-width: $max-width-container;
   margin: 0 auto;
   min-height: calc(100vh - 80px);
 
   .dashboardGrid {
     display: flex;
-    gap: 1.5rem;
+    gap: $gap-lg;
     min-height: calc(100vh - 80px - 3rem);
 
-    @media (max-width: 1200px) {
+    @include respond-to('lg') {
       flex-direction: column;
     }
 
     .roomsSection,
     .statsSection {
       flex: 1;
-      display: flex;
-      flex-direction: column;
+      @include flex-column;
       min-height: 0;
       min-width: 0;
     }
 
     .statsSection {
       .placeholder {
-        background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
-        border-radius: 16px;
-        padding: 3rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        border: 1px solid #444;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1.5rem;
-        text-align: center;
-        height: 100%;
+        @include card-placeholder;
 
         .icon {
-          font-size: 3.5rem;
-          filter: drop-shadow(0 0 12px rgba(74, 158, 255, 0.4));
+          font-size: $font-size-4xl;
+          @include icon-glow($color-primary, 0.4);
         }
 
         h2 {
-          color: #e0e0e0;
-          font-size: 1.5rem;
+          color: $text-secondary;
+          font-size: $font-size-3xl;
           margin: 0;
         }
 
         .constructionText {
-          color: #999;
-          font-size: 1rem;
+          color: $text-disabled;
+          font-size: $font-size-md;
           margin: 0;
         }
 
         .linksContainer {
-          margin-top: 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
+          margin-top: $spacing-base;
+          @include flex-column;
+          gap: $spacing-base;
 
           .infoText {
-            color: #b0b0b0;
-            font-size: 0.95rem;
+            color: $text-muted;
+            font-size: $font-size-base;
             margin: 0;
           }
 
           .links {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
+            @include flex-column;
+            gap: $gap-md;
+            margin-top: $spacing-sm;
 
             .link {
               display: flex;
               align-items: center;
-              gap: 0.5rem;
-              padding: 0.75rem 1.25rem;
-              background: linear-gradient(145deg, #333 0%, #2a2a2a 100%);
-              border: 1px solid #555;
-              border-radius: 8px;
-              color: #4a9eff;
+              gap: $spacing-sm;
+              padding: $spacing-md $spacing-lg;
+              background: $gradient-card;
+              border: 1px solid $border-light;
+              border-radius: $radius-base;
+              color: $color-primary;
               text-decoration: none;
-              font-weight: 500;
-              transition: all 0.3s ease;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              font-weight: $font-weight-medium;
+              transition: $transition-all;
+              box-shadow: $shadow-base;
 
               .linkIcon {
-                font-size: 1.25rem;
-                filter: drop-shadow(0 0 8px rgba(74, 158, 255, 0.3));
+                font-size: $font-size-xl;
+                @include icon-glow($color-primary);
               }
 
               &:hover {
                 background: linear-gradient(145deg, #3a3a3a 0%, #333 100%);
-                border-color: #4a9eff;
+                border-color: $color-primary;
                 transform: translateY(-2px);
-                box-shadow: 0 6px 16px rgba(74, 158, 255, 0.2);
+                box-shadow: $shadow-primary-hover;
 
                 .linkIcon {
-                  filter: drop-shadow(0 0 12px rgba(74, 158, 255, 0.5));
+                  @include icon-glow($color-primary, 0.5);
                 }
               }
 

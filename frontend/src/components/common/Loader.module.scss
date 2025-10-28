@@ -1,21 +1,11 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
 .loader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
+  @include flex-center;
+  padding: $spacing-base;
 }
 
 .spinner {
-  width: 4rem;
-  height: 4rem;
-  border: 3px solid #555;
-  border-top-color: #82ca9d;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  @include spinner;
 }

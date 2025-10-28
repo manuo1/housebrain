@@ -1,22 +1,22 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
 .heatingZone {
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   margin: 0;
   padding: 2px 8px;
-
-  border: 1px solid #444;
-  border-radius: 8px;
-  background: linear-gradient(145deg, #252525 0%, #1a1a1a 100%);
-
+  border: 1px solid $border-medium;
+  border-radius: $radius-base;
+  background: $gradient-card;
   font-size: 10px;
-  font-weight: 500;
-  color: #999;
+  font-weight: $font-weight-medium;
+  color: $text-disabled;
 
   .label {
     padding: 0 6px;
-    color: #888;
+    color: $text-placeholder;
     font-size: 9px;
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     letter-spacing: 0.5px;
   }
 }

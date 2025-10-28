@@ -1,6 +1,8 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
 .roomCard {
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   flex: 1;
   gap: 10px;
   min-width: 150px;
@@ -8,23 +10,13 @@
   padding: 10px;
   position: relative;
   overflow: hidden;
-
-  background: linear-gradient(145deg, #252525 0%, #1a1a1a 100%);
-  border: 1px solid #333;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #4a9eff;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(74, 158, 255, 0.3);
-  }
+  @include card-base;
+  @include card-hover;
 
   .title {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     font-size: 14px;
-    color: #e0e0e0;
+    color: $text-secondary;
     text-align: left;
   }
 }

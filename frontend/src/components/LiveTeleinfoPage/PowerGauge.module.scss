@@ -1,25 +1,28 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
 .powerGauge {
   position: relative;
   width: clamp(375px, 225.3521px + 39.9061vw, 800px);
   margin: 0 auto;
   margin-top: 10px;
   height: 300px;
-  background-color: #121212;
-  border-radius: 12px;
+  background-color: $bg-darker;
+  border-radius: $radius-lg;
 
   .centerText {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1.8rem;
-    font-weight: 600;
+    font-size: $font-size-4xl;
+    font-weight: $font-weight-semibold;
     text-align: center;
-    text-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+    text-shadow: $glow-primary-xl;
   }
 
   // Optional: style Recharts tick values if not done via tick prop
   .recharts-polar-angle-axis-tick-value {
-    fill: #bbb;
+    fill: $text-muted;
   }
 }

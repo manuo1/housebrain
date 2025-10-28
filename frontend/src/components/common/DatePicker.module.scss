@@ -1,45 +1,35 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
 .datePicker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 1rem auto;
+  @include flex-center;
+  gap: $gap-sm;
+  margin: $spacing-base auto;
 }
 
 .navButton {
-  background-color: #333;
-  color: #eee;
+  background-color: $bg-lighter;
+  color: $text-tertiary;
   border: none;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.25rem;
-  border-radius: 6px;
+  padding: $spacing-sm $gap-md;
+  font-size: $font-size-xl;
+  border-radius: $radius-sm;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: $transition-fast;
 
   &:hover {
-    background-color: #555;
+    background-color: $border-light;
   }
 
   &:active {
-    background-color: #777;
+    background-color: $border-hover;
   }
 }
 
 .dateInput {
-  background-color: #2a2a2a;
-  color: #fff;
-  border: 1px solid #444;
-  padding: 0.45rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-family: inherit;
+  @include input-base;
 
   &::-webkit-calendar-picker-indicator {
     filter: invert(1);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #888;
   }
 }

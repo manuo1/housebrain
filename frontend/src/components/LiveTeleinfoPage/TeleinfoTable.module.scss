@@ -1,36 +1,39 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
 .table {
   width: clamp(375px, 225.3521px + 39.9061vw, 800px);
   border-collapse: collapse;
   margin: 0 auto;
-  font-family: Arial, sans-serif;
-  background-color: #1e1e1e;
-  border-radius: 8px;
+  font-family: $font-family-base;
+  background-color: $bg-medium-dark;
+  border-radius: $radius-base;
   overflow: hidden;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
-  color: #e0e0e0;
+  box-shadow: $shadow-xl;
+  color: $text-secondary;
 }
 
 .table thead {
-  background-color: #333;
-  color: #fff;
+  background-color: $bg-lighter;
+  color: $text-primary;
   text-align: left;
 }
 
 .table th,
 .table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #444;
+  padding: $spacing-md $spacing-base;
+  border-bottom: 1px solid $border-medium;
 }
 
 .table tbody tr:nth-child(even) {
-  background-color: #2a2a2a;
+  background-color: $bg-light;
 }
 
 .table tbody tr:hover {
   background-color: #3a3a3a;
-  transition: background-color 0.3s ease;
+  transition: $transition-bg;
 }
 
 .table td {
-  color: #ddd;
+  color: $text-tertiary;
 }

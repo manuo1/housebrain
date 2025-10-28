@@ -1,22 +1,20 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
 .totalsDisplay {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  color: #eee;
+  @include flex-column-center;
+  color: $text-tertiary;
 }
 
 .cardGrid {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
+  @include flex-center;
+  gap: $spacing-base;
   flex-wrap: wrap;
-  margin: 0.5rem auto;
+  margin: $spacing-sm auto;
 }
 
 .empty {
-  color: #888;
+  color: $text-placeholder;
   font-style: italic;
-  margin-top: 1rem;
+  margin-top: $spacing-base;
 }

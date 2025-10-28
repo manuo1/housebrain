@@ -1,16 +1,19 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
 .tooltip {
-  background-color: #222;
-  color: #eee;
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid #444;
-  max-width: 240px;
+  background-color: $bg-medium;
+  color: $text-tertiary;
+  padding: $spacing-md;
+  border-radius: $radius-base;
+  border: 1px solid $border-medium;
+  max-width: $max-width-tooltip;
 }
 
 .time {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-sm;
+  font-size: $font-size-base;
 }
 
 .row {
@@ -18,8 +21,8 @@
 }
 
 .warning {
-  margin-top: 0.5rem;
-  color: #ffcc00;
-  font-size: 0.85rem;
+  margin-top: $spacing-sm;
+  color: $color-warning;
+  font-size: $font-size-sm;
   font-style: italic;
 }

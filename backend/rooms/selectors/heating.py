@@ -11,5 +11,11 @@ def get_rooms_with_on_off_heating_control_data() -> list[dict]:
                 Room.CurrentHeatingState.OFF,
                 Room.CurrentHeatingState.ON,
             ],
-        ).values("radiator__id", "current_on_off_state")
+        ).values(
+            "radiator__id",
+            "radiator__power",
+            "radiator__importance",
+            "radiator__requested_state",
+            "current_on_off_state",
+        )
     )

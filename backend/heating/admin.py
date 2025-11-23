@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.core.exceptions import ValidationError
 from heating.models import HeatingPattern, RoomHeatingDayPlan
 
 
@@ -17,24 +16,6 @@ class HeatingPatternAdmin(admin.ModelAdmin):
         return f"{count} créneau{'x' if count > 1 else ''}"
 
     slots_preview.short_description = "Créneaux"
-
-    def clean(self):
-        cleaned = super().clean()
-        slots = cleaned.get("slots")
-
-        if slots is None:
-            return cleaned
-
-        temp_hash = self.instance.calculate_hash()
-
-        qs = HeatingPattern.objects.filter(slots_hash=temp_hash)
-        if self.instance.pk:
-            qs = qs.exclude(pk=self.instance.pk)
-
-        if qs.exists():
-            raise ValidationError("Un pattern de chauffage identique existe déjà.")
-
-        return cleaned
 
 
 @admin.register(RoomHeatingDayPlan)

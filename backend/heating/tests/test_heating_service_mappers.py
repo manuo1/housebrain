@@ -7,20 +7,20 @@ from rooms.models import Room
 @pytest.mark.parametrize(
     "room_state, radiator_state, expected_match",
     [
-        (Room.CurrentHeatingState.ON, Radiator.RequestedState.ON, True),
-        (Room.CurrentHeatingState.ON, Radiator.RequestedState.OFF, False),
-        (Room.CurrentHeatingState.ON, Radiator.RequestedState.LOAD_SHED, False),
-        (Room.CurrentHeatingState.ON, None, False),
+        (Room.RequestedHeatingState.ON, Radiator.RequestedState.ON, True),
+        (Room.RequestedHeatingState.ON, Radiator.RequestedState.OFF, False),
+        (Room.RequestedHeatingState.ON, Radiator.RequestedState.LOAD_SHED, False),
+        (Room.RequestedHeatingState.ON, None, False),
         #
-        (Room.CurrentHeatingState.OFF, Radiator.RequestedState.ON, False),
-        (Room.CurrentHeatingState.OFF, Radiator.RequestedState.OFF, True),
-        (Room.CurrentHeatingState.OFF, Radiator.RequestedState.LOAD_SHED, True),
-        (Room.CurrentHeatingState.OFF, None, False),
+        (Room.RequestedHeatingState.OFF, Radiator.RequestedState.ON, False),
+        (Room.RequestedHeatingState.OFF, Radiator.RequestedState.OFF, True),
+        (Room.RequestedHeatingState.OFF, Radiator.RequestedState.LOAD_SHED, True),
+        (Room.RequestedHeatingState.OFF, None, False),
         #
-        (Room.CurrentHeatingState.UNKNOWN, Radiator.RequestedState.ON, False),
-        (Room.CurrentHeatingState.UNKNOWN, Radiator.RequestedState.OFF, False),
-        (Room.CurrentHeatingState.UNKNOWN, Radiator.RequestedState.LOAD_SHED, False),
-        (Room.CurrentHeatingState.UNKNOWN, None, False),
+        (Room.RequestedHeatingState.UNKNOWN, Radiator.RequestedState.ON, False),
+        (Room.RequestedHeatingState.UNKNOWN, Radiator.RequestedState.OFF, False),
+        (Room.RequestedHeatingState.UNKNOWN, Radiator.RequestedState.LOAD_SHED, False),
+        (Room.RequestedHeatingState.UNKNOWN, None, False),
         #
         (None, Radiator.RequestedState.ON, False),
         (None, Radiator.RequestedState.OFF, False),

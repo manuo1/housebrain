@@ -17,42 +17,42 @@ ROOM_DATA_TO_TURN_ON = {
     "radiator__power": 1000,
     "radiator__importance": Radiator.Importance.CRITICAL,
     "radiator__requested_state": Radiator.RequestedState.OFF,
-    "current_on_off_state": Room.CurrentHeatingState.ON,
+    "requested_heating_state": Room.RequestedHeatingState.ON,
 }
 ROOM_DATA_TO_TURN_OFF = {
     "radiator__id": 2,
     "radiator__power": 1000,
     "radiator__importance": Radiator.Importance.CRITICAL,
     "radiator__requested_state": Radiator.RequestedState.ON,
-    "current_on_off_state": Room.CurrentHeatingState.OFF,
+    "requested_heating_state": Room.RequestedHeatingState.OFF,
 }
 ROOM_DATA_NO_CHANGE = {
     "radiator__id": 3,
     "radiator__power": 1000,
     "radiator__importance": Radiator.Importance.CRITICAL,
     "radiator__requested_state": Radiator.RequestedState.ON,
-    "current_on_off_state": Room.CurrentHeatingState.ON,
+    "requested_heating_state": Room.RequestedHeatingState.ON,
 }
 ROOM_DATA_NO_HEATER = {
     "radiator__id": None,
     "radiator__power": None,
     "radiator__importance": None,
     "radiator__requested_state": None,
-    "current_on_off_state": Room.CurrentHeatingState.ON,
+    "requested_heating_state": Room.RequestedHeatingState.ON,
 }
 ROOM_DATA_NOT_ON_OFF_HEATING = {
     "radiator__id": 4,
     "radiator__power": 1000,
     "radiator__importance": Radiator.Importance.CRITICAL,
     "radiator__requested_state": Radiator.RequestedState.ON,
-    "current_on_off_state": Room.CurrentHeatingState.UNKNOWN,
+    "requested_heating_state": Room.RequestedHeatingState.UNKNOWN,
 }
 ROOM_DATA_NOT_ON_OFF_HEATING_AND_NO_HEATING = {
     "radiator__id": None,
     "radiator__power": None,
     "radiator__importance": None,
     "radiator__requested_state": None,
-    "current_on_off_state": None,
+    "requested_heating_state": None,
 }
 ROOMS_DATA = [
     ROOM_DATA_TO_TURN_ON,
@@ -92,7 +92,7 @@ def test_synchronize_heating_for_rooms_with_on_off_heating_control():
     RoomFactory(
         heating_control_mode=Room.HeatingControlMode.ONOFF,
         radiator=radiator_to_turn_off,
-        current_on_off_state=Room.CurrentHeatingState.OFF,
+        requested_heating_state=Room.RequestedHeatingState.OFF,
     )
 
     radiator_to_turn_on = RadiatorFactory(
@@ -104,7 +104,7 @@ def test_synchronize_heating_for_rooms_with_on_off_heating_control():
     RoomFactory(
         heating_control_mode=Room.HeatingControlMode.ONOFF,
         radiator=radiator_to_turn_on,
-        current_on_off_state=Room.CurrentHeatingState.ON,
+        requested_heating_state=Room.RequestedHeatingState.ON,
     )
     synchronize_heating_for_rooms_with_on_off_heating_control()
     radiator_to_turn_off.refresh_from_db()

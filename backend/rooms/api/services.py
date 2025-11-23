@@ -72,9 +72,9 @@ def _transform_heating(room_dict: dict) -> dict:
     value = None
 
     if mode == Room.HeatingControlMode.THERMOSTAT:
-        value = room_dict.get("current_setpoint")
+        value = room_dict.get("temperature_setpoint")
     elif mode == Room.HeatingControlMode.ONOFF:
-        value = room_dict.get("current_on_off_state")
+        value = room_dict.get("requested_heating_state")
 
     return {"mode": mode, "value": value}
 

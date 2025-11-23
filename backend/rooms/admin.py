@@ -10,10 +10,10 @@ class RoomAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "heating_control_mode",
-        "current_setpoint",
-        "current_on_off_state",
+        "temperature_setpoint",
+        "requested_heating_state",
     )
-    list_filter = ("heating_control_mode", "current_on_off_state")
+    list_filter = ("heating_control_mode", "requested_heating_state")
     search_fields = ("name",)
     ordering = ("name",)
 
@@ -38,8 +38,8 @@ class RoomAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "heating_control_mode",
-                    "current_setpoint",
-                    "current_on_off_state",
+                    "temperature_setpoint",
+                    "requested_heating_state",
                 ),
                 "description": "Paramètres de pilotage et consignes pour le chauffage.",
             },
@@ -50,7 +50,7 @@ class RoomAdmin(admin.ModelAdmin):
         description="État du chauffage sur Allumé pour les pièces sélectionnées"
     )
     def set_heating_on(self, request, queryset):
-        updated = queryset.update(current_on_off_state=Room.CurrentHeatingState.ON)
+        updated = queryset.update(requested_heating_state=Room.RequestedHeatingState.ON)
         self.message_user(
             request,
             f"{updated} pièce(s) mise(s) sur ON avec succès.",
@@ -61,7 +61,9 @@ class RoomAdmin(admin.ModelAdmin):
         description="État du chauffage sur Éteint pour les pièces sélectionnées"
     )
     def set_heating_off(self, request, queryset):
-        updated = queryset.update(current_on_off_state=Room.CurrentHeatingState.OFF)
+        updated = queryset.update(
+            requested_heating_state=Room.RequestedHeatingState.OFF
+        )
         self.message_user(
             request,
             f"{updated} pièce(s) mise(s) sur OFF avec succès.",

@@ -1,6 +1,5 @@
-from django.db import models
-
 from actuators.models import Radiator
+from django.db import models
 from sensors.models import TemperatureSensor
 
 
@@ -9,7 +8,7 @@ class Room(models.Model):
         THERMOSTAT = "thermostat", "Piloté par plannings de température"
         ONOFF = "on_off", "Piloté par plannings on/off"
 
-    class CurrentHeatingState(models.TextChoices):
+    class RequestedHeatingState(models.TextChoices):
         OFF = "off", "Éteint"
         ON = "on", "Allumé"
         UNKNOWN = "unknown", "Non défini"
@@ -40,21 +39,19 @@ class Room(models.Model):
         help_text="Définit si la pièce est pilotée par consigne de température ou en on/off.",
     )
 
-    # Temperature control (thermostat)
-    current_setpoint = models.FloatField(
+    temperature_setpoint = models.FloatField(
         null=True,
         blank=True,
         verbose_name="Consigne de température",
         help_text="Température souhaitée lorsque la pièce est pilotée par thermostat (en C°).",
     )
 
-    # on/off control
-    current_on_off_state = models.CharField(
+    requested_heating_state = models.CharField(
         max_length=20,
-        choices=CurrentHeatingState.choices,
-        default=CurrentHeatingState.UNKNOWN,
+        choices=RequestedHeatingState.choices,
+        default=RequestedHeatingState.UNKNOWN,
         verbose_name="Consigne d'état du chauffage",
-        help_text="Consigne lorsque la pièce est pilotée par état : Allumé, Éteint, ou Non défini.",
+        help_text="État souhaité du chauffage dans cette pièce.",
     )
 
     class Meta:

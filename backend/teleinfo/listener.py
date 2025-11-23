@@ -6,6 +6,9 @@ from core.constants import LoggerLabel
 from core.utils.systemd_utils import notify_watchdog
 from django.core.cache import caches
 from django.utils import timezone
+from heating.services.heating_synchronization import (
+    turn_on_radiators_according_to_the_available_power,
+)
 from teleinfo.constants import SerialConfig
 from teleinfo.services import (
     buffer_can_accept_new_data,
@@ -23,6 +26,7 @@ class TeleinfoListener:
     def __init__(self) -> None:
         self.buffer = {}
         self.teleinfo = {}
+        self.should_manage_radiator_power = False
         set_teleinfo_data_in_cache({"last_read": None})
 
     def start(self) -> None:
@@ -66,4 +70,9 @@ class TeleinfoListener:
             self.buffer.clear()
             set_teleinfo_data_in_cache(self.teleinfo)
             notify_watchdog()
-            ensure_power_not_exceeded()
+            # Alternate power management cycles to allow teleinfo
+            # to reflect changes before applying new modifications
+            if self.should_manage_radiator_power:
+                ensure_power_not_exceeded()
+                turn_on_radiators_according_to_the_available_power()
+            self.should_manage_radiator_power = not self.should_manage_radiator_power

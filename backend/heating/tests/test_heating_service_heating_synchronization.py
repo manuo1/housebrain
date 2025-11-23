@@ -1,4 +1,5 @@
 import pytest
+from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
 from actuators.tests.factories import RadiatorFactory
 from django.core.cache import cache
@@ -137,7 +138,7 @@ RADIATOR_3 = {
 
 
 def test_split_radiators_by_available_power(monkeypatch):
-    available_power = 2000
+    available_power = 2000 + POWER_SAFETY_MARGIN
     monkeypatch.setattr(
         "heating.services.heating_synchronization.get_instant_available_power",
         lambda: available_power,

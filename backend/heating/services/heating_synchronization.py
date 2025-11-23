@@ -1,5 +1,6 @@
 import logging
 
+from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.mutators.radiators import (
     apply_load_shedding_to_radiators,
     set_radiators_requested_state_to_off,
@@ -46,7 +47,7 @@ def get_radiators_to_update_for_on_off_heating_control(rooms_data: list[dict]) -
 def split_radiators_by_available_power(radiators: list):
     can_turn_on = []
     cannot_turn_on = []
-    remaining_power = get_instant_available_power()
+    remaining_power = get_instant_available_power() - POWER_SAFETY_MARGIN
 
     for radiator in radiators:
         if remaining_power >= radiator["power"]:

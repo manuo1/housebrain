@@ -3,7 +3,6 @@ from actuators.models import Radiator
 from actuators.selectors.radiators import (
     get_radiators_data_for_hardware_synchronization,
     get_radiators_data_for_load_shedding,
-    get_radiators_data_for_on_off_heating_control,
 )
 from actuators.tests.factories import RadiatorFactory
 
@@ -93,22 +92,4 @@ def test_get_radiators_data_for_load_shedding_sort():
         {"id": 2, "power": 100, "importance": 2},
         # plus important donc en dernier
         {"id": 1, "power": 100, "importance": 1},
-    ]
-
-
-@pytest.mark.django_db
-def test_get_radiators_data_for_on_off_heating_control():
-    RadiatorFactory(id=1, requested_state=Radiator.RequestedState.ON)
-    RadiatorFactory(id=2, requested_state=Radiator.RequestedState.OFF)
-    RadiatorFactory(id=3, requested_state=Radiator.RequestedState.LOAD_SHED)
-    RadiatorFactory(id=4, requested_state=Radiator.RequestedState.ON)
-    RadiatorFactory(id=5, requested_state=Radiator.RequestedState.OFF)
-
-    id_list = [1, 2, 3, 6]  # 6 n'existe pas dans la bdd
-
-    result = get_radiators_data_for_on_off_heating_control(id_list)
-    assert result == [
-        {"id": 1, "requested_state": Radiator.RequestedState.ON},
-        {"id": 2, "requested_state": Radiator.RequestedState.OFF},
-        {"id": 3, "requested_state": Radiator.RequestedState.LOAD_SHED},
     ]

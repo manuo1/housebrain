@@ -25,14 +25,3 @@ def get_radiators_data_for_load_shedding() -> list[dict]:
         .order_by("-importance", "-power")
         .values("id", "power", "importance")
     )
-
-
-def get_radiators_data_for_on_off_heating_control(id_list: list[int]) -> list[dict]:
-    """
-    Return the minimum radiators info needed for the On/Off heating mode control"""
-    return list(
-        Radiator.objects.filter(id__in=id_list).values(
-            "id",
-            "requested_state",
-        )
-    )

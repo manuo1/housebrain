@@ -2,16 +2,21 @@ from actuators.models import Radiator
 from rooms.models import Room
 
 
-def room_current_on_off_state_to_radiator_requested_state(
-    room_current_on_off_state: Room.CurrentHeatingState,
-) -> Radiator.RequestedState | None:
-    """
-    Convert a Room heating state into a Radiator requested state.
-    """
-    match room_current_on_off_state:
+def radiator_state_matches_room_state(
+    room_current_heatingState: Room.CurrentHeatingState,
+    radiator_requested_state: Radiator.RequestedState,
+) -> bool:
+    match room_current_heatingState:
+        case Room.CurrentHeatingState.UNKNOWN:
+            return False
         case Room.CurrentHeatingState.ON:
-            return Radiator.RequestedState.ON
+            return radiator_requested_state == Radiator.RequestedState.ON
         case Room.CurrentHeatingState.OFF:
-            return Radiator.RequestedState.OFF
+            return radiator_requested_state in (
+                Radiator.RequestedState.OFF,
+                Radiator.RequestedState.LOAD_SHED,
+            )
+        case None:
+            return radiator_requested_state is None
         case _:
-            return None
+            return False

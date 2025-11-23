@@ -1,66 +1,84 @@
 import logging
 
-from actuators.models import Radiator
 from actuators.mutators.radiators import (
+    apply_load_shedding_to_radiators,
     set_radiators_requested_state_to_off,
     set_radiators_requested_state_to_on,
 )
-from actuators.selectors.radiators import get_radiators_data_for_on_off_heating_control
-from heating.mappers import RoomAndRadiatorStateMapper
+from heating.mappers import radiator_state_matches_room_state
+from heating.utils.cache_radiators import (
+    get_radiators_to_turn_on_in_cache,
+    set_radiators_to_turn_on_in_cache,
+)
+from rooms.models import Room
 from rooms.selectors.heating import get_rooms_with_on_off_heating_control_data
+from teleinfo.utils.cache_teleinfo_data import get_instant_available_power
 
 logger = logging.getLogger("django")
 
 
-class HeatingSyncService:
-    """
-    Service to synchronize heating setpoints and states from Rooms to Radiators
-    """
+def get_radiators_to_update_for_on_off_heating_control(rooms_data: list[dict]) -> list:
+    radiators = {"to_turn_on": [], "ids_to_turn_off": []}
+    for room in rooms_data:
+        radiator_state = room["radiator__requested_state"]
+        room_state = room["current_on_off_state"]
+        if radiator_state is None:
+            continue
 
-    @classmethod
-    def synchronize_rooms_with_on_off_heating_control(cls) -> None:
-        rooms_data = get_rooms_with_on_off_heating_control_data()
+        if not radiator_state_matches_room_state(room_state, radiator_state):
+            match room_state:
+                case Room.CurrentHeatingState.ON:
+                    radiators["to_turn_on"].append(
+                        {
+                            "id": room["radiator__id"],
+                            "power": room["radiator__power"],
+                            "importance": room["radiator__importance"],
+                        }
+                    )
+                case Room.CurrentHeatingState.OFF:
+                    radiators["ids_to_turn_off"].append(room["radiator__id"])
+                case _:
+                    continue
 
-        radiators_data = get_radiators_data_for_on_off_heating_control(
-            [room_data["radiator__id"] for room_data in rooms_data]
-        )
+    return radiators
 
-        radiators_to_update = cls.get_radiators_to_update_for_on_off_heating_control(
-            radiators_data, rooms_data
-        )
 
-        set_radiators_requested_state_to_on(radiators_to_update["ids_to_turn_on"])
-        set_radiators_requested_state_to_off(radiators_to_update["ids_to_turn_off"])
+def split_radiators_by_available_power(radiators: list):
+    can_turn_on = []
+    cannot_turn_on = []
+    remaining_power = get_instant_available_power()
 
-    @classmethod
-    def synchronize_rooms_with_thermostat_heating_control(cls) -> None:
-        pass
+    for radiator in radiators:
+        if remaining_power >= radiator["power"]:
+            can_turn_on.append(radiator)
+            remaining_power -= radiator["power"]
+        else:
+            cannot_turn_on.append(radiator)
 
-    @staticmethod
-    def get_radiators_to_update_for_on_off_heating_control(
-        radiators_data: list[dict], rooms_data: list[dict]
-    ) -> dict[str, list[int]]:
-        room_state_map = {
-            room[
-                "radiator__id"
-            ]: RoomAndRadiatorStateMapper.room_current_on_off_state_to_radiator_requested_state(
-                room["current_on_off_state"]
-            )
-            for room in rooms_data
-        }
+    return can_turn_on, cannot_turn_on
 
-        radiator_ids_to_update = {"ids_to_turn_on": [], "ids_to_turn_off": []}
 
-        for radiator in radiators_data:
-            room_expected_state = room_state_map.get(radiator["id"])
-            if room_expected_state is None:
-                continue
+def turn_on_radiators_according_to_the_available_power():
+    radiators = get_radiators_to_turn_on_in_cache()
+    if not radiators:
+        return
+    sorted_radiators = sorted(radiators, key=lambda x: (x["importance"], -x["power"]))
+    can_turn_on, cannot_turn_on = split_radiators_by_available_power(sorted_radiators)
 
-            if radiator["requested_state"] != room_expected_state:
-                match room_expected_state:
-                    case Radiator.RequestedState.ON:
-                        radiator_ids_to_update["ids_to_turn_on"].append(radiator["id"])
-                    case Radiator.RequestedState.OFF:
-                        radiator_ids_to_update["ids_to_turn_off"].append(radiator["id"])
+    # Keep the radiators that couldn't be turned on in the cache to try again.
+    set_radiators_to_turn_on_in_cache(cannot_turn_on)
+    # Turn on the radiators that can.
+    set_radiators_requested_state_to_on([radiator["id"] for radiator in can_turn_on])
+    # Indicates that the others are experiencing load shedding.
+    apply_load_shedding_to_radiators([radiator["id"] for radiator in cannot_turn_on])
 
-        return radiator_ids_to_update
+
+def synchronize_heating_for_rooms_with_on_off_heating_control():
+    rooms_data = get_rooms_with_on_off_heating_control_data()
+    radiators = get_radiators_to_update_for_on_off_heating_control(rooms_data)
+    # Immediately turn off radiators that need to be turned off
+    set_radiators_requested_state_to_off(radiators["ids_to_turn_off"])
+    # Store the list of radiators to be turned on in the cache
+    # to delegate their activation to the teleinfo listener
+    # who has the better understanding of the available power
+    set_radiators_to_turn_on_in_cache(radiators["to_turn_on"])

@@ -12,17 +12,17 @@ def test_get_rooms_with_on_off_heating_control_data_select():
     RoomFactory(
         heating_control_mode=Room.HeatingControlMode.THERMOSTAT,
         radiator=RadiatorFactory(id=1, power=1, importance=Radiator.Importance.HIGH),
-        current_on_off_state=Room.CurrentHeatingState.OFF,
+        requested_heating_state=Room.RequestedHeatingState.OFF,
     )
     RoomFactory(
         heating_control_mode=Room.HeatingControlMode.ONOFF,
         radiator=None,
-        current_on_off_state=Room.CurrentHeatingState.OFF,
+        requested_heating_state=Room.RequestedHeatingState.OFF,
     )
     RoomFactory(
         heating_control_mode=Room.HeatingControlMode.ONOFF,
         radiator=RadiatorFactory(id=2),
-        current_on_off_state=Room.CurrentHeatingState.UNKNOWN,
+        requested_heating_state=Room.RequestedHeatingState.UNKNOWN,
     )
     # Valid
     RoomFactory(
@@ -33,7 +33,7 @@ def test_get_rooms_with_on_off_heating_control_data_select():
             importance=Radiator.Importance.HIGH,
             requested_state=Radiator.RequestedState.OFF,
         ),
-        current_on_off_state=Room.CurrentHeatingState.ON,
+        requested_heating_state=Room.RequestedHeatingState.ON,
     )
     RoomFactory(
         heating_control_mode=Room.HeatingControlMode.ONOFF,
@@ -43,21 +43,21 @@ def test_get_rooms_with_on_off_heating_control_data_select():
             importance=Radiator.Importance.HIGH,
             requested_state=Radiator.RequestedState.OFF,
         ),
-        current_on_off_state=Room.CurrentHeatingState.OFF,
+        requested_heating_state=Room.RequestedHeatingState.OFF,
     )
 
     result = get_rooms_with_on_off_heating_control_data()
     assert result == [
         {
             "radiator__id": 3,
-            "current_on_off_state": Room.CurrentHeatingState.ON,
+            "requested_heating_state": Room.RequestedHeatingState.ON,
             "radiator__power": 1,
             "radiator__importance": Radiator.Importance.HIGH,
             "radiator__requested_state": Radiator.RequestedState.OFF,
         },
         {
             "radiator__id": 4,
-            "current_on_off_state": Room.CurrentHeatingState.OFF,
+            "requested_heating_state": Room.RequestedHeatingState.OFF,
             "radiator__power": 1,
             "radiator__importance": Radiator.Importance.HIGH,
             "radiator__requested_state": Radiator.RequestedState.OFF,

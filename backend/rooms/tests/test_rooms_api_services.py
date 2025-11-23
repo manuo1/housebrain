@@ -207,7 +207,7 @@ def test_transform_radiator_extra_fields_are_ignored():
         (
             {
                 "heating_control_mode": Room.HeatingControlMode.THERMOSTAT,
-                "current_setpoint": 21.5,
+                "temperature_setpoint": 21.5,
             },
             Room.HeatingControlMode.THERMOSTAT,
             21.5,
@@ -215,7 +215,7 @@ def test_transform_radiator_extra_fields_are_ignored():
         (
             {
                 "heating_control_mode": Room.HeatingControlMode.THERMOSTAT,
-                "current_setpoint": None,
+                "temperature_setpoint": None,
             },
             Room.HeatingControlMode.THERMOSTAT,
             None,
@@ -224,15 +224,15 @@ def test_transform_radiator_extra_fields_are_ignored():
         (
             {
                 "heating_control_mode": Room.HeatingControlMode.ONOFF,
-                "current_on_off_state": Room.CurrentHeatingState.ON,
+                "requested_heating_state": Room.RequestedHeatingState.ON,
             },
             Room.HeatingControlMode.ONOFF,
-            Room.CurrentHeatingState.ON,
+            Room.RequestedHeatingState.ON,
         ),
         (
             {
                 "heating_control_mode": Room.HeatingControlMode.ONOFF,
-                "current_on_off_state": None,
+                "requested_heating_state": None,
             },
             Room.HeatingControlMode.ONOFF,
             None,
@@ -241,13 +241,13 @@ def test_transform_radiator_extra_fields_are_ignored():
         (
             {
                 "heating_control_mode": Room.HeatingControlMode.ONOFF,
-                "current_on_off_state": None,
+                "requested_heating_state": None,
             },
             Room.HeatingControlMode.ONOFF,
             None,
         ),
         (
-            {"heating_control_mode": None, "current_setpoint": 20.0},
+            {"heating_control_mode": None, "temperature_setpoint": 20.0},
             None,
             None,
         ),
@@ -269,7 +269,7 @@ def test_transform_heating_ignores_extra_fields():
     """Les champs inutiles ne doivent pas interférer."""
     room_dict = {
         "heating_control_mode": "on_off",
-        "current_on_off_state": "off",
+        "requested_heating_state": "off",
         "random_field": 123,
         "temperature_sensor__id": 99,
     }

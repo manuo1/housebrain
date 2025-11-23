@@ -21,13 +21,13 @@ def get_radiators_to_update_for_on_off_heating_control(rooms_data: list[dict]) -
     radiators = {"to_turn_on": [], "ids_to_turn_off": []}
     for room in rooms_data:
         radiator_state = room["radiator__requested_state"]
-        room_state = room["current_on_off_state"]
+        room_state = room["requested_heating_state"]
         if radiator_state is None:
             continue
 
         if not radiator_state_matches_room_state(room_state, radiator_state):
             match room_state:
-                case Room.CurrentHeatingState.ON:
+                case Room.RequestedHeatingState.ON:
                     radiators["to_turn_on"].append(
                         {
                             "id": room["radiator__id"],
@@ -35,7 +35,7 @@ def get_radiators_to_update_for_on_off_heating_control(rooms_data: list[dict]) -
                             "importance": room["radiator__importance"],
                         }
                     )
-                case Room.CurrentHeatingState.OFF:
+                case Room.RequestedHeatingState.OFF:
                     radiators["ids_to_turn_off"].append(room["radiator__id"])
                 case _:
                     continue

@@ -40,15 +40,15 @@ Regroupe les informations de pilotage du chauffage de la pièce.
 
 #### Champs source (modèle `Room`)
 - `heating_control_mode` : Mode de pilotage ("thermostat" ou "on_off")
-- `current_setpoint` : Consigne de température (float, en °C)
-- `current_on_off_state` : État du chauffage ("off", "on", "unknown")
+- `temperature_setpoint` : Consigne de température (float, en °C)
+- `requested_heating_state` : État du chauffage ("off", "on", "unknown")
 
 #### Transformation
 ```python
 heating = {
     "mode": room.heating_control_mode,  # "thermostat" ou "on_off"
-    "value": room.current_setpoint if room.heating_control_mode == "thermostat" 
-             else room.current_on_off_state
+    "value": room.temperature_setpoint if room.heating_control_mode == "thermostat"
+             else room.requested_heating_state
 }
 ```
 
@@ -150,9 +150,9 @@ Calcule l'évolution de la température par rapport à la mesure précédente.
 if previous_measurements and interval < timedelta(minutes=5):
     temp_current = measurements['temperature']
     temp_previous = previous_measurements['temperature']
-    
+
     diff = temp_current - temp_previous
-    
+
     if diff > 0.1:  # Seuil pour considérer une hausse
         trend = "up"
     elif diff < -0.1:  # Seuil pour considérer une baisse

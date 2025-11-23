@@ -16,8 +16,8 @@ def get_rooms_data_for_api():
             "id",
             "name",
             "heating_control_mode",
-            "current_setpoint",
-            "current_on_off_state",
+            "temperature_setpoint",
+            "requested_heating_state",
             # Radiator fields (None if no radiator)
             "radiator__id",
             "radiator__requested_state",

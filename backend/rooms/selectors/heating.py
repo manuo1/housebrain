@@ -7,15 +7,15 @@ def get_rooms_with_on_off_heating_control_data() -> list[dict]:
         Room.objects.filter(
             heating_control_mode=Room.HeatingControlMode.ONOFF,
             radiator__isnull=False,
-            current_on_off_state__in=[
-                Room.CurrentHeatingState.OFF,
-                Room.CurrentHeatingState.ON,
+            requested_heating_state__in=[
+                Room.RequestedHeatingState.OFF,
+                Room.RequestedHeatingState.ON,
             ],
         ).values(
             "radiator__id",
             "radiator__power",
             "radiator__importance",
             "radiator__requested_state",
-            "current_on_off_state",
+            "requested_heating_state",
         )
     )

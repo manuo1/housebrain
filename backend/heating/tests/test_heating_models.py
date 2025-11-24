@@ -59,9 +59,18 @@ class TestHeatingPattern:
                 ]
             )
 
+    def test_reversed_start_and_stop_slot_raises_error(self):
+        """Test that reversed start and stop slots raise ValidationError"""
+        with pytest.raises(ValidationError, match="Slot start must be before end"):
+            HeatingPatternFactory(
+                slots=[
+                    {"start": "11:00", "end": "10:00", "type": "temp", "value": 20.0},
+                ]
+            )
+
     def test_invalid_slot_format_missing_field(self):
         """Test that missing required field raises ValidationError"""
-        with pytest.raises(ValidationError, match="missing required field"):
+        with pytest.raises(ValidationError, match="missing or invalid field"):
             HeatingPatternFactory(
                 slots=[
                     {"start": "07:00", "type": "temp", "value": 20.0}  # Missing 'end'
@@ -79,7 +88,7 @@ class TestHeatingPattern:
 
     def test_invalid_value_for_temp_type(self):
         """Test that non-numeric value for temp type raises ValidationError"""
-        with pytest.raises(ValidationError, match="must have numeric value"):
+        with pytest.raises(ValidationError, match="Slot value does not match its type"):
             HeatingPatternFactory(
                 slots=[
                     {"start": "07:00", "end": "09:00", "type": "temp", "value": "hot"}
@@ -88,7 +97,7 @@ class TestHeatingPattern:
 
     def test_invalid_value_for_onoff_type(self):
         """Test that invalid value for onoff type raises ValidationError"""
-        with pytest.raises(ValidationError, match="must have value 'on' or 'off'"):
+        with pytest.raises(ValidationError, match="Slot value does not match its type"):
             HeatingPatternFactory(
                 slots=[
                     {
@@ -102,7 +111,7 @@ class TestHeatingPattern:
 
     def test_invalid_time_format(self):
         """Test that invalid time format raises ValidationError"""
-        with pytest.raises(ValidationError, match="invalid time format"):
+        with pytest.raises(ValidationError, match="Slot must have HH:MM time format"):
             HeatingPatternFactory(
                 slots=[
                     {"start": "25:00", "end": "09:00", "type": "temp", "value": 20.0}
@@ -157,7 +166,7 @@ class TestHeatingPattern:
         assert p1.id is not None
 
         # Second creation with same slots must fail
-        with pytest.raises(ValidationError, match="identique existe déjà"):
+        with pytest.raises(ValidationError, match="heating pattern already exists."):
             p2 = HeatingPattern(slots=slots)
             p2.full_clean()  # triggers clean()
             p2.save()  # should never reach here

@@ -57,90 +57,73 @@ class HeatingPattern(models.Model):
         if not self.slots:
             return
 
-        # Validate that slots is a list
+        # Sort slots by start time
+        try:
+            self.slots.sort(key=lambda s: s["start"])
+        except KeyError:
+            raise ValidationError("Each slot must have a 'start' key")
+
+        # Check for duplicates
+        if (
+            HeatingPattern.objects.filter(slots_hash=self.calculate_hash())
+            .exclude(pk=self.pk)
+            .exists()
+        ):
+            raise ValidationError("An identical heating pattern already exists.")
+
+        # Validate that self.slots is a list
         if not isinstance(self.slots, list):
             raise ValidationError("Slots must be a list")
 
-        # Check that all slots have the same type
-        if len(self.slots) > 0:
-            first_type = None
-            for idx, slot in enumerate(self.slots):
-                if not isinstance(slot, dict):
-                    raise ValidationError(f"Slot {idx} must be a dictionary")
+        # Validate self.slots content
+        valid_slot_types = [choice[0] for choice in self.SlotType.choices]
+        slot_types_set = set()
+        time_ranges = []
+        for slot in self.slots:
+            if not isinstance(slot, dict):
+                raise ValidationError("Slot must be a dictionary")
 
-                # Check required fields
-                required_fields = ["start", "end", "type", "value"]
-                for field in required_fields:
-                    if field not in slot:
-                        raise ValidationError(
-                            f"Slot {idx} missing required field: {field}"
-                        )
+            # Check required fields
+            if set(slot.keys()) != {"start", "end", "type", "value"}:
+                raise ValidationError("Slot has missing or invalid field")
 
-                # Validate type
-                if slot["type"] not in [choice[0] for choice in self.SlotType.choices]:
-                    raise ValidationError(
-                        f"Slot {idx} has invalid type: {slot['type']}. "
-                        f"Must be one of: {', '.join([choice[0] for choice in self.SlotType.choices])}"
-                    )
+            slot_type = slot["type"]
 
-                # Check type consistency
-                if first_type is None:
-                    first_type = slot["type"]
-                elif slot["type"] != first_type:
-                    raise ValidationError(
-                        f"All slots must have the same type. "
-                        f"Found mixed types: '{first_type}' and '{slot['type']}'"
-                    )
+            # Validate type
+            if slot_type not in valid_slot_types:
+                raise ValidationError("Slot has invalid type")
 
-                # Validate value based on type
-                if slot["type"] == self.SlotType.TEMPERATURE:
-                    if not isinstance(slot["value"], (int, float)):
-                        raise ValidationError(
-                            f"Slot {idx} with type 'temp' must have numeric value"
-                        )
-                elif slot["type"] == self.SlotType.ONOFF:
-                    if slot["value"] not in ["on", "off"]:
-                        raise ValidationError(
-                            f"Slot {idx} with type 'onoff' must have value 'on' or 'off'"
-                        )
+            # Check type consistency
+            slot_types_set.add(slot_type)
+            if len(slot_types_set) != 1:
+                raise ValidationError("All slots must have the same type.")
 
-                # Validate time format
-                try:
-                    datetime.strptime(slot["start"], "%H:%M")
-                    datetime.strptime(slot["end"], "%H:%M")
-                except ValueError:
-                    raise ValidationError(
-                        f"Slot {idx} has invalid time format (expected HH:MM)"
-                    )
+            # Validate slot value based on slot type
+            validators = {
+                self.SlotType.TEMPERATURE: lambda v: isinstance(v, (int, float)),
+                self.SlotType.ONOFF: lambda v: v in {"on", "off"},
+            }
+            if not validators.get(slot_type, lambda v: True)(slot["value"]):
+                raise ValidationError("Slot value does not match its type")
 
-        # Check for duplicates
-        temp_hash = self.calculate_hash()
+            # Validate time format
+            try:
+                start = datetime.strptime(slot["start"], "%H:%M")
+                end = datetime.strptime(slot["end"], "%H:%M")
+            except ValueError:
+                raise ValidationError("Slot must have HH:MM time format")
 
-        qs = HeatingPattern.objects.filter(slots_hash=temp_hash)
-        if self.pk:
-            qs = qs.exclude(pk=self.pk)
+            # Validate start is before end
+            if start >= end:
+                raise ValidationError("Slot start must be before end")
 
-        if qs.exists():
-            raise ValidationError("Un pattern de chauffage identique existe déjà.")
+            # Check for overlaps
+            if time_ranges and start < time_ranges[-1][1]:
+                raise ValidationError("Slots overlap")
 
-        # Check for overlaps (rest of the code unchanged)
-        try:
-            sorted_slots = sorted(self.slots, key=lambda s: s["start"])
-        except (KeyError, TypeError):
-            raise ValidationError("Invalid slot format")
-
-        for i in range(len(sorted_slots) - 1):
-            current_end = datetime.strptime(sorted_slots[i]["end"], "%H:%M").time()
-            next_start = datetime.strptime(sorted_slots[i + 1]["start"], "%H:%M").time()
-
-            if current_end > next_start:
-                raise ValidationError(
-                    f"Slots overlap: {sorted_slots[i]['start']}-{sorted_slots[i]['end']} "
-                    f"and {sorted_slots[i + 1]['start']}-{sorted_slots[i + 1]['end']}"
-                )
+            time_ranges.append((start, end))
 
     def save(self, *args, **kwargs):
-        # Validate before saving
         self.clean()
         # Always recalculate hash
         self.slots_hash = self.calculate_hash()
@@ -159,8 +142,8 @@ class HeatingPattern(models.Model):
         Uses hash for deduplication.
         """
         # Create temporary pattern to calculate hash
-        temp_pattern = cls(slots=slots)
-        slots_hash = temp_pattern.calculate_hash()
+        temp_heating_pattern = cls(slots=slots)
+        slots_hash = temp_heating_pattern.calculate_hash()
 
         # Look for existing pattern with this hash
         existing = cls.objects.filter(slots_hash=slots_hash).first()
@@ -168,9 +151,9 @@ class HeatingPattern(models.Model):
             return existing, False
 
         # Otherwise create a new one
-        temp_pattern.slots_hash = slots_hash
-        temp_pattern.save()
-        return temp_pattern, True
+        temp_heating_pattern.slots_hash = slots_hash
+        temp_heating_pattern.save()
+        return temp_heating_pattern, True
 
 
 class RoomHeatingDayPlan(models.Model):

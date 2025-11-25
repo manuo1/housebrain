@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from heating.models import HeatingPattern, RoomHeatingDayPlan
 
 
@@ -45,9 +46,24 @@ class RoomHeatingDayPlanAdmin(admin.ModelAdmin):
     search_fields = ["room__name"]
     date_hierarchy = "date"
     autocomplete_fields = ["room", "heating_pattern"]
-    readonly_fields = ["created_at", "updated_at"]
+    readonly_fields = ["created_at", "updated_at", "pattern_details"]
 
     def get_queryset(self, request):
         """Optimize queries with select_related"""
         qs = super().get_queryset(request)
         return qs.select_related("room", "heating_pattern")
+
+    def pattern_details(self, obj):
+        """Display detailed pattern information"""
+        if not obj.heating_pattern:
+            return "-"
+
+        pattern = obj.heating_pattern
+        lines = [f"<strong>Pattern {pattern.id}</strong><br>"]
+
+        for slot in pattern.slots:
+            lines.append(f"• {slot['start']}-{slot['end']}: {slot['value']}<br>")
+
+        return format_html("".join(lines))
+
+    pattern_details.short_description = "Détails du pattern"

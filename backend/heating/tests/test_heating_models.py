@@ -271,3 +271,59 @@ class TestRoomHeatingDayPlan:
         plan = RoomHeatingDayPlanFactory(room=room, date=test_date)
 
         assert str(plan) == "Salon - 2025-10-24"
+
+    def test_can_modify_pattern_with_zero_usage(self):
+        """Test that pattern with no usage can be modified"""
+        pattern = HeatingPatternFactory()
+        pattern.slots = [
+            {"start": "10:00", "end": "12:00", "type": "temp", "value": 21.0}
+        ]
+        pattern.save()
+
+        assert pattern.slots[0]["start"] == "10:00"
+        assert pattern.slots[0]["value"] == 21.0
+
+    def test_can_modify_pattern_with_one_usage(self):
+        """Test that pattern with single usage can be modified"""
+        from heating.tests.factories import RoomHeatingDayPlanFactory
+
+        pattern = HeatingPatternFactory()
+        RoomHeatingDayPlanFactory(heating_pattern=pattern)
+
+        pattern.slots = [
+            {"start": "10:00", "end": "12:00", "type": "temp", "value": 21.0}
+        ]
+        pattern.save()
+
+        assert pattern.slots[0]["start"] == "10:00"
+        assert pattern.slots[0]["value"] == 21.0
+
+    def test_cannot_modify_pattern_with_multiple_usages(self):
+        """Test that pattern with multiple usages cannot be modified"""
+        from heating.tests.factories import RoomHeatingDayPlanFactory
+
+        pattern = HeatingPatternFactory()
+        RoomHeatingDayPlanFactory(heating_pattern=pattern)
+        RoomHeatingDayPlanFactory(heating_pattern=pattern)
+
+        pattern.slots = [
+            {"start": "10:00", "end": "12:00", "type": "temp", "value": 21.0}
+        ]
+
+        with pytest.raises(ValidationError, match="used by multiple"):
+            pattern.save()
+
+    def test_can_save_pattern_without_changes_multiple_usages(self):
+        """Test that pattern with multiple usages can be saved without modifications"""
+        from heating.tests.factories import RoomHeatingDayPlanFactory
+
+        pattern = HeatingPatternFactory()
+        plan1 = RoomHeatingDayPlanFactory(heating_pattern=pattern)
+        plan2 = RoomHeatingDayPlanFactory(heating_pattern=pattern)
+
+        # Save without modifying slots
+        pattern.save()
+
+        # Verify pattern still linked to both plans
+        assert plan1.heating_pattern.id == pattern.id
+        assert plan2.heating_pattern.id == pattern.id

@@ -63,9 +63,24 @@ class HeatingPattern(models.Model):
         except KeyError:
             raise ValidationError("Each slot must have a 'start' key")
 
+        temp_slots_hash = self.calculate_hash()
+
+        # Prevent modification if used by multiple RoomHeatingDayPlan
+        if (
+            # modification not creation
+            self.pk
+            # slots have changed (allow save if no change)
+            and self.slots_hash != temp_slots_hash
+            # self used by more than one RoomHeatingDayPlan
+            and self.day_plans.count() > 1
+        ):
+            raise ValidationError(
+                "Modification not possible: pattern used by multiple RoomHeatingDayPlan"
+            )
+
         # Check for duplicates
         if (
-            HeatingPattern.objects.filter(slots_hash=self.calculate_hash())
+            HeatingPattern.objects.filter(slots_hash=temp_slots_hash)
             .exclude(pk=self.pk)
             .exists()
         ):

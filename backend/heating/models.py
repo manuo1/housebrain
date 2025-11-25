@@ -50,7 +50,19 @@ class HeatingPattern(models.Model):
         verbose_name_plural = "Patterns de chauffage"
 
     def __str__(self):
-        return f"Pattern {self.id} ({len(self.slots)} créneaux)"
+        if not self.slots:
+            return f"Pattern {self.id} (vide)"
+
+        max_displayed_slots = 4
+        parts = []
+        for slot in self.slots[:max_displayed_slots]:
+            parts.append(f"[{slot['start']}-{slot['end']} {slot['value']}]")
+
+        result = " ".join(parts)
+        if len(self.slots) > max_displayed_slots:
+            result += f" +{len(self.slots) - max_displayed_slots}"
+
+        return f"Pattern {self.id}: {result}"
 
     def clean(self):
         """Validate slots format and check for overlaps"""

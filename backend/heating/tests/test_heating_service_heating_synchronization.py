@@ -4,9 +4,9 @@ from actuators.models import Radiator
 from actuators.tests.factories import RadiatorFactory
 from django.core.cache import cache
 from heating.services.heating_synchronization import (
-    get_radiators_to_update_for_on_off_heating_control,
+    get_radiators_to_update,
     split_radiators_by_available_power,
-    synchronize_heating_for_rooms_with_on_off_heating_control,
+    synchronize_room_heating_states_with_radiators,
     turn_on_radiators_according_to_the_available_power,
 )
 from heating.utils.cache_radiators import get_radiators_to_turn_on_in_cache
@@ -66,8 +66,8 @@ ROOMS_DATA = [
 ]
 
 
-def test_get_radiators_to_update_for_on_off_heating_control():
-    radiators = get_radiators_to_update_for_on_off_heating_control(ROOMS_DATA)
+def test_get_radiators_to_update():
+    radiators = get_radiators_to_update(ROOMS_DATA)
 
     assert radiators == {
         "to_turn_on": [
@@ -82,7 +82,7 @@ def test_get_radiators_to_update_for_on_off_heating_control():
 
 
 @pytest.mark.django_db
-def test_synchronize_heating_for_rooms_with_on_off_heating_control():
+def test_synchronize_room_heating_states_with_radiators():
     cache.clear
     radiator_to_turn_off = RadiatorFactory(
         id=1,
@@ -107,7 +107,7 @@ def test_synchronize_heating_for_rooms_with_on_off_heating_control():
         radiator=radiator_to_turn_on,
         requested_heating_state=Room.RequestedHeatingState.ON,
     )
-    synchronize_heating_for_rooms_with_on_off_heating_control()
+    synchronize_room_heating_states_with_radiators()
     radiator_to_turn_off.refresh_from_db()
     radiator_to_turn_on.refresh_from_db()
     # radiator to turn-off are immediately turn-off

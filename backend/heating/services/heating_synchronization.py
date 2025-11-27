@@ -12,13 +12,13 @@ from heating.utils.cache_radiators import (
     set_radiators_to_turn_on_in_cache,
 )
 from rooms.models import Room
-from rooms.selectors.heating import get_rooms_with_on_off_heating_control_data
+from rooms.selectors.heating import get_rooms_heating_state_data
 from teleinfo.utils.cache_teleinfo_data import get_instant_available_power
 
 logger = logging.getLogger("django")
 
 
-def get_radiators_to_update_for_on_off_heating_control(rooms_data: list[dict]) -> list:
+def get_radiators_to_update(rooms_data: list[dict]) -> list:
     radiators = {"to_turn_on": [], "ids_to_turn_off": []}
     for room in rooms_data:
         radiator_state = room["radiator__requested_state"]
@@ -74,9 +74,9 @@ def turn_on_radiators_according_to_the_available_power():
     apply_load_shedding_to_radiators([radiator["id"] for radiator in cannot_turn_on])
 
 
-def synchronize_heating_for_rooms_with_on_off_heating_control():
-    rooms_data = get_rooms_with_on_off_heating_control_data()
-    radiators = get_radiators_to_update_for_on_off_heating_control(rooms_data)
+def synchronize_room_heating_states_with_radiators():
+    rooms_data = get_rooms_heating_state_data()
+    radiators = get_radiators_to_update(rooms_data)
     # Immediately turn off radiators that need to be turned off
     set_radiators_requested_state_to_off(radiators["ids_to_turn_off"])
     # Store the list of radiators to be turned on in the cache

@@ -33,6 +33,7 @@ sudo systemctl stop nginx
 sudo systemctl stop gunicorn
 sudo systemctl stop teleinfo-listener.service
 sudo systemctl stop bluetooth-listener.service
+sudo systemctl stop housebrain-periodic.timer
 
 # Mise à jour du dépôt
 print_step "Mise à jour du code source depuis Git..."

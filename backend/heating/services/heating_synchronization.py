@@ -7,12 +7,19 @@ from actuators.mutators.radiators import (
     set_radiators_requested_state_to_off,
     set_radiators_requested_state_to_on,
 )
-from heating.mappers import radiator_state_matches_room_state
+from django.utils import timezone
+from heating.mappers import (
+    heating_pattern_slot_value_to_room_requested_heating_state,
+    radiator_state_matches_room_state,
+)
+from heating.models import HeatingPattern
+from heating.selectors.heating import get_rooms_heating_plans_data
 from heating.utils.cache_heating import (
     get_radiators_to_turn_on_in_cache,
     set_radiators_to_turn_on_in_cache,
 )
 from rooms.models import Room
+from rooms.mutators.rooms import update_room_heating_fields
 from rooms.selectors.heating import get_rooms_heating_state_data
 from teleinfo.utils.cache_teleinfo_data import get_instant_available_power
 
@@ -106,3 +113,46 @@ def get_slot_data(slots: list, searched_time: time) -> tuple:
                 continue
 
     return None, None
+
+
+def synchronize_room_requested_heating_states_with_room_heating_day_plan():
+    now = timezone.localtime(timezone.now())
+    rooms_heating_plans = get_rooms_heating_plans_data(now.date())
+    # if a room don't have day plan for this day
+    # nothing will change on this room
+    for room_plan in rooms_heating_plans:
+        heating_control_mode = Room.HeatingControlMode.ONOFF
+        temperature_setpoint = None
+        requested_heating_state = Room.RequestedHeatingState.OFF
+        setpoint_type, setpoint_value = get_slot_data(
+            room_plan["heating_pattern__slots"], now.time()
+        )
+
+        match setpoint_type:
+            case HeatingPattern.SlotType.TEMPERATURE:
+                heating_control_mode = Room.HeatingControlMode.THERMOSTAT
+                # TODO implement thermostat control
+                # get temp from cache with sensor mac_address
+                # get requested_heating_state to keep temperature
+
+            case HeatingPattern.SlotType.ONOFF:
+                temperature_setpoint = None
+                requested_heating_state = (
+                    heating_pattern_slot_value_to_room_requested_heating_state(
+                        setpoint_value
+                    )
+                )
+
+        if any(
+            {
+                room_plan["room__heating_control_mode"] != heating_control_mode,
+                room_plan["room__temperature_setpoint"] != temperature_setpoint,
+                room_plan["room__requested_heating_state"] != requested_heating_state,
+            }
+        ):
+            update_room_heating_fields(
+                room_plan["room_id"],
+                heating_control_mode,
+                temperature_setpoint,
+                requested_heating_state,
+            )

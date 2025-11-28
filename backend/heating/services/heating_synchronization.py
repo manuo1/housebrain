@@ -7,7 +7,7 @@ from actuators.mutators.radiators import (
     set_radiators_requested_state_to_on,
 )
 from heating.mappers import radiator_state_matches_room_state
-from heating.utils.cache_radiators import (
+from heating.utils.cache_heating import (
     get_radiators_to_turn_on_in_cache,
     set_radiators_to_turn_on_in_cache,
 )

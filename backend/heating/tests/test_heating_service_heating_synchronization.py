@@ -1,3 +1,5 @@
+from datetime import time
+
 import pytest
 from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
@@ -5,6 +7,7 @@ from actuators.tests.factories import RadiatorFactory
 from django.core.cache import cache
 from heating.services.heating_synchronization import (
     get_radiators_to_update,
+    get_slot_data,
     split_radiators_by_available_power,
     synchronize_room_heating_states_with_radiators,
     turn_on_radiators_according_to_the_available_power,
@@ -182,3 +185,77 @@ def test_turn_on_radiators_according_to_the_available_power(monkeypatch):
     assert radiator_1.requested_state == Radiator.RequestedState.ON
     assert radiator_2.requested_state == Radiator.RequestedState.ON
     assert radiator_3.requested_state == Radiator.RequestedState.LOAD_SHED
+
+
+TEMPERATURE_SLOTS = [
+    {"start": "00:00", "end": "01:00", "type": "temp", "value": 1.0},
+    {"start": "07:00", "end": "08:00", "type": "temp", "value": 2.0},
+    {"start": "23:00", "end": "23:59", "type": "temp", "value": 3.0},
+]
+ONOFF_SLOTS = [
+    {"start": "00:00", "end": "01:00", "type": "onoff", "value": "on"},
+    {"start": "07:00", "end": "08:00", "type": "onoff", "value": "off"},
+    {"start": "23:00", "end": "23:59", "type": "onoff", "value": "on"},
+]
+
+
+@pytest.mark.parametrize(
+    "slots, searched_time, expected",
+    [
+        (TEMPERATURE_SLOTS, time(0, 0), ("temp", 1.0)),
+        (TEMPERATURE_SLOTS, time(7, 2), ("temp", 2.0)),
+        (TEMPERATURE_SLOTS, time(23, 59), ("temp", 3.0)),
+        (ONOFF_SLOTS, time(0, 0), ("onoff", "on")),
+        (ONOFF_SLOTS, time(7, 2), ("onoff", "off")),
+        (ONOFF_SLOTS, time(23, 59), ("onoff", "on")),
+        # No Slot for this time
+        (TEMPERATURE_SLOTS, time(2, 0), (None, None)),
+        (ONOFF_SLOTS, time(2, 0), (None, None)),
+        # Missing field
+        (
+            [{"end": "01:00", "type": "onoff", "value": "on"}],
+            time(2, 0),
+            (None, None),
+        ),
+        (
+            [{"start": "00:00", "type": "onoff", "value": "on"}],
+            time(2, 0),
+            (None, None),
+        ),
+        (
+            [{"start": "00:00", "end": "01:00", "value": "on"}],
+            time(2, 0),
+            (None, None),
+        ),
+        (
+            [{"start": "00:00", "end": "01:00", "type": "onoff"}],
+            time(2, 0),
+            (None, None),
+        ),
+        # searched_time or slots Not valid
+        ({"start": "00:00", "end": "01:00", "type": "onoff"}, time(2, 0), (None, None)),
+        (ONOFF_SLOTS, "02:00", (None, None)),
+        # None
+        (None, time(2, 0), (None, None)),
+        (ONOFF_SLOTS, None, (None, None)),
+        # Strange cases
+        (
+            [
+                [],
+                {"start": "00:00", "end": "01:00", "type": "onoff", "value": "on"},
+            ],
+            time(2, 0),
+            (None, None),
+        ),
+        (
+            [
+                None,
+                {"start": "00:00", "end": "01:00", "type": "onoff", "value": "on"},
+            ],
+            time(2, 0),
+            (None, None),
+        ),
+    ],
+)
+def test_get_slot_data(slots, searched_time, expected):
+    assert get_slot_data(slots, searched_time) == expected

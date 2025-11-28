@@ -1,4 +1,5 @@
 import logging
+from datetime import time
 
 from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.mutators.radiators import (
@@ -83,3 +84,25 @@ def synchronize_room_heating_states_with_radiators():
     # to delegate their activation to the teleinfo listener
     # who has the better understanding of the available power
     set_radiators_to_turn_on_in_cache(radiators["to_turn_on"])
+
+
+def get_slot_data(slots: list, searched_time: time) -> tuple:
+    if not isinstance(slots, list) or not isinstance(searched_time, time):
+        return None, None
+
+    for slot in slots:
+        try:
+            start_h, start_m = map(int, slot["start"].split(":"))
+            end_h, end_m = map(int, slot["end"].split(":"))
+            start_t = time(start_h, start_m)
+            end_t = time(end_h, end_m)
+        except (ValueError, KeyError, TypeError):
+            continue
+
+        if start_t <= searched_time <= end_t:
+            try:
+                return slot["type"], slot["value"]
+            except (ValueError, KeyError):
+                continue
+
+    return None, None

@@ -1,6 +1,9 @@
 import pytest
 from actuators.models import Radiator
-from heating.mappers import radiator_state_matches_room_state
+from heating.mappers import (
+    heating_pattern_slot_value_to_room_requested_heating_state,
+    radiator_state_matches_room_state,
+)
 from rooms.models import Room
 
 
@@ -31,4 +34,26 @@ from rooms.models import Room
 def test_radiator_state_matches_room_state(room_state, radiator_state, expected_match):
     assert (
         radiator_state_matches_room_state(room_state, radiator_state) == expected_match
+    )
+
+
+@pytest.mark.parametrize(
+    "heating_pattern_slot_value, room_requested_heating_state",
+    [
+        ("on", Room.RequestedHeatingState.ON),
+        ("off", Room.RequestedHeatingState.OFF),
+        ("not_on_or_off", Room.RequestedHeatingState.UNKNOWN),
+        (None, Room.RequestedHeatingState.UNKNOWN),
+        ([], Room.RequestedHeatingState.UNKNOWN),
+        ({}, Room.RequestedHeatingState.UNKNOWN),
+    ],
+)
+def test_heating_pattern_slot_value_to_room_requested_heating_state(
+    heating_pattern_slot_value, room_requested_heating_state
+):
+    assert (
+        heating_pattern_slot_value_to_room_requested_heating_state(
+            heating_pattern_slot_value
+        )
+        == room_requested_heating_state
     )

@@ -9,7 +9,7 @@ from heating.services.heating_synchronization import (
     synchronize_room_heating_states_with_radiators,
     turn_on_radiators_according_to_the_available_power,
 )
-from heating.utils.cache_radiators import get_radiators_to_turn_on_in_cache
+from heating.utils.cache_heating import get_radiators_to_turn_on_in_cache
 from rooms.models import Room
 from rooms.tests.factories import RoomFactory
 

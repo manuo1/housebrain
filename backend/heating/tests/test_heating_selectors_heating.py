@@ -57,7 +57,6 @@ def test_get_rooms_heating_plans_data_select():
         ),
         room=RoomFactory(id=5, radiator=None),
     )
-    print(get_rooms_heating_plans_data(DATE))
 
     assert get_rooms_heating_plans_data(DATE) == [
         {

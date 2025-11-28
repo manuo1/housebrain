@@ -83,7 +83,6 @@ def test_get_radiators_data_for_load_shedding_sort():
     RadiatorFactory(power=200, importance=2, actual_state=Radiator.ActualState.ON)
     RadiatorFactory(power=100, importance=3, actual_state=Radiator.ActualState.ON)
     result = get_radiators_data_for_load_shedding()
-    print(result)
     assert result == [
         # moins important en premier
         {"id": 4, "power": 100, "importance": 3},

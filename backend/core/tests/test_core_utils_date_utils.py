@@ -18,7 +18,7 @@ from freezegun import freeze_time
         (timedelta(minutes=1, seconds=1), False),  # plus d'une minute
     ],
 )
-@freeze_time("2025-10-15 12:00:00")
+@freeze_time("2025-10-15 12:00:00+01:00")
 def test_is_delta_within_one_minute_param(delta, expected):
     now = datetime.now()
     other_dt = now - delta
@@ -34,7 +34,7 @@ def test_is_delta_within_one_minute_param(delta, expected):
         (timedelta(minutes=2, seconds=1), False),  # plus d'une minute
     ],
 )
-@freeze_time("2025-10-15 12:00:00")
+@freeze_time("2025-10-15 12:00:00+01:00")
 def test_is_delta_within_two_minute_param(delta, expected):
     now = datetime.now()
     other_dt = now - delta
@@ -78,7 +78,7 @@ def test_parse_iso_datetime(dt_str, expected):
         (timedelta(minutes=1), False),
     ],
 )
-@freeze_time("2025-10-15 12:00:00")
+@freeze_time("2025-10-15 12:00:00+01:00")
 def test_is_delta_within_five_seconds(delta, expected):
     now = datetime.now()
     other_dt = now - delta

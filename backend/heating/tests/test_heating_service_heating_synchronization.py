@@ -269,7 +269,7 @@ def test_get_slot_data(slots, searched_time, expected):
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_onoff_pattern_during_on_slot():
     """Test that room state is set to ON during an 'on' slot"""
     pattern = HeatingPatternOnOffFactory(
@@ -291,7 +291,7 @@ def test_sync_onoff_pattern_during_on_slot():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_onoff_pattern_during_off_slot():
     """Test that room state is set to OFF during an 'off' slot"""
     pattern = HeatingPatternOnOffFactory(
@@ -313,7 +313,7 @@ def test_sync_onoff_pattern_during_off_slot():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 10:00:00")
+@freeze_time("2025-01-15 10:00:00+01:00")
 def test_sync_onoff_pattern_outside_slots():
     """Test that room state is set to OFF when outside any slot"""
     pattern = HeatingPatternOnOffFactory(
@@ -335,7 +335,7 @@ def test_sync_onoff_pattern_outside_slots():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_temp_pattern_sets_thermostat_mode():
     """Test that temperature pattern sets thermostat mode"""
     pattern = HeatingPatternFactory(
@@ -356,7 +356,7 @@ def test_sync_temp_pattern_sets_thermostat_mode():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_only_updates_changed_fields():
     """Test that sync only updates when fields have changed"""
     pattern = HeatingPatternOnOffFactory(
@@ -384,7 +384,7 @@ def test_sync_only_updates_changed_fields():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_ignores_rooms_without_radiator():
     """Test that sync ignores rooms without radiator"""
     pattern = HeatingPatternOnOffFactory(
@@ -405,7 +405,7 @@ def test_sync_ignores_rooms_without_radiator():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_no_plan_for_date():
     """Test that sync handles no plan for current date"""
     room = RoomFactory(radiator=RadiatorFactory())
@@ -419,7 +419,7 @@ def test_sync_no_plan_for_date():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_multiple_rooms():
     """Test that sync handles multiple rooms correctly"""
     pattern_on = HeatingPatternOnOffFactory(
@@ -511,7 +511,7 @@ def test_get_slot_data_handles_none_inputs():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 07:00:00")
+@freeze_time("2025-01-15 07:00:00+01:00")
 def test_sync_at_exact_slot_start_time():
     """Test that sync works at exact start time of slot"""
     pattern = HeatingPatternOnOffFactory(
@@ -531,7 +531,7 @@ def test_sync_at_exact_slot_start_time():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 09:00:00")
+@freeze_time("2025-01-15 09:00:00+01:00")
 def test_sync_at_exact_slot_end_time():
     """Test that sync works at exact end time of slot"""
     pattern = HeatingPatternOnOffFactory(
@@ -539,7 +539,10 @@ def test_sync_at_exact_slot_end_time():
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
     )
-    room = RoomFactory(radiator=RadiatorFactory())
+    room = RoomFactory(
+        radiator=RadiatorFactory(),
+        requested_heating_state=Room.RequestedHeatingState.OFF,
+    )
     RoomHeatingDayPlanFactory(
         room=room, date=date(2025, 1, 15), heating_pattern=pattern
     )
@@ -551,7 +554,7 @@ def test_sync_at_exact_slot_end_time():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 13:00:00")
+@freeze_time("2025-01-15 13:00:00+01:00")
 def test_sync_finds_correct_slot_among_multiple():
     """Test that sync finds the correct slot when multiple slots exist"""
     pattern = HeatingPatternOnOffFactory(
@@ -574,7 +577,7 @@ def test_sync_finds_correct_slot_among_multiple():
 
 
 @pytest.mark.django_db
-@freeze_time("2025-01-15 08:00:00")
+@freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_room_with_radiator_but_no_plan_today():
     """Test that room with radiator but no plan for today is not updated"""
     room = RoomFactory(

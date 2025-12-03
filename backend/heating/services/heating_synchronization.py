@@ -116,12 +116,28 @@ def get_slot_data(slots: list, searched_time: time) -> tuple:
     return None, None
 
 
+def room_plan_keys_are_valides(room_plan: dict) -> bool:
+    if not isinstance(room_plan, dict):
+        return False
+    required_fields = {
+        "room_id",
+        "heating_pattern__slots",
+        "room__temperature_sensor__mac_address",
+        "room__heating_control_mode",
+        "room__temperature_setpoint",
+        "room__requested_heating_state",
+    }
+    return required_fields.issubset(room_plan.keys())
+
+
 def synchronize_room_requested_heating_states_with_room_heating_day_plan():
     now = timezone.localtime(timezone.now())
     rooms_heating_plans = get_rooms_heating_plans_data(now.date())
     # if a room don't have day plan for this day
     # nothing will change on this room
     for room_plan in rooms_heating_plans:
+        if not room_plan_keys_are_valides(room_plan):
+            continue
         heating_control_mode = Room.HeatingControlMode.ONOFF
         temperature_setpoint = None
         requested_heating_state = Room.RequestedHeatingState.OFF

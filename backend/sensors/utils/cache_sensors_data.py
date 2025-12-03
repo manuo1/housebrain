@@ -7,3 +7,9 @@ def get_sensors_data_in_cache():
     if environment_is_development():
         return MOCKED_SENSORS_DATA
     return cache.get("sensors_data", {})
+
+
+def get_sensor_data_in_cache(mac_address: str) -> object | None:
+    if not isinstance(mac_address, str):
+        return
+    return get_sensors_data_in_cache().get(mac_address)

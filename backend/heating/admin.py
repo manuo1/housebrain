@@ -55,8 +55,8 @@ class DuplicateToDateActionForm(ActionForm):
 
 @admin.register(RoomHeatingDayPlan)
 class RoomHeatingDayPlanAdmin(admin.ModelAdmin):
-    list_display = ["id", "room", "date", "heating_pattern", "created_at"]
-    list_filter = ["date", "room"]
+    list_display = ["id", "room", "date", "heating_pattern"]
+    list_filter = ["date", "room", "heating_pattern"]
     search_fields = ["room__name"]
     date_hierarchy = "date"
     autocomplete_fields = ["room", "heating_pattern"]
@@ -64,6 +64,8 @@ class RoomHeatingDayPlanAdmin(admin.ModelAdmin):
     actions = ["duplicate_to_date"]
 
     action_form = DuplicateToDateActionForm
+
+    ordering = ["-date"]
 
     def get_queryset(self, request):
         """Optimize queries with select_related"""

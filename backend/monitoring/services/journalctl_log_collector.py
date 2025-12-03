@@ -64,8 +64,10 @@ IMPORTANT_KEYWORDS = {
     *[label.value.lower() for label in LoggerLabel],
 }
 
+# Important: use lowercase
 NOT_IMPORTANT_KEYWORDS = {
     ".service: consumed",
+    "available power is too low",
 }
 
 

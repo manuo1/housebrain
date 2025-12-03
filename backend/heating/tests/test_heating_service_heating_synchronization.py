@@ -13,7 +13,6 @@ from heating.services.heating_synchronization import (
     synchronize_room_heating_states_with_radiators,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
     turn_on_radiators_according_to_the_available_power,
-    validate_temperature_setpoint,
 )
 from heating.tests.factories import (
     HeatingPatternFactory,
@@ -629,22 +628,3 @@ def test_get_slot_data_at_slot_boundaries():
     slot_type, slot_value = get_slot_data(slots, time(9, 1))
     assert slot_type is None
     assert slot_value is None
-
-
-@pytest.mark.parametrize(
-    "setpoint, expected",
-    [
-        (1, 1.0),
-        (1.1, 1.1),
-        ("1", 1.0),
-        ("1.1", 1.1),
-        ("on", None),
-        ("off", None),
-        ([], None),
-        ({}, None),
-        (None, None),
-        (False, None),
-    ],
-)
-def test_validate_temperature_setpoint(setpoint, expected):
-    assert validate_temperature_setpoint(setpoint) == expected

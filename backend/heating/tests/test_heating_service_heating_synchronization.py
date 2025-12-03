@@ -9,6 +9,7 @@ from freezegun import freeze_time
 from heating.services.heating_synchronization import (
     get_radiators_to_update,
     get_slot_data,
+    room_plan_keys_are_valides,
     split_radiators_by_available_power,
     synchronize_room_heating_states_with_radiators,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
@@ -628,3 +629,38 @@ def test_get_slot_data_at_slot_boundaries():
     slot_type, slot_value = get_slot_data(slots, time(9, 1))
     assert slot_type is None
     assert slot_value is None
+
+
+CORRECT_ROOM_PLAN = {
+    "room_id": "",
+    "heating_pattern__slots": "",
+    "room__temperature_sensor__mac_address": "",
+    "room__heating_control_mode": "",
+    "room__temperature_setpoint": "",
+    "room__requested_heating_state": "",
+}
+
+
+@pytest.mark.parametrize(
+    "room_plan, expected",
+    [
+        (CORRECT_ROOM_PLAN, True),
+        (CORRECT_ROOM_PLAN | {"extra_field": "value"}, True),
+        (
+            {
+                "room_id": "",
+                "heating_pattern__slots": "",
+                "room__temperature_sensor__mac_address": "",
+                "room__heating_control_mode": "",
+                "room__temperature_setpoint": "",
+            },
+            False,
+        ),
+        ({}, False),
+        ([], False),
+        (None, False),
+        (False, False),
+    ],
+)
+def test_room_plan_keys_are_valides(room_plan, expected):
+    assert room_plan_keys_are_valides(room_plan) == expected

@@ -7,6 +7,7 @@ from actuators.mutators.radiators import (
     set_radiators_requested_state_to_off,
     set_radiators_requested_state_to_on,
 )
+from core.utils.temperatures import validate_temperature_value
 from django.utils import timezone
 from heating.mappers import (
     heating_pattern_slot_value_to_room_requested_heating_state,
@@ -115,15 +116,6 @@ def get_slot_data(slots: list, searched_time: time) -> tuple:
     return None, None
 
 
-def validate_temperature_setpoint(setpoint_value: object) -> float | None:
-    if isinstance(setpoint_value, bool):
-        return
-    try:
-        return float(setpoint_value)
-    except (ValueError, TypeError):
-        return
-
-
 def synchronize_room_requested_heating_states_with_room_heating_day_plan():
     now = timezone.localtime(timezone.now())
     rooms_heating_plans = get_rooms_heating_plans_data(now.date())
@@ -140,7 +132,7 @@ def synchronize_room_requested_heating_states_with_room_heating_day_plan():
         match setpoint_type:
             case HeatingPattern.SlotType.TEMPERATURE:
                 heating_control_mode = Room.HeatingControlMode.THERMOSTAT
-                temperature_setpoint = validate_temperature_setpoint(setpoint_value)
+                temperature_setpoint = validate_temperature_value(setpoint_value)
                 # TODO implement thermostat control
                 # get temp from cache with sensor mac_address
                 # get requested_heating_state to keep temperature

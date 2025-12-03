@@ -1,10 +1,7 @@
 from core.utils.date_utils import is_delta_within_two_minute, parse_iso_datetime
+from core.utils.temperatures import calculate_temperature_trend
 from django.utils import timezone
-from rooms.api.utils import (
-    calculate_radiator_state,
-    calculate_temperature_trend,
-    get_mac_short,
-)
+from rooms.api.utils import calculate_radiator_state, get_mac_short
 from rooms.models import Room
 from sensors.services.rssi import rssi_to_signal_strength
 

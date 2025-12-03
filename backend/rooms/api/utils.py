@@ -1,5 +1,5 @@
 from actuators.models import Radiator
-from rooms.api.constants import ApiRadiatorState, TemperatureTrend
+from rooms.api.constants import ApiRadiatorState
 
 
 def get_mac_short(mac_address: str | None) -> str | None:
@@ -10,25 +10,6 @@ def get_mac_short(mac_address: str | None) -> str | None:
     if isinstance(mac_address, str):
         return mac_address[-8:]
     return None
-
-
-def calculate_temperature_trend(
-    current_temp: float | None, previous_temp: float | None, threshold=0.1
-) -> str | None:
-    """
-    Calculate the temperature trend between two measurements.
-    """
-    try:
-        diff = current_temp - previous_temp
-
-        if diff > threshold:
-            return TemperatureTrend.UP
-        elif diff < -threshold:
-            return TemperatureTrend.DOWN
-        else:
-            return TemperatureTrend.SAME
-    except (TypeError, ValueError):
-        return None
 
 
 def calculate_radiator_state(

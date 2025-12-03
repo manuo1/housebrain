@@ -1,7 +1,8 @@
 import pytest
 from actuators.models import Radiator
+from core.utils.temperatures import TemperatureTrend
 from freezegun import freeze_time
-from rooms.api.constants import ApiRadiatorState, TemperatureTrend
+from rooms.api.constants import ApiRadiatorState
 from rooms.api.services import (
     _transform_heating,
     _transform_radiator,

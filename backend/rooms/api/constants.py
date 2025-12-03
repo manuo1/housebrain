@@ -8,9 +8,3 @@ class ApiRadiatorState(StrEnum):
     SHUTTING_DOWN = "shutting_down"
     LOAD_SHED = "load_shed"
     UNDEFINED = "undefined"
-
-
-class TemperatureTrend(StrEnum):
-    UP = "up"
-    DOWN = "down"
-    SAME = "same"

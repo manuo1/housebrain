@@ -115,6 +115,15 @@ def get_slot_data(slots: list, searched_time: time) -> tuple:
     return None, None
 
 
+def validate_temperature_setpoint(setpoint_value: object) -> float | None:
+    if isinstance(setpoint_value, bool):
+        return
+    try:
+        return float(setpoint_value)
+    except (ValueError, TypeError):
+        return
+
+
 def synchronize_room_requested_heating_states_with_room_heating_day_plan():
     now = timezone.localtime(timezone.now())
     rooms_heating_plans = get_rooms_heating_plans_data(now.date())
@@ -131,6 +140,7 @@ def synchronize_room_requested_heating_states_with_room_heating_day_plan():
         match setpoint_type:
             case HeatingPattern.SlotType.TEMPERATURE:
                 heating_control_mode = Room.HeatingControlMode.THERMOSTAT
+                temperature_setpoint = validate_temperature_setpoint(setpoint_value)
                 # TODO implement thermostat control
                 # get temp from cache with sensor mac_address
                 # get requested_heating_state to keep temperature

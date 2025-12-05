@@ -31,21 +31,15 @@ def test_get_sensor_temperatures_real_case():
             return_value=sensor_data_in_cache,
         ),
     ):
-        assert get_sensor_temperatures("38:1F:8D:65:E9:1C") == {
-            "current": 20.69,
-            "previous": 20.68,
-        }
-
-
-DEFAULT_SENSOR_TEMPERATURES = {"current": None, "previous": None}
+        assert get_sensor_temperatures("38:1F:8D:65:E9:1C") == (20.69, 20.68)
 
 
 @pytest.mark.parametrize(
     "sensor_data_in_cache, excepted",
     [
-        ([], DEFAULT_SENSOR_TEMPERATURES),
-        ("a", DEFAULT_SENSOR_TEMPERATURES),
-        ({}, DEFAULT_SENSOR_TEMPERATURES),
+        ([], (None, None)),
+        ("a", (None, None)),
+        ({}, (None, None)),
         # measurements missing
         (
             {
@@ -54,7 +48,7 @@ DEFAULT_SENSOR_TEMPERATURES = {"current": None, "previous": None}
                     "dt": "2025-10-15T12:58:30Z",
                 },
             },
-            {"current": None, "previous": 2.0},
+            (None, 2),
         ),
         # previous_measurements missing
         (
@@ -64,7 +58,7 @@ DEFAULT_SENSOR_TEMPERATURES = {"current": None, "previous": None}
                     "dt": "2025-10-15T12:59:30Z",
                 },
             },
-            {"current": 1, "previous": None},
+            (1, None),
         ),
         # missing dt field
         (
@@ -77,7 +71,7 @@ DEFAULT_SENSOR_TEMPERATURES = {"current": None, "previous": None}
                     "temperature": 1,
                 },
             },
-            {"current": 1, "previous": None},
+            (1, None),
         ),
         # missing temperature field
         (
@@ -90,7 +84,7 @@ DEFAULT_SENSOR_TEMPERATURES = {"current": None, "previous": None}
                     "dt": "2025-10-15T12:58:30Z",
                 },
             },
-            {"current": 1, "previous": None},
+            (1, None),
         ),
         # Outdated dt
         (
@@ -106,7 +100,7 @@ DEFAULT_SENSOR_TEMPERATURES = {"current": None, "previous": None}
                     },
                 },
             },
-            {"current": 1, "previous": None},
+            (1, None),
         ),
     ],
 )

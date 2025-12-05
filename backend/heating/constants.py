@@ -1,0 +1,1 @@
+HYSTERESIS = 0.5

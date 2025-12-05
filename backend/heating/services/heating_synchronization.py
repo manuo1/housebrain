@@ -15,6 +15,7 @@ from heating.mappers import (
 )
 from heating.models import HeatingPattern
 from heating.selectors.heating import get_rooms_heating_plans_data
+from heating.services.thermostat import get_requested_heating_state_based_on_temperature
 from heating.utils.cache_heating import (
     get_radiators_to_turn_on_in_cache,
     set_radiators_to_turn_on_in_cache,
@@ -149,9 +150,12 @@ def synchronize_room_requested_heating_states_with_room_heating_day_plan():
             case HeatingPattern.SlotType.TEMPERATURE:
                 heating_control_mode = Room.HeatingControlMode.THERMOSTAT
                 temperature_setpoint = validate_temperature_value(setpoint_value)
-                # TODO implement thermostat control
-                # get temp from cache with sensor mac_address
-                # get requested_heating_state to keep temperature
+                requested_heating_state = (
+                    get_requested_heating_state_based_on_temperature(
+                        temperature_setpoint,
+                        room_plan["room__temperature_sensor__mac_address"],
+                    )
+                ) or room_plan["room__requested_heating_state"]
 
             case HeatingPattern.SlotType.ONOFF:
                 temperature_setpoint = None

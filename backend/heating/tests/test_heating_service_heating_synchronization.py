@@ -353,7 +353,6 @@ def test_sync_temp_pattern_sets_thermostat_mode():
 
     room.refresh_from_db()
     assert room.heating_control_mode == Room.HeatingControlMode.THERMOSTAT
-    # Temperature setpoint logic not yet implemented (TODO in code)
 
 
 @pytest.mark.django_db

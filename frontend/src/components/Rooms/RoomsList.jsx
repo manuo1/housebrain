@@ -10,8 +10,8 @@ export default function RoomsList() {
 
   useEffect(() => {
     loadRooms();
-    // Polling toutes les 30s
-    const interval = setInterval(loadRooms, 30000);
+    // Polling toutes les 10s
+    const interval = setInterval(loadRooms, 10000);
     return () => clearInterval(interval);
   }, []);
 

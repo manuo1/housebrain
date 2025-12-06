@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
 from django.db import IntegrityError
+from django.utils import formats
 from django.utils.html import format_html
 from heating.models import HeatingPattern, RoomHeatingDayPlan
 
@@ -55,7 +56,7 @@ class DuplicateToDateActionForm(ActionForm):
 
 @admin.register(RoomHeatingDayPlan)
 class RoomHeatingDayPlanAdmin(admin.ModelAdmin):
-    list_display = ["id", "room", "date", "heating_pattern"]
+    list_display = ["id", "room", "weekday", "date", "heating_pattern"]
     list_filter = ["date", "room", "heating_pattern"]
     search_fields = ["room__name"]
     date_hierarchy = "date"
@@ -66,6 +67,11 @@ class RoomHeatingDayPlanAdmin(admin.ModelAdmin):
     action_form = DuplicateToDateActionForm
 
     ordering = ["-date"]
+
+    def weekday(self, obj):
+        return formats.date_format(obj.date, "l")
+
+    weekday.short_description = "Jour"
 
     def get_queryset(self, request):
         """Optimize queries with select_related"""

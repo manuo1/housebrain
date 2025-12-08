@@ -1,0 +1,114 @@
+// frontend/src/pages/HeatingSchedulePage.module.scss
+
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
+.heatingSchedulePage {
+  display: flex;
+  gap: $gap-lg;
+  height: calc(100vh - $navbar-height - ($spacing-2xl * 2));
+  overflow: hidden;
+
+  @include respond-to('lg') {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+// ============================================
+// SIDEBAR GAUCHE
+// ============================================
+
+.sidebar {
+  width: 240px;
+  background: $gradient-bg;
+  border-right: 1px solid $border-medium;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-base;
+  @include flex-column;
+  overflow: hidden;
+
+  @include respond-to('lg') {
+    width: 100%;
+    max-height: 400px;
+  }
+
+  .calendarSection {
+    padding: $spacing-base;
+    border-bottom: 1px solid $border-dark;
+  }
+
+  .roomsSection {
+    padding: $spacing-base;
+    overflow-y: auto;
+    flex: 1;
+    @include custom-scrollbar;
+  }
+}
+
+// ============================================
+// MAIN CONTENT
+// ============================================
+
+.mainContent {
+  flex: 1;
+  @include flex-column;
+  gap: $gap-lg;
+  overflow: hidden;
+
+  .header {
+    @include flex-between;
+    gap: $gap-base;
+
+    h2 {
+      margin: 0;
+      font-size: $font-size-3xl;
+      color: $text-secondary;
+      font-weight: $font-weight-semibold;
+    }
+
+    .actions {
+      display: flex;
+      gap: $gap-md;
+    }
+
+    .btnSecondary {
+      @include button-base;
+    }
+
+    .btnPrimary {
+      @include button-primary;
+    }
+  }
+
+  .timeline {
+    flex: 1;
+    background: $gradient-card;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-lg;
+    border: 1px solid $border-medium;
+    padding: $spacing-xl;
+    overflow-y: auto;
+    @include custom-scrollbar;
+  }
+}
+
+// ============================================
+// RIGHT PANEL
+// ============================================
+
+.rightPanel {
+  width: 340px;
+  background: $gradient-bg;
+  border-left: 1px solid $border-medium;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-base;
+  padding: $spacing-xl;
+  overflow-y: auto;
+  @include custom-scrollbar;
+
+  @include respond-to('lg') {
+    width: 100%;
+  }
+}

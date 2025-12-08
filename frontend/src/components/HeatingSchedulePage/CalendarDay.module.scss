@@ -1,0 +1,68 @@
+@use '../../styles/abstracts/variables' as *;
+
+.dayButton {
+  width: 28px;
+  height: 28px;
+  border-radius: $radius-round;
+  border: none;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: $transition-fast;
+  font-weight: $font-weight-normal;
+  font-size: $font-size-xs;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+// ============================================
+// STATES
+// ============================================
+
+.otherMonth {
+  color: $text-dark;
+  opacity: 0.4;
+}
+
+.selected {
+  background: $color-primary !important;
+  color: white !important;
+  font-weight: $font-weight-semibold;
+
+  &:hover {
+    background: $color-primary-dark !important;
+  }
+}
+
+.different {
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #ff6b6b;
+    border-radius: $radius-round;
+  }
+}
+
+.empty {
+  color: $text-dark;
+  opacity: 0.3;
+
+  &:hover {
+    background: transparent !important;
+  }
+}

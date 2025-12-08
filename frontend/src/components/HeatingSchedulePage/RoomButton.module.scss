@@ -1,0 +1,54 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.roomButton {
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  background: $gradient-card;
+  border: 1px solid $border-dark;
+  border-radius: $radius-md;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: $transition-all;
+  box-shadow: $shadow-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-align: left;
+  @include flex-between;
+
+  &:hover {
+    border-color: $color-primary;
+    transform: translateY(-2px);
+    box-shadow: $shadow-primary-hover;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.allButton {
+  font-weight: $font-weight-semibold;
+  background: linear-gradient(145deg, #2a4a7c 0%, #1e3a5f 100%);
+}
+
+.active {
+  background: linear-gradient(145deg, #357abd 0%, #4a9eff 100%);
+  color: white;
+  border-color: $color-primary;
+  box-shadow: $shadow-primary;
+
+  &:hover {
+    box-shadow: $shadow-primary;
+  }
+}
+
+.name {
+  flex: 1;
+}
+
+.checkmark {
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: white;
+}

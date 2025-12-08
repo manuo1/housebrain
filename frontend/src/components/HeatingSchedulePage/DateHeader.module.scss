@@ -1,0 +1,8 @@
+@use '../../styles/abstracts/variables' as *;
+
+.dateHeader {
+  margin: 0;
+  font-size: $font-size-3xl;
+  color: $text-secondary;
+  font-weight: $font-weight-semibold;
+}

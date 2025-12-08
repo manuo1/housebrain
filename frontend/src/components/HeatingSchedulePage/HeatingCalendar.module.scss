@@ -1,0 +1,85 @@
+// frontend/src/components/HeatingSchedulePage/HeatingCalendar.module.scss
+
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.calendar {
+  padding: $spacing-base;
+  border-bottom: 1px solid $border-dark;
+}
+
+.loading {
+  padding: $spacing-lg;
+  text-align: center;
+  color: $text-disabled;
+  font-size: $font-size-sm;
+}
+
+// ============================================
+// HEADER
+// ============================================
+
+.header {
+  @include flex-between;
+  margin-bottom: $spacing-sm;
+  gap: $gap-sm;
+}
+
+.title {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $text-secondary;
+  flex: 1;
+  text-align: center;
+}
+
+.navBtn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: $font-size-lg;
+  cursor: pointer;
+  padding: $spacing-xs;
+  border-radius: $radius-round;
+  transition: $transition-all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: $text-secondary;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// ============================================
+// TABLE
+// ============================================
+
+.calendarTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: $font-size-xs;
+
+  th {
+    color: $text-dark;
+    padding-bottom: $spacing-xs;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    padding: 2px;
+    text-align: center;
+  }
+}

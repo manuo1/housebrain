@@ -2,6 +2,7 @@
 
 .slotBar {
   height: 32px;
+  min-height: 32px;
   background: linear-gradient(145deg, #1a1a1a 0%, #252525 100%);
   border-radius: $radius-md;
   border: 1px solid $border-dark;

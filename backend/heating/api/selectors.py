@@ -27,7 +27,8 @@ def get_daily_heating_plan(day: date) -> list:
     ).values("heating_pattern__slots")[:1]
 
     qs = (
-        Room.objects.annotate(
+        Room.objects.filter(radiator__isnull=False)
+        .annotate(
             room_id=F("id"),
             slots=Coalesce(
                 Subquery(slots_subquery, output_field=JSONField()),

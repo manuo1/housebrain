@@ -10,7 +10,6 @@ export async function fetchJson(url) {
       );
       throw err;
     }
-    console.log(res);
     return await res.json();
   } catch (err) {
     if (err.status === undefined) {

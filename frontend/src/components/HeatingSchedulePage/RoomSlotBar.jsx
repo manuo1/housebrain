@@ -7,7 +7,7 @@ export default function RoomSlotBar({ room }) {
   return (
     <div className={styles.roomSlotBar}>
       <SlotBarLabel roomName={room.name} />
-      <SlotBar slots={room.slots} mode={room.mode} />
+      <SlotBar slots={room.slots} />
     </div>
   );
 }

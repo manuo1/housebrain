@@ -1,31 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import fetchHeatingCalendar from '../services/fetchHeatingCalendar';
 import fetchDailyHeatingPlan from '../services/fetchDailyHeatingPlan';
+import SimpleDate from '../utils/simpleDate';
 import HeatingCalendar from '../components/HeatingSchedulePage/HeatingCalendar';
 import RoomsSelector from '../components/HeatingSchedulePage/RoomsSelector';
 import DateHeader from '../components/HeatingSchedulePage/DateHeader';
-import SimpleDate from '../utils/simpleDate';
+import Timeline from '../components/HeatingSchedulePage/Timeline';
 import styles from './HeatingSchedulePage.module.scss';
 
 export default function HeatingSchedulePage() {
   const [calendar, setCalendar] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null); // ISO string
-  const [selectedDateObj, setSelectedDateObj] = useState(null); // SimpleDate
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDateObj, setSelectedDateObj] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(null);
   const [dailyPlan, setDailyPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedRoomIds, setSelectedRoomIds] = useState([]);
 
-  // Fetch initial calendar (backend provides today and current month)
+  // Fetch initial calendar
   useEffect(() => {
     async function loadInitialData() {
       try {
-        // Fetch calendar without params - backend returns current month by default
-        // Or pass null/0 to indicate "give me current month"
         const data = await fetchHeatingCalendar(null, null);
         setCalendar(data);
 
-        // Set today as selected date
         if (data.today) {
           setSelectedDate(data.today.toISO());
           setSelectedDateObj(data.today);
@@ -126,21 +124,20 @@ export default function HeatingSchedulePage() {
           </div>
         </div>
 
-        <div className={styles.timeline}>
-          {loading ? (
+        {loading ? (
+          <div className={styles.timeline}>
             <p>Chargement...</p>
-          ) : (
-            <>
-              <h3>⏰ Timeline (TODO)</h3>
-              <p>Pièces sélectionnées : {selectedRoomIds.length}</p>
-              {dailyPlan && <pre>{JSON.stringify(dailyPlan, null, 2)}</pre>}
-            </>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Timeline
+            rooms={dailyPlan?.rooms || []}
+            selectedRoomIds={selectedRoomIds}
+          />
+        )}
       </main>
 
       <aside className={styles.rightPanel}>
-        <h3>⚙️ Options de duplication (TODO)</h3>
+        <h3>Options de duplication (TODO)</h3>
         <p>Répéter les jours, date de fin, etc.</p>
       </aside>
     </div>

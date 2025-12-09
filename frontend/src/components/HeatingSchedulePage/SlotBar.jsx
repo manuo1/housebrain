@@ -28,7 +28,14 @@ export default function SlotBar({ slots }) {
         const { left, width } = calculateSlotPosition(slot);
 
         return (
-          <TimeSlot key={index} left={left} width={width} value={slot.value} />
+          <TimeSlot
+            key={index}
+            left={left}
+            width={width}
+            value={slot.value}
+            start={slot.start}
+            end={slot.end}
+          />
         );
       })}
     </div>

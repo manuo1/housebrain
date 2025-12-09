@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import fetchTeleinfoData from "../services/fetchTeleinfoData";
-import TeleinfoTable from "../components/LiveTeleinfoPage/TeleinfoTable";
-import PowerGauge from "../components/LiveTeleinfoPage/PowerGauge";
-import styles from "./LiveTeleinfoPage.module.scss";
-//import mockTeleinfoData from "../mocks/mockTeleinfoData";
+import React, { useEffect, useState } from 'react';
+import fetchTeleinfoData from '../services/fetchTeleinfoData';
+import TeleinfoTable from '../components/LiveTeleinfoPage/TeleinfoTable';
+import PowerGauge from '../components/LiveTeleinfoPage/PowerGauge';
+import styles from './LiveTeleinfoPage.module.scss';
 
 const DEFAULT_VOLTAGE = 230;
 
@@ -23,7 +22,7 @@ export default function LiveTeleinfoPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err.message || "Failed to fetch teleinfo data");
+          setError(err.message || 'Failed to fetch teleinfo data');
         }
       }
     }

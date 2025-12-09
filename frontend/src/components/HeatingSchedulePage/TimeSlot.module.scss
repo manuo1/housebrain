@@ -1,0 +1,110 @@
+@use '../../styles/abstracts/variables' as *;
+
+.slot {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: $radius-base;
+  opacity: 0.85;
+  transition: $transition-all;
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-xs;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+  &:hover {
+    opacity: 1;
+    transform: scaleY(1.05);
+    box-shadow: $shadow-md;
+  }
+}
+
+// ============================================
+// MODE ON/OFF
+// ============================================
+
+.on {
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  border-color: #4caf50;
+}
+
+.off {
+  background: linear-gradient(135deg, #757575 0%, #616161 100%);
+  border-color: #757575;
+}
+
+// ============================================
+// TEMPÉRATURES LIMITES
+// ============================================
+
+// < 16° (très froid)
+.tempCold {
+  background: linear-gradient(135deg, #0d47a1 0%, #01579b 100%);
+  border-color: #0d47a1;
+  box-shadow: 0 0 8px rgba(13, 71, 161, 0.4);
+}
+
+// > 24° (très chaud)
+.tempHot {
+  background: linear-gradient(135deg, #b71c1c 0%, #880e4f 100%);
+  border-color: #b71c1c;
+  box-shadow: 0 0 12px rgba(183, 28, 28, 0.6);
+}
+
+// ============================================
+// MODE TEMPÉRATURE (16° à 24°)
+// ============================================
+
+// Froid (bleu foncé)
+.temp16 {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  border-color: #1565c0;
+}
+
+.temp17 {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  border-color: #1976d2;
+}
+
+.temp18 {
+  background: linear-gradient(135deg, #1e88e5 0%, #1976d2 100%);
+  border-color: #1e88e5;
+}
+
+// Confort (bleu clair → orange léger)
+.temp19 {
+  background: linear-gradient(135deg, #42a5f5 0%, #64b5f6 100%);
+  border-color: #42a5f5;
+}
+
+.temp20 {
+  background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
+  border-color: #66bb6a;
+}
+
+.temp21 {
+  background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);
+  border-color: #ffa726;
+}
+
+// Chaud (orange → rouge vif)
+.temp22 {
+  background: linear-gradient(135deg, #ff7043 0%, #f4511e 100%);
+  border-color: #ff7043;
+}
+
+.temp23 {
+  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+  border-color: #ef5350;
+}
+
+.temp24 {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  border-color: #d32f2f;
+  box-shadow: 0 0 8px rgba(211, 47, 47, 0.4);
+}

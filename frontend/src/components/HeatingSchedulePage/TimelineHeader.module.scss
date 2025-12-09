@@ -5,7 +5,9 @@
   justify-content: space-between;
   font-size: $font-size-xs;
   color: $text-dark;
+  margin-left: -$spacing-sm;
+  margin-right: -$spacing-sm;
   margin-bottom: $spacing-sm;
-  padding: 0 $spacing-sm;
+  padding: 0;
   font-weight: $font-weight-medium;
 }

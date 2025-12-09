@@ -2,21 +2,23 @@ import React from 'react';
 import styles from './TimeSlot.module.scss';
 
 export default function TimeSlot({ left, width, value }) {
-  const isOnOff = typeof value === 'string';
-  const isTemperature = typeof value === 'number';
+  const lower = value.toLowerCase();
+  const isOnOff = lower === 'on' || lower === 'off';
+
+  const tempValue = Number(value);
+  const isTemperature = !isNaN(tempValue);
 
   const getSlotClass = () => {
     if (isOnOff) {
-      return value === 'on' ? styles.on : styles.off;
+      return lower === 'on' ? styles.on : styles.off;
     }
 
     if (isTemperature) {
-      const temp = Math.round(value);
+      const temp = Math.round(tempValue);
 
       if (temp < 16) return styles.tempCold;
       if (temp > 24) return styles.tempHot;
 
-      // ex: temp20 → styles.temp20
       return styles[`temp${temp}`] || '';
     }
 
@@ -24,9 +26,9 @@ export default function TimeSlot({ left, width, value }) {
   };
 
   const getLabel = () => {
-    if (isOnOff) return value === 'on' ? 'ON' : 'OFF';
-    if (isTemperature) return `${value}°`;
-    return '';
+    if (isOnOff) return lower === 'on' ? 'ON' : 'OFF';
+    if (isTemperature) return `${tempValue}°`;
+    return value;
   };
 
   const className = [styles.slot, getSlotClass()].filter(Boolean).join(' ');

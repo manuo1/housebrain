@@ -33,18 +33,6 @@
     width: 100%;
     max-height: 400px;
   }
-
-  .calendarSection {
-    padding: $spacing-base;
-    border-bottom: 1px solid $border-dark;
-  }
-
-  .roomsSection {
-    padding: $spacing-base;
-    overflow-y: auto;
-    flex: 1;
-    @include custom-scrollbar;
-  }
 }
 
 // ============================================
@@ -99,7 +87,7 @@
 // ============================================
 
 .rightPanel {
-  width: 340px;
+  width: 240px;
   background: $gradient-bg;
   border-left: 1px solid $border-medium;
   border-radius: $radius-lg;

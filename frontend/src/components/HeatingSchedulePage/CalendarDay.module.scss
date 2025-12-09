@@ -15,11 +15,9 @@
   align-items: center;
   justify-content: center;
   position: relative;
-
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.05);
   }
-
   &:disabled {
     cursor: default;
   }
@@ -28,20 +26,23 @@
 // ============================================
 // STATES
 // ============================================
-
 .otherMonth {
   color: $text-dark;
   opacity: 0.4;
 }
 
-.selected {
+.today {
   background: $color-primary !important;
   color: white !important;
   font-weight: $font-weight-semibold;
+  // Pas de hover sur today
+}
 
-  &:hover {
-    background: $color-primary-dark !important;
-  }
+.selected {
+  background: $color-info !important;
+  color: white !important;
+  font-weight: $font-weight-semibold;
+  // Pas de hover sur selected
 }
 
 .different {
@@ -60,9 +61,4 @@
 
 .empty {
   color: $text-dark;
-  opacity: 0.3;
-
-  &:hover {
-    background: transparent !important;
-  }
 }

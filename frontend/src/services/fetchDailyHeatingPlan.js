@@ -14,7 +14,7 @@ async function fetchDailyHeatingPlan(date) {
     return mockDailyHeatingPlan;
   }
 
-  const rawData = await fetchJson(`/api/heating/plan/${date}/`);
+  const rawData = await fetchJson(`/api/heating/plans/daily/?date=${date}`);
   return new DailyHeatingPlan(rawData);
 }
 

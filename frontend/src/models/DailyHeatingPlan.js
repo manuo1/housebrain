@@ -12,7 +12,7 @@ export default class DailyHeatingPlan {
 
     // Rooms with their slots
     this.rooms = (raw.rooms ?? []).map((room) => ({
-      id: room.id ?? null,
+      id: room.room_id ?? null,
       name: room.name ?? 'Unknown',
       mode: room.mode ?? HeatingMode.TEMPERATURE,
       slots: (room.slots ?? []).map((slot) => ({

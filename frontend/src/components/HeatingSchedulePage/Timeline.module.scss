@@ -10,10 +10,12 @@
   padding: $spacing-xl;
   overflow-y: auto;
   @include custom-scrollbar;
+  position: relative;
 }
 
 .roomsList {
   @include flex-column;
+  gap: $gap-xs;
 }
 
 .empty {
@@ -21,4 +23,29 @@
   padding: $spacing-3xl;
   color: $text-disabled;
   font-size: $font-size-base;
+}
+
+.gridOverlay {
+  position: absolute;
+  top: $spacing-3xl;
+  left: $spacing-xl;
+  right: $spacing-xl;
+  bottom: $spacing-xl;
+  pointer-events: none;
+}
+
+.hourLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gridOverlay {
+  @for $i from 1 through 12 {
+    .hourLine:nth-child(#{$i}) {
+      left: calc(($i / 12) * 100%);
+    }
+  }
 }

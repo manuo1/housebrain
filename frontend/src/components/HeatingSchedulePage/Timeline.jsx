@@ -22,6 +22,12 @@ export default function Timeline({ rooms, selectedRoomIds }) {
     <div className={styles.timeline}>
       <TimelineHeader />
 
+      <div className={styles.gridOverlay}>
+        {Array.from({ length: 11 }).map((_, i) => (
+          <div key={i} className={styles.hourLine} />
+        ))}
+      </div>
+
       <div className={styles.roomsList}>
         {filteredRooms.map((room) => (
           <RoomSlotBar key={room.id} room={room} />

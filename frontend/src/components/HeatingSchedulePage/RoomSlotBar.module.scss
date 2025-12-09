@@ -4,6 +4,5 @@
 .roomSlotBar {
   @include flex-column;
   gap: $gap-sm;
-  margin-bottom: $spacing-xs;
   width: 100%;
 }

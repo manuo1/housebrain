@@ -1,0 +1,25 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.timeline {
+  flex: 1;
+  background: $gradient-card;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  border: 1px solid $border-medium;
+  padding: $spacing-xl;
+  overflow-y: auto;
+  @include custom-scrollbar;
+}
+
+.roomsList {
+  @include flex-column;
+  gap: $gap-base;
+}
+
+.empty {
+  @include flex-center;
+  padding: $spacing-3xl;
+  color: $text-disabled;
+  font-size: $font-size-base;
+}

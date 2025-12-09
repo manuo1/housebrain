@@ -14,7 +14,6 @@ export default class DailyHeatingPlan {
     this.rooms = (raw.rooms ?? []).map((room) => ({
       id: room.room_id ?? null,
       name: room.name ?? 'Unknown',
-      mode: room.mode ?? HeatingMode.TEMPERATURE,
       slots: (room.slots ?? []).map((slot) => ({
         start: slot.start ?? '00:00',
         end: slot.end ?? '00:00',
@@ -35,12 +34,6 @@ export default class DailyHeatingPlan {
     this.rooms.forEach((room) => {
       if (!room.id) {
         console.warn(`DailyHeatingPlan: room missing id - ${room.name}`);
-      }
-
-      if (!Object.values(HeatingMode).includes(room.mode)) {
-        console.warn(
-          `DailyHeatingPlan: invalid mode "${room.mode}" for ${room.name}`
-        );
       }
 
       // Validate slots

@@ -2,7 +2,7 @@ import React from 'react';
 import TimeSlot from './TimeSlot';
 import styles from './SlotBar.module.scss';
 
-export default function SlotBar({ slots, mode }) {
+export default function SlotBar({ slots }) {
   // Fonction pour convertir HH:MM en pourcentage de la journée
   const timeToPercent = (timeStr) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -28,13 +28,7 @@ export default function SlotBar({ slots, mode }) {
         const { left, width } = calculateSlotPosition(slot);
 
         return (
-          <TimeSlot
-            key={index}
-            left={left}
-            width={width}
-            value={slot.value}
-            mode={mode}
-          />
+          <TimeSlot key={index} left={left} width={width} value={slot.value} />
         );
       })}
     </div>

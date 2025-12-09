@@ -2,7 +2,10 @@ import calendar
 
 from django.utils import timezone
 from heating.api.constants import DayStatus
+from heating.api.selectors import get_daily_heating_plan
 from heating.api.serializers import (
+    DailyHeatingPlanInputSerializer,
+    DailyHeatingPlanSerializer,
     HeatingCalendarInputSerializer,
     HeatingCalendarSerializer,
 )
@@ -29,11 +32,19 @@ class HeatingCalendarView(APIView):
         heating_calendar = add_day_status(raw_heating_calendar)
 
         serializer = HeatingCalendarSerializer(
-            {
-                "year": year,
-                "month": month,
-                "today": today,
-                "days": heating_calendar,
-            }
+            {"year": year, "month": month, "today": today, "days": heating_calendar}
+        )
+        return Response(serializer.data)
+
+
+class DailyHeatingPlan(APIView):
+    def get(self, request):
+        input_serializer = DailyHeatingPlanInputSerializer(data=request.query_params)
+        input_serializer.is_valid(raise_exception=True)
+        params = input_serializer.validated_data
+        day = params.get("date", timezone.localdate())
+
+        serializer = DailyHeatingPlanSerializer(
+            {"date": day, "rooms": get_daily_heating_plan(day)}
         )
         return Response(serializer.data)

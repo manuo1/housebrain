@@ -15,9 +15,20 @@ async function fetchHeatingCalendar(year, month) {
     return mockHeatingCalendar;
   }
 
+  const params = new URLSearchParams();
+
+  if (year != null) {
+    params.append('year', year);
+  }
+
+  if (month != null) {
+    params.append('month', month);
+  }
+
   const rawData = await fetchJson(
-    `/api/heating/calendar/${year}-${month.toString().padStart(2, '0')}/`
+    `/api/heating/calendar/?${params.toString()}`
   );
+
   return new HeatingCalendar(rawData);
 }
 

@@ -16,3 +16,24 @@ class HeatingCalendarSerializer(serializers.Serializer):
     month = serializers.IntegerField()
     today = serializers.CharField()
     days = CalendarDaySerializer(many=True)
+
+
+class HeatingSlotSerializer(serializers.Serializer):
+    start = serializers.CharField()
+    end = serializers.CharField()
+    value = serializers.CharField()
+
+
+class DailyRoomPlanSerializer(serializers.Serializer):
+    room_id = serializers.IntegerField()
+    name = serializers.CharField()
+    slots = HeatingSlotSerializer(many=True)
+
+
+class DailyHeatingPlanSerializer(serializers.Serializer):
+    date = serializers.CharField()
+    rooms = DailyRoomPlanSerializer(many=True)
+
+
+class DailyHeatingPlanInputSerializer(serializers.Serializer):
+    date = serializers.DateField(required=False)

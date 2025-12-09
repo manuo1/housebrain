@@ -1,0 +1,11 @@
+@use '../../styles/abstracts/variables' as *;
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: $font-size-xs;
+  color: $text-dark;
+  margin-bottom: $spacing-sm;
+  padding: 0 $spacing-sm;
+  font-weight: $font-weight-medium;
+}

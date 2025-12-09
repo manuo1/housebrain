@@ -2,9 +2,8 @@
 @use '../../styles/abstracts/mixins' as *;
 
 .roomSlotBar {
-  display: flex;
-  align-items: center;
-  gap: $gap-base;
-  margin-bottom: $spacing-base;
+  @include flex-column;
+  gap: $gap-sm;
+  margin-bottom: $spacing-lg;
   width: 100%;
 }

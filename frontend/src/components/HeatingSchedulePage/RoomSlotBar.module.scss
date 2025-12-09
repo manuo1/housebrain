@@ -1,0 +1,9 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.roomSlotBar {
+  display: flex;
+  align-items: center;
+  gap: $gap-base;
+  margin-bottom: $spacing-base;
+}

@@ -1,0 +1,11 @@
+@use '../../styles/abstracts/variables' as *;
+
+.slotBarLabel {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $text-secondary;
+  padding-right: $spacing-base;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+}

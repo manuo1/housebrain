@@ -1,5 +1,3 @@
-// frontend/src/components/HeatingSchedulePage/HeatingCalendar.jsx
-
 import React from 'react';
 import { getMonthLabel } from '../../utils/dateUtils';
 import CalendarDay from './CalendarDay';
@@ -35,6 +33,7 @@ export default function HeatingCalendar({
 
   const monthLabel = `${getMonthLabel(calendar.month)} ${calendar.year}`;
   const selectedDateISO = selectedDate;
+  const todayISO = calendar.today?.toISO();
 
   return (
     <div className={styles.calendar}>
@@ -75,6 +74,7 @@ export default function HeatingCalendar({
                 const dateISO = day.date.toISO();
                 const isCurrentMonth = day.date.month === calendar.month;
                 const isSelected = dateISO === selectedDateISO;
+                const isToday = dateISO === todayISO;
 
                 return (
                   <td key={dateISO}>
@@ -82,6 +82,7 @@ export default function HeatingCalendar({
                       day={day}
                       isCurrentMonth={isCurrentMonth}
                       isSelected={isSelected}
+                      isToday={isToday}
                       onClick={() => onDateSelect(dateISO)}
                     />
                   </td>

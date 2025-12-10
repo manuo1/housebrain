@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Dropdown from './Dropdown';
+import AuthDropdown from './AuthDropdown';
 import styles from './Navbar.module.scss';
 
 export default function Navbar() {
@@ -64,6 +65,7 @@ export default function Navbar() {
         <div className={styles.navigation}>
           <Dropdown title="Consommation" icon="⚡" links={consumptionLinks} />
           <Dropdown title="Chauffage" icon="🔥" links={heatingLinks} />
+          <AuthDropdown />
         </div>
       </div>
     </nav>

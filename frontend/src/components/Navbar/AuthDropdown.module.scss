@@ -1,0 +1,248 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.authDropdown {
+  position: relative;
+
+  .authToggle {
+    background: none;
+    border: none;
+    color: $text-secondary;
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-base;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    transition: $transition-all;
+    font-family: inherit;
+
+    &:hover {
+      background-color: rgba(74, 158, 255, 0.1);
+      color: $color-primary;
+      transform: translateY(-1px);
+    }
+
+    &.active {
+      background-color: rgba(74, 158, 255, 0.2);
+      color: $color-primary;
+    }
+
+    .icon {
+      font-size: $font-size-lg;
+    }
+  }
+
+  .authMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: $gradient-bg;
+    border: 1px solid $border-medium;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 280px;
+    backdrop-filter: blur(20px);
+    padding: $spacing-lg;
+
+    &.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      right: 20px;
+      width: 16px;
+      height: 16px;
+      background: $gradient-bg;
+      border: 1px solid $border-medium;
+      border-bottom: none;
+      border-right: none;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+  }
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-base;
+
+  .formTitle {
+    margin: 0 0 $spacing-sm 0;
+    color: $text-primary;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+  }
+
+  .error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-base;
+    font-size: $font-size-sm;
+  }
+
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid $border-medium;
+    border-radius: $radius-base;
+    padding: $spacing-md;
+    color: $text-primary;
+    font-size: $font-size-base;
+    font-family: inherit;
+    transition: $transition-all;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &::placeholder {
+      color: $text-muted;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .submitButton {
+    background: $color-primary;
+    color: white;
+    border: none;
+    border-radius: $radius-base;
+    padding: $spacing-md;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: $transition-all;
+    font-family: inherit;
+
+    &:hover:not(:disabled) {
+      background: lighten($color-primary, 5%);
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.userMenu {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-base;
+
+  .userInfo {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: $radius-base;
+
+    .userIcon {
+      font-size: $font-size-2xl;
+    }
+
+    .userName {
+      color: $text-primary;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-base;
+    }
+  }
+
+  .logoutButton {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    border-radius: $radius-base;
+    padding: $spacing-md;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: $transition-all;
+    font-family: inherit;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+@include respond-to('md') {
+  .authDropdown {
+    .authToggle {
+      padding: $spacing-sm $gap-md;
+      font-size: $font-size-sm;
+
+      .icon {
+        font-size: $font-size-base;
+      }
+    }
+
+    .authMenu {
+      min-width: 240px;
+      padding: $spacing-base;
+    }
+  }
+
+  .loginForm {
+    gap: $spacing-sm;
+
+    .formTitle {
+      font-size: $font-size-base;
+    }
+
+    .input,
+    .submitButton {
+      padding: $spacing-sm;
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+@include respond-to('xs') {
+  .authDropdown {
+    .authToggle {
+      padding: 0.4rem 0.6rem;
+      font-size: $font-size-sm;
+    }
+
+    .authMenu {
+      min-width: 220px;
+      padding: $spacing-sm;
+    }
+  }
+
+  .loginForm {
+    .input,
+    .submitButton {
+      font-size: $font-size-sm;
+    }
+  }
+}

@@ -18,7 +18,7 @@ export default function HeatingSchedulePage() {
   const [currentMonth, setCurrentMonth] = useState(null);
   const [selectedRoomIds, setSelectedRoomIds] = useState([]);
 
-  const { dailyPlan, loading, canUndo, hasChanges, undo, save } =
+  const { dailyPlan, loading, canUndo, hasChanges, undo, save, applyChange } =
     useHeatingPlanHistory(selectedDate);
 
   // Fetch initial calendar
@@ -78,6 +78,33 @@ export default function HeatingSchedulePage() {
     setSelectedRoomIds(roomIds);
   };
 
+  const handleSlotUpdate = (roomId, slotIndex, updatedSlot) => {
+    if (!dailyPlan) return;
+
+    // Clone deep du dailyPlan
+    const newPlan = {
+      ...dailyPlan,
+      rooms: dailyPlan.rooms.map((room) => {
+        if (room.id === roomId) {
+          const newSlots = [...room.slots];
+
+          if (updatedSlot === null) {
+            // Delete slot
+            newSlots.splice(slotIndex, 1);
+          } else {
+            // Update slot
+            newSlots[slotIndex] = updatedSlot;
+          }
+
+          return { ...room, slots: newSlots };
+        }
+        return room;
+      }),
+    };
+
+    applyChange(newPlan);
+  };
+
   // Show loader while initial data is loading
   if (!calendar || !selectedDate) {
     return (
@@ -125,6 +152,7 @@ export default function HeatingSchedulePage() {
           <Timeline
             rooms={dailyPlan?.rooms || []}
             selectedRoomIds={selectedRoomIds}
+            onSlotUpdate={handleSlotUpdate}
           />
         )}
       </main>

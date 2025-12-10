@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './TimeSlot.module.scss';
 
-export default function TimeSlot({ left, width, value, start, end }) {
+export default function TimeSlot({ left, width, value, start, end, onClick }) {
   const lower = value.toLowerCase();
   const isOnOff = lower === 'on' || lower === 'off';
 
@@ -33,11 +33,18 @@ export default function TimeSlot({ left, width, value, start, end }) {
 
   const className = [styles.slot, getSlotClass()].filter(Boolean).join(' ');
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick({ start, end, value });
+    }
+  };
+
   return (
     <div
       className={className}
       style={{ left, width }}
       title={`${start} - ${end}`}
+      onClick={handleClick}
     >
       {getLabel()}
     </div>

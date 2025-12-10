@@ -4,12 +4,12 @@
 .home {
   max-width: $max-width-container;
   margin: 0 auto;
-  min-height: calc(100vh - 80px);
 
   .dashboardGrid {
     display: flex;
     gap: $gap-lg;
-    min-height: calc(100vh - 80px - 3rem);
+    min-height: calc(100vh - $navbar-height - ($spacing-2xl));
+    margin-top: $spacing-base;
 
     @include respond-to('lg') {
       flex-direction: column;

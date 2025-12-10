@@ -1,12 +1,11 @@
-// frontend/src/pages/HeatingSchedulePage.module.scss
-
 @use '../styles/abstracts/variables' as *;
 @use '../styles/abstracts/mixins' as *;
 
 .heatingSchedulePage {
   display: flex;
   gap: $gap-lg;
-  height: calc(100vh - $navbar-height - ($spacing-2xl * 2));
+  height: calc(100vh - $navbar-height - ($spacing-2xl));
+  margin-top: $spacing-base;
   overflow: hidden;
 
   @include respond-to('lg') {

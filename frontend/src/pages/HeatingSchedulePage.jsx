@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/useAuth';
+import { useHeatingPlanHistory } from '../hooks/HeatingSchedulePage/useHeatingPlanHistory';
 import fetchHeatingCalendar from '../services/fetchHeatingCalendar';
-import fetchDailyHeatingPlan from '../services/fetchDailyHeatingPlan';
 import SimpleDate from '../utils/simpleDate';
 import HeatingCalendar from '../components/HeatingSchedulePage/HeatingCalendar';
 import RoomsSelector from '../components/HeatingSchedulePage/RoomsSelector';
@@ -16,9 +16,10 @@ export default function HeatingSchedulePage() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedDateObj, setSelectedDateObj] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(null);
-  const [dailyPlan, setDailyPlan] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedRoomIds, setSelectedRoomIds] = useState([]);
+
+  const { dailyPlan, loading, canUndo, hasChanges, undo, save } =
+    useHeatingPlanHistory(selectedDate);
 
   // Fetch initial calendar
   useEffect(() => {
@@ -57,27 +58,12 @@ export default function HeatingSchedulePage() {
     loadCalendar();
   }, [currentMonth]);
 
-  // Fetch daily plan when date changes
+  // Update selected rooms when dailyPlan changes
   useEffect(() => {
-    if (!selectedDate) return;
-
-    async function loadDailyPlan() {
-      setLoading(true);
-      try {
-        const data = await fetchDailyHeatingPlan(selectedDate);
-        setDailyPlan(data);
-
-        if (data && data.rooms) {
-          setSelectedRoomIds(data.rooms.map((room) => room.id));
-        }
-      } catch (error) {
-        console.error('Error loading daily plan:', error);
-      } finally {
-        setLoading(false);
-      }
+    if (dailyPlan && dailyPlan.rooms) {
+      setSelectedRoomIds(dailyPlan.rooms.map((room) => room.id));
     }
-    loadDailyPlan();
-  }, [selectedDate]);
+  }, [dailyPlan]);
 
   const handleMonthChange = (year, month) => {
     setCurrentMonth({ year, month });
@@ -121,7 +107,14 @@ export default function HeatingSchedulePage() {
       <main className={styles.mainContent}>
         <div className={styles.header}>
           <DateHeader date={selectedDateObj} />
-          {user && <TimelineSaveActions />}
+          {user && (
+            <TimelineSaveActions
+              onCancel={undo}
+              onSave={save}
+              canUndo={canUndo}
+              hasChanges={hasChanges}
+            />
+          )}
         </div>
 
         {loading ? (

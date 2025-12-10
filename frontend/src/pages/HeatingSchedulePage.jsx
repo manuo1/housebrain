@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/useAuth';
 import fetchHeatingCalendar from '../services/fetchHeatingCalendar';
 import fetchDailyHeatingPlan from '../services/fetchDailyHeatingPlan';
 import SimpleDate from '../utils/simpleDate';
@@ -6,9 +7,11 @@ import HeatingCalendar from '../components/HeatingSchedulePage/HeatingCalendar';
 import RoomsSelector from '../components/HeatingSchedulePage/RoomsSelector';
 import DateHeader from '../components/HeatingSchedulePage/DateHeader';
 import Timeline from '../components/HeatingSchedulePage/Timeline';
+import TimelineSaveActions from '../components/HeatingSchedulePage/TimelineSaveActions';
 import styles from './HeatingSchedulePage.module.scss';
 
 export default function HeatingSchedulePage() {
+  const { user } = useAuth();
   const [calendar, setCalendar] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedDateObj, setSelectedDateObj] = useState(null);
@@ -118,10 +121,7 @@ export default function HeatingSchedulePage() {
       <main className={styles.mainContent}>
         <div className={styles.header}>
           <DateHeader date={selectedDateObj} />
-          <div className={styles.actions}>
-            <button className={styles.btnSecondary}>Annuler</button>
-            <button className={styles.btnPrimary}>Enregistrer</button>
-          </div>
+          {user && <TimelineSaveActions />}
         </div>
 
         {loading ? (

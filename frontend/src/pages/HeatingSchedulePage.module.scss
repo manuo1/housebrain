@@ -54,19 +54,6 @@
       color: $text-secondary;
       font-weight: $font-weight-semibold;
     }
-
-    .actions {
-      display: flex;
-      gap: $gap-md;
-    }
-
-    .btnSecondary {
-      @include button-base;
-    }
-
-    .btnPrimary {
-      @include button-primary;
-    }
   }
 
   .timeline {

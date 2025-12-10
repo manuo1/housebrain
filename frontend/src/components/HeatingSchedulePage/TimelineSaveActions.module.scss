@@ -1,0 +1,15 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.actions {
+  display: flex;
+  gap: $gap-md;
+}
+
+.btnSecondary {
+  @include button-base;
+}
+
+.btnPrimary {
+  @include button-primary;
+}

@@ -13,8 +13,17 @@ export default function Navbar() {
       const windowHeight = window.innerHeight;
       const fullHeight = document.documentElement.scrollHeight;
 
-      // Si on est proche du bas de la page, cacher la navbar
-      if (scrollTop + windowHeight >= fullHeight - 100) {
+      // Ne gérer le comportement de masquage que si la page est scrollable
+      const isScrollable = fullHeight > windowHeight + 1;
+
+      if (!isScrollable) {
+        // Si la page n'est pas scrollable, toujours montrer la navbar
+        setHidden(false);
+        return;
+      }
+
+      // Si on est proche du bas de la page
+      if (scrollTop + windowHeight >= fullHeight - 1) {
         setHidden(true);
       }
       // Sinon, gérer le comportement normal de scroll
@@ -39,11 +48,7 @@ export default function Navbar() {
   ];
 
   const heatingLinks = [
-    {
-      to: '/heating/schedule/',
-      icon: '⚙️',
-      text: 'Planning',
-    },
+    { to: '/heating/schedule/', icon: '⚙️', text: 'Planning' },
   ];
 
   return (

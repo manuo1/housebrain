@@ -1,15 +1,20 @@
 import calendar
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from heating.api.constants import DayStatus
-from heating.api.selectors import get_daily_heating_plan
+from heating.api.selectors import get_daily_heating_plan, invalid_room_ids_in_plans
 from heating.api.serializers import (
     DailyHeatingPlanInputSerializer,
     DailyHeatingPlanSerializer,
     HeatingCalendarInputSerializer,
     HeatingCalendarSerializer,
+    HeatingPlansInputSerializer,
 )
 from heating.api.services import add_day_status
+from heating.models import HeatingPattern, RoomHeatingDayPlan
+from rest_framework import status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -48,3 +53,47 @@ class DailyHeatingPlan(APIView):
             {"date": day, "rooms": get_daily_heating_plan(day)}
         )
         return Response(serializer.data)
+
+    def post(self, request):
+        input_serializer = HeatingPlansInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        params = input_serializer.validated_data
+        plans = params.get("plans", [])
+        changes = {"updated": 0, "created": 0}
+
+        invalid_room_ids = invalid_room_ids_in_plans(plans)
+
+        if invalid_room_ids:
+            raise DRFValidationError(f"Invalid room_ids : {invalid_room_ids}")
+
+        for plan in plans:
+            slots = plan["slots"]
+            if not slots:
+                raise DRFValidationError(f"Invalid plan (Slots is empty): {plan} ")
+
+            # HeatingPattern
+            try:
+                heating_pattern, _ = HeatingPattern.get_or_create_from_slots(
+                    plan["slots"]
+                )
+            except DjangoValidationError as e:
+                raise DRFValidationError(f"Invalid plan ({e}): {plan} ")
+
+            # RoomHeatingDayPlan
+            room_heating_day_plan, is_created = (
+                RoomHeatingDayPlan.objects.get_or_create(
+                    room_id=plan["room_id"],
+                    date=plan["date"],
+                    defaults={"heating_pattern": heating_pattern},
+                )
+            )
+
+            if is_created:
+                changes["created"] += 1
+            else:
+                if room_heating_day_plan.heating_pattern != heating_pattern:
+                    room_heating_day_plan.heating_pattern = heating_pattern
+                    room_heating_day_plan.save()
+                    changes["updated"] += 1
+
+        return Response(changes, status=status.HTTP_201_CREATED)

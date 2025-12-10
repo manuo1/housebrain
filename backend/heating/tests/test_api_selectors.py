@@ -2,7 +2,11 @@ from datetime import date, timedelta
 
 import pytest
 from actuators.tests.factories import RadiatorFactory
-from heating.api.selectors import get_daily_heating_plan, get_slots_hashes
+from heating.api.selectors import (
+    get_daily_heating_plan,
+    get_slots_hashes,
+    invalid_room_ids_in_plans,
+)
 from heating.tests.factories import HeatingPatternFactory, RoomHeatingDayPlanFactory
 from rooms.tests.factories import RoomFactory
 
@@ -131,3 +135,18 @@ def test_get_daily_heating_plan_normal_cases():
 @pytest.mark.django_db
 def test_get_daily_heating_plan_incorrect_cases(day):
     assert get_daily_heating_plan(day) == []
+
+
+@pytest.mark.parametrize(
+    "plan , expected",
+    [
+        ([{"room_id": 1}, {"room_id": 2}], set()),
+        ([{"room_id": 1}, {"room_id": 2}, {"room_id": 3}, {"room_id": 4}], {3, 4}),
+        ([], set()),
+    ],
+)
+@pytest.mark.django_db
+def test_invalid_room_ids_in_plans(plan, expected):
+    RoomFactory(id=1)
+    RoomFactory(id=2)
+    assert invalid_room_ids_in_plans(plan) == expected

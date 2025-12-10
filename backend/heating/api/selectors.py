@@ -40,3 +40,12 @@ def get_daily_heating_plan(day: date) -> list:
     )
 
     return list(qs)
+
+
+def invalid_room_ids_in_plans(plans: list) -> set:
+    room_ids_in_request = [plan["room_id"] for plan in plans]
+
+    room_ids_in_db = set(
+        Room.objects.filter(id__in=room_ids_in_request).values_list("id", flat=True)
+    )
+    return set(room_ids_in_request) - room_ids_in_db

@@ -1,3 +1,4 @@
+from heating.models import HeatingPattern
 from rest_framework import serializers
 
 
@@ -37,3 +38,20 @@ class DailyHeatingPlanSerializer(serializers.Serializer):
 
 class DailyHeatingPlanInputSerializer(serializers.Serializer):
     date = serializers.DateField(required=False)
+
+
+class HeatingSlotInputSerializer(serializers.Serializer):
+    start = serializers.CharField()
+    end = serializers.CharField()
+    type = serializers.ChoiceField(choices=HeatingPattern.SlotType.choices)
+    value = serializers.JSONField()
+
+
+class RoomHeatingPlanInputSerializer(serializers.Serializer):
+    room_id = serializers.IntegerField(min_value=1)
+    date = serializers.DateField()
+    slots = HeatingSlotInputSerializer(many=True)
+
+
+class HeatingPlansInputSerializer(serializers.Serializer):
+    plans = RoomHeatingPlanInputSerializer(many=True)

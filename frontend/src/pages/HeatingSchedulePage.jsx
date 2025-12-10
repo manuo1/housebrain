@@ -91,6 +91,15 @@ export default function HeatingSchedulePage() {
           if (updatedSlot === null) {
             // Delete slot
             newSlots.splice(slotIndex, 1);
+          } else if (slotIndex === -1) {
+            // Create new slot
+            newSlots.push(updatedSlot);
+            // Sort slots by start time
+            newSlots.sort((a, b) => {
+              const [aH, aM] = a.start.split(':').map(Number);
+              const [bH, bM] = b.start.split(':').map(Number);
+              return aH * 60 + aM - (bH * 60 + bM);
+            });
           } else {
             // Update slot
             newSlots[slotIndex] = updatedSlot;
@@ -153,6 +162,7 @@ export default function HeatingSchedulePage() {
             rooms={dailyPlan?.rooms || []}
             selectedRoomIds={selectedRoomIds}
             onSlotUpdate={handleSlotUpdate}
+            user={user}
           />
         )}
       </main>

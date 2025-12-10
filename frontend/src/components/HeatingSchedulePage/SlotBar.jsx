@@ -2,7 +2,7 @@ import React from 'react';
 import TimeSlot from './TimeSlot';
 import styles from './SlotBar.module.scss';
 
-export default function SlotBar({ slots, onSlotClick }) {
+export default function SlotBar({ slots, onSlotClick, onEmptyClick }) {
   // Fonction pour convertir HH:MM en pourcentage de la journée
   const timeToPercent = (timeStr) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -28,8 +28,27 @@ export default function SlotBar({ slots, onSlotClick }) {
     }
   };
 
+  const handleBarClick = (e) => {
+    // Check if click was on the bar itself, not on a slot
+    if (e.target.className.includes('slotBar') && onEmptyClick) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percentClick = (clickX / rect.width) * 100;
+
+      // Convert percent to time
+      const totalMinutes = Math.round((percentClick / 100) * 1440);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      const clickTime = `${String(hours).padStart(2, '0')}:${String(
+        minutes
+      ).padStart(2, '0')}`;
+
+      onEmptyClick(clickTime);
+    }
+  };
+
   return (
-    <div className={styles.slotBar}>
+    <div className={styles.slotBar} onClick={handleBarClick}>
       {slots.map((slot, index) => {
         const { left, width } = calculateSlotPosition(slot);
 

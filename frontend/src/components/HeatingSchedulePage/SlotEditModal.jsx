@@ -5,6 +5,7 @@ export default function SlotEditModal({
   slot,
   roomSlots,
   slotIndex,
+  isCreating,
   onSave,
   onDelete,
   onClose,
@@ -172,7 +173,7 @@ export default function SlotEditModal({
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <h3>Modifier le créneau</h3>
+        <h3>{isCreating ? 'Créer un créneau' : 'Modifier le créneau'}</h3>
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
@@ -222,13 +223,15 @@ export default function SlotEditModal({
           </div>
 
           <div className={styles.actions}>
-            <button
-              type="button"
-              className={styles.btnDanger}
-              onClick={handleDelete}
-            >
-              Supprimer
-            </button>
+            {!isCreating && (
+              <button
+                type="button"
+                className={styles.btnDanger}
+                onClick={handleDelete}
+              >
+                Supprimer
+              </button>
+            )}
             <div className={styles.rightActions}>
               <button
                 type="button"
@@ -242,7 +245,7 @@ export default function SlotEditModal({
                 className={styles.btnPrimary}
                 disabled={!isValid}
               >
-                Valider
+                {isCreating ? 'Créer' : 'Valider'}
               </button>
             </div>
           </div>

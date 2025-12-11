@@ -8,6 +8,7 @@ import RoomsSelector from '../components/HeatingSchedulePage/RoomsSelector';
 import DateHeader from '../components/HeatingSchedulePage/DateHeader';
 import Timeline from '../components/HeatingSchedulePage/Timeline';
 import TimelineSaveActions from '../components/HeatingSchedulePage/TimelineSaveActions';
+import DuplicationPanel from '../components/HeatingSchedulePage/Duplication/DuplicationPanel';
 import styles from './HeatingSchedulePage.module.scss';
 
 export default function HeatingSchedulePage() {
@@ -114,6 +115,11 @@ export default function HeatingSchedulePage() {
     applyChange(newPlan);
   };
 
+  const handleDuplicationApply = async (payload) => {
+    console.log('Duplication payload:', payload);
+    // TODO: POST to backend /api/heating/plans/duplicate
+  };
+
   // Show loader while initial data is loading
   if (!calendar || !selectedDate) {
     return (
@@ -168,8 +174,13 @@ export default function HeatingSchedulePage() {
       </main>
 
       <aside className={styles.rightPanel}>
-        <h3>Options de duplication (TODO)</h3>
-        <p>Répéter les jours, date de fin, etc.</p>
+        <DuplicationPanel
+          sourceDate={selectedDate}
+          selectedRooms={
+            dailyPlan?.rooms.filter((r) => selectedRoomIds.includes(r.id)) || []
+          }
+          onApply={handleDuplicationApply}
+        />
       </aside>
     </div>
   );

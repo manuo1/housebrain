@@ -1,0 +1,43 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.summary {
+  background: $bg-dark;
+  border: 1px solid $border-medium;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  font-size: $font-size-sm;
+  color: $text-primary;
+
+  label {
+    display: block;
+    color: $text-secondary;
+    margin-bottom: $spacing-md;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.content {
+  line-height: 1.8;
+}
+
+.section {
+  margin-bottom: $spacing-sm;
+  color: $text-primary;
+}
+
+.list {
+  padding-left: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.item {
+  color: $color-primary;
+  padding: $spacing-xs 0;
+}
+
+.highlight {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+  padding: $spacing-xs 0;
+}

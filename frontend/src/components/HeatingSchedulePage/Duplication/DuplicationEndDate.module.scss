@@ -1,0 +1,28 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.endDate {
+  label {
+    display: block;
+    margin-bottom: $spacing-sm;
+    font-weight: $font-weight-medium;
+    color: $text-secondary;
+    font-size: $font-size-sm;
+  }
+
+  input {
+    width: 100%;
+    padding: $spacing-md;
+    border: 1px solid $border-medium;
+    border-radius: $radius-md;
+    background: $bg-dark;
+    color: $text-primary;
+    font-size: $font-size-base;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+    }
+  }
+}

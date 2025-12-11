@@ -1,0 +1,45 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.weekdaySelector {
+  label {
+    display: block;
+    margin-bottom: $spacing-sm;
+    font-weight: $font-weight-medium;
+    color: $text-secondary;
+    font-size: $font-size-sm;
+  }
+}
+
+.days {
+  display: flex;
+  gap: $gap-sm;
+  flex-wrap: wrap;
+
+  button {
+    width: 36px;
+    height: 36px;
+    background: $bg-card;
+    border: 1px solid $border-medium;
+    border-radius: $radius-md;
+    text-align: center;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    color: $text-primary;
+    transition: $transition-all;
+    font-weight: $font-weight-medium;
+
+    &:hover {
+      border-color: $color-primary;
+      transform: translateY(-2px);
+    }
+
+    &.active {
+      background: $color-primary;
+      color: white;
+      border-color: $color-primary;
+      box-shadow: 0 0 12px rgba(74, 158, 255, 0.4);
+      font-weight: $font-weight-semibold;
+    }
+  }
+}

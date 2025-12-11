@@ -1,0 +1,40 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.modeToggle {
+  display: flex;
+  align-items: center;
+  gap: $gap-md;
+  padding: $spacing-sm;
+  background: $bg-dark;
+  border-radius: $radius-lg;
+  border: 1px solid $border-medium;
+
+  button {
+    padding: $spacing-sm $spacing-lg;
+    border: none;
+    background: transparent;
+    color: $text-secondary;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    border-radius: $radius-md;
+    transition: $transition-all;
+
+    &:hover {
+      color: $text-primary;
+    }
+
+    &.active {
+      background: $color-primary;
+      color: white;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  .separator {
+    width: 1px;
+    height: 20px;
+    background: $border-medium;
+  }
+}

@@ -13,17 +13,18 @@
 
 .days {
   display: flex;
-  gap: $gap-sm;
+  justify-content: center;
+  gap: $gap-xs;
   flex-wrap: wrap;
 
   button {
-    width: 36px;
-    height: 36px;
+    width: 31px;
+    height: 31px;
     background: $bg-card;
     border: 1px solid $border-medium;
     border-radius: $radius-md;
     text-align: center;
-    font-size: $font-size-sm;
+    font-size: $font-size-xs;
     cursor: pointer;
     color: $text-primary;
     transition: $transition-all;

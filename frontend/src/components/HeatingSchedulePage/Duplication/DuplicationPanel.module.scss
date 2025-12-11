@@ -4,11 +4,11 @@
 .duplicationPanel {
   display: flex;
   flex-direction: column;
-  gap: $gap-lg;
+  gap: $gap-md;
   height: 100%;
 
   h3 {
-    font-size: $font-size-xl;
+    font-size: $font-size-lg;
     margin: 0;
     color: $text-primary;
     font-weight: $font-weight-semibold;
@@ -17,4 +17,22 @@
 
 .section {
   // Spacing between sections handled by parent gap
+}
+
+.errors {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  padding: $gap-sm $gap-md;
+  color: #c33;
+
+  ul {
+    margin: 0;
+    padding-left: $gap-md;
+
+    li {
+      margin: $gap-xs 0;
+      font-size: $font-size-sm;
+    }
+  }
 }

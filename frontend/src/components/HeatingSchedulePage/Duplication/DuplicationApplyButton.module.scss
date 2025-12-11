@@ -4,8 +4,8 @@
 .applyButton {
   @include button-primary;
   width: 100%;
-  padding: $spacing-md $spacing-xl;
-  font-size: $font-size-base;
+  padding: $spacing-sm $spacing-lg;
+  font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
 

@@ -12,13 +12,14 @@
 
   input {
     width: 100%;
-    padding: $spacing-md;
+    padding: $spacing-sm;
     border: 1px solid $border-medium;
     border-radius: $radius-md;
     background: $bg-dark;
     color: $text-primary;
-    font-size: $font-size-base;
+    font-size: $font-size-sm;
     transition: border-color 0.2s;
+    text-align: center;
 
     &:focus {
       outline: none;

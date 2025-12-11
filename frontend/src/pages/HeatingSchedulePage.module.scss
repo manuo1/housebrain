@@ -73,12 +73,12 @@
 // ============================================
 
 .rightPanel {
-  width: 240px;
+  width: 280px;
   background: $gradient-bg;
   border-left: 1px solid $border-medium;
   border-radius: $radius-lg;
   box-shadow: $shadow-base;
-  padding: $spacing-xl;
+  padding: $spacing-base;
   overflow-y: auto;
   @include custom-scrollbar;
 

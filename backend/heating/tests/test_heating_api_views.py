@@ -211,8 +211,6 @@ def test_create_heating_plan_no_room_existing_for_this_id(authenticated_client):
             ],
             "invalid_choice",
         ),
-        # Empty slot
-        ([], "Slots is empty"),
         # strange slots
         ({}, "not_a_list"),
         (False, "not_a_list"),
@@ -237,3 +235,27 @@ def test_create_heating_plan_invalide_slots(authenticated_client, slots, error_m
     print(str(response.data))
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert error_message in str(response.data)
+
+
+@pytest.mark.django_db
+def test_heating_plan_update_with_empty_slot(authenticated_client):
+    RoomHeatingDayPlanFactory(
+        room=RoomFactory(id=ROOM_ID),
+        date=DEFAULT_DATE,
+        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+    )
+    assert RoomHeatingDayPlan.objects.count() == 1
+    assert HeatingPattern.objects.count() == 1
+
+    data = {"plans": [{"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": []}]}
+
+    response = authenticated_client.post(
+        "/api/heating/plans/daily/", data, format="json"
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.data["created"] == 0
+    assert response.data["updated"] == 1
+    # we update existing RoomHeatingDayPlan = no new RoomHeatingDayPlan
+    assert RoomHeatingDayPlan.objects.count() == 1
+    # The new heating pattern didn't exist yet, it was created.
+    assert HeatingPattern.objects.count() == 2

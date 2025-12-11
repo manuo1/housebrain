@@ -145,7 +145,7 @@ class HeatingPattern(models.Model):
                 raise ValidationError("Slot start must be before end")
 
             # Check for overlaps
-            if time_ranges and start < time_ranges[-1][1]:
+            if time_ranges and start <= time_ranges[-1][1]:
                 raise ValidationError("Slots overlap")
 
             time_ranges.append((start, end))

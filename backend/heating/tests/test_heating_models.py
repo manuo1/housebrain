@@ -50,12 +50,17 @@ class TestHeatingPattern:
             HeatingPatternFactory(
                 slots=[
                     {"start": "07:00", "end": "10:00", "type": "temp", "value": 20.0},
-                    {
-                        "start": "09:00",
-                        "end": "12:00",
-                        "type": "temp",
-                        "value": 21.0,
-                    },  # Overlaps!
+                    {"start": "09:00", "end": "12:00", "type": "temp", "value": 21.0},
+                ]
+            )
+
+    def test_exact_overlapping_slots_raises_error(self):
+        """Test that overlapping slots raise ValidationError"""
+        with pytest.raises(ValidationError, match="Slots overlap"):
+            HeatingPatternFactory(
+                slots=[
+                    {"start": "07:00", "end": "10:00", "type": "temp", "value": 20.0},
+                    {"start": "10:00", "end": "12:00", "type": "temp", "value": 21.0},
                 ]
             )
 

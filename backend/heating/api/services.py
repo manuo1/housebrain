@@ -1,7 +1,7 @@
 from collections import defaultdict
-from datetime import timedelta
+from datetime import date, timedelta
 
-from heating.api.constants import DayStatus
+from heating.api.constants import DayStatus, DuplicationTypes
 from heating.api.selectors import get_slots_hashes
 
 
@@ -52,3 +52,32 @@ def add_day_status(raw_calendar: list) -> list:
             day["status"] = DayStatus.DIFFERENT
 
     return raw_calendar
+
+
+def error_in_duplication_dates(source_date, end_date, duplication_type):
+    if source_date >= end_date:
+        return "source_date must be before repeat_until"
+    if (end_date - source_date).days > 366:
+        return "Maximum 365 days between source_date and repeat_until"
+    if duplication_type == DuplicationTypes.WEEK and (end_date - source_date).days < 7:
+        return "There must be at least 7 days between source_date and repeat_until in the case of a duplication of weeks"
+
+
+def generate_duplication_dates(
+    source_date: date, weekdays: list[int], end_date: date
+) -> list[date]:
+    dates = []
+    current_date = source_date + timedelta(days=1)
+
+    for weekday in sorted(weekdays):
+        days_ahead = (weekday - current_date.weekday()) % 7
+        if days_ahead == 0 and current_date <= source_date:
+            days_ahead = 7
+        next_date = current_date + timedelta(days=days_ahead)
+
+        while next_date <= end_date:
+            dates.append(next_date)
+            next_date += timedelta(days=7)
+
+    dates.sort()
+    return dates

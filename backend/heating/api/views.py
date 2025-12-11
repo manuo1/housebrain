@@ -67,10 +67,6 @@ class DailyHeatingPlan(APIView):
             raise DRFValidationError(f"Invalid room_ids : {invalid_room_ids}")
 
         for plan in plans:
-            slots = plan["slots"]
-            if not slots:
-                raise DRFValidationError(f"Invalid plan (Slots is empty): {plan} ")
-
             # HeatingPattern
             try:
                 heating_pattern, _ = HeatingPattern.get_or_create_from_slots(

@@ -20,8 +20,8 @@
 }
 
 .errors {
-  background-color: #fee;
-  border: 1px solid #fcc;
+  background-color: $bg-lighter;
+  border: 1px solid $border-light;
   border-radius: 4px;
   padding: $gap-sm $gap-md;
   color: #c33;
@@ -31,8 +31,8 @@
     padding-left: $gap-md;
 
     li {
+      font-size: $font-size-xs;
       margin: $gap-xs 0;
-      font-size: $font-size-sm;
     }
   }
 }

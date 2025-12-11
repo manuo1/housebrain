@@ -5,16 +5,9 @@
   background: $bg-dark;
   border: 1px solid $border-medium;
   border-radius: $radius-lg;
-  padding: $spacing-lg;
+  padding: $spacing-md;
   font-size: $font-size-sm;
   color: $text-primary;
-
-  label {
-    display: block;
-    color: $text-secondary;
-    margin-bottom: $spacing-md;
-    font-weight: $font-weight-medium;
-  }
 }
 
 .content {
@@ -22,18 +15,18 @@
 }
 
 .section {
-  margin-bottom: $spacing-sm;
+  margin-bottom: $spacing-xs;
   color: $text-primary;
 }
 
 .list {
-  padding-left: $spacing-lg;
-  margin-bottom: $spacing-md;
+  padding-left: $spacing-md;
+  margin-bottom: $spacing-xs;
 }
 
 .item {
   color: $color-primary;
-  padding: $spacing-xs 0;
+  padding: 0;
 }
 
 .highlight {

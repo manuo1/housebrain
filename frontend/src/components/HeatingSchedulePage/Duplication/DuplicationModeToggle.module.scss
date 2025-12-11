@@ -2,39 +2,43 @@
 @use '../../../styles/abstracts/mixins' as *;
 
 .modeToggle {
-  display: flex;
-  align-items: center;
-  gap: $gap-md;
-  padding: $spacing-sm;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
   background: $bg-dark;
   border-radius: $radius-lg;
   border: 1px solid $border-medium;
+  padding: 0;
+  overflow: hidden;
+  height: 30px;
+}
 
-  button {
-    padding: $spacing-sm $spacing-lg;
-    border: none;
-    background: transparent;
-    color: $text-secondary;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    cursor: pointer;
-    border-radius: $radius-md;
-    transition: $transition-all;
+button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: $text-secondary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: $transition-all;
 
-    &:hover {
-      color: $text-primary;
-    }
-
-    &.active {
-      background: $color-primary;
-      color: white;
-      font-weight: $font-weight-semibold;
-    }
+  &:hover {
+    color: $text-primary;
   }
 
-  .separator {
-    width: 1px;
-    height: 20px;
-    background: $border-medium;
+  &.active {
+    background: $color-primary;
+    color: white;
+    font-weight: $font-weight-semibold;
   }
+}
+
+.separator {
+  width: 1px;
+  background: $border-medium;
+  height: 100%;
 }

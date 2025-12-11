@@ -1,3 +1,5 @@
+from core.constants import WeekDayLabel
+from heating.api.constants import DuplicationTypes
 from heating.models import HeatingPattern
 from rest_framework import serializers
 
@@ -55,3 +57,17 @@ class RoomHeatingPlanInputSerializer(serializers.Serializer):
 
 class HeatingPlansInputSerializer(serializers.Serializer):
     plans = RoomHeatingPlanInputSerializer(many=True)
+
+
+class HeatingPlanDuplicationSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=[t.value for t in DuplicationTypes])
+    source_date = serializers.DateField()
+    repeat_until = serializers.DateField()
+    room_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1), allow_empty=False
+    )
+    weekdays = serializers.ListField(
+        child=serializers.ChoiceField(choices=[d.value for d in WeekDayLabel]),
+        required=False,
+        allow_null=True,
+    )

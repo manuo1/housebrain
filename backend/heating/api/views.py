@@ -1,17 +1,29 @@
 import calendar
 
+from core.utils.date_utils import weekdays_str_to_datetime_weekdays
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
-from heating.api.constants import DayStatus
-from heating.api.selectors import get_daily_heating_plan, invalid_room_ids_in_plans
+from heating.api.constants import DayStatus, DuplicationTypes
+from heating.api.mutators import duplicate_heating_plan_with_override
+from heating.api.selectors import (
+    get_daily_heating_plan,
+    get_room_heating_day_plan_data,
+    invalid_room_ids,
+    invalid_room_ids_in_plans,
+)
 from heating.api.serializers import (
     DailyHeatingPlanInputSerializer,
     DailyHeatingPlanSerializer,
     HeatingCalendarInputSerializer,
     HeatingCalendarSerializer,
+    HeatingPlanDuplicationSerializer,
     HeatingPlansInputSerializer,
 )
-from heating.api.services import add_day_status
+from heating.api.services import (
+    add_day_status,
+    error_in_duplication_dates,
+    generate_duplication_dates,
+)
 from heating.models import HeatingPattern, RoomHeatingDayPlan
 from rest_framework import status
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -93,3 +105,46 @@ class DailyHeatingPlan(APIView):
                     changes["updated"] += 1
 
         return Response(changes, status=status.HTTP_201_CREATED)
+
+
+class HeatingPlanDuplication(APIView):
+    # remove after dev
+    from core.utils.env_utils import environment_is_development
+
+    if environment_is_development():
+        from rest_framework.permissions import AllowAny
+
+        permission_classes = [AllowAny]
+
+    def post(self, request):
+        input_serializer = HeatingPlanDuplicationSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        params = input_serializer.validated_data
+
+        duplication_type = params["type"]
+        source_date = params["source_date"]
+        end_date = params["repeat_until"]
+        # check dates
+        dates_errors = error_in_duplication_dates(
+            source_date, end_date, duplication_type
+        )
+        if dates_errors:
+            raise DRFValidationError(f"Invalid dates : {dates_errors}")
+        # check rooms
+        invalid_ids = invalid_room_ids(params["room_ids"])
+        if invalid_ids:
+            raise DRFValidationError(f"Invalid room_ids : {invalid_ids}")
+        result = 0
+        if duplication_type == DuplicationTypes.DAY:
+            weekdays = weekdays_str_to_datetime_weekdays(params["weekdays"])
+            duplication_dates = generate_duplication_dates(
+                source_date, weekdays, end_date
+            )
+            for room_id, heating_pattern_id in get_room_heating_day_plan_data(
+                source_date, params["room_ids"]
+            ):
+                result = duplicate_heating_plan_with_override(
+                    room_id, heating_pattern_id, duplication_dates
+                )
+
+        return Response({"created/updated": result}, status=status.HTTP_201_CREATED)

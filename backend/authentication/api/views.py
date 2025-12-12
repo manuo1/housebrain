@@ -1,7 +1,7 @@
 from authentication.api.serializers import UserSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -73,3 +73,11 @@ class CookieTokenRefreshView(TokenRefreshView):
 def user_info(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def logout_view(request):
+    response = Response({"detail": "Logged out successfully."})
+    response.delete_cookie("refresh_token")
+    return response

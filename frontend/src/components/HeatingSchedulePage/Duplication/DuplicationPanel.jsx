@@ -11,6 +11,7 @@ export default function DuplicationPanel({
   sourceDate,
   selectedRooms,
   onApply,
+  user,
 }) {
   const [mode, setMode] = useState('day');
   const [selectedWeekdays, setSelectedWeekdays] = useState([]);
@@ -123,7 +124,12 @@ export default function DuplicationPanel({
         />
       </div>
 
-      <DuplicationApplyButton onClick={handleApplyClick} disabled={!isValid} />
+      {user && (
+        <DuplicationApplyButton
+          onClick={handleApplyClick}
+          disabled={!isValid}
+        />
+      )}
 
       <ConfirmModal
         isOpen={showConfirmModal}

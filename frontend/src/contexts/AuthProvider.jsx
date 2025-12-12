@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AuthContext from './AuthContext';
 import loginApi from '../services/auth/login';
+import logoutApi from '../services/auth/logout';
 import refreshApi from '../services/auth/refresh';
 import getUserApi from '../services/auth/getUser';
 
@@ -38,9 +39,15 @@ export function AuthProvider({ children }) {
     setUser(userData);
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setAccessToken(null);
+  const logout = useCallback(async () => {
+    try {
+      await logoutApi();
+    } catch (error) {
+      console.error('Logout API failed:', error);
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+    }
   }, []);
 
   const refresh = useCallback(async () => {

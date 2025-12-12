@@ -4,6 +4,7 @@ import WeekdaySelector from './WeekdaySelector';
 import DuplicationEndDate from './DuplicationEndDate';
 import DuplicationSummary from './DuplicationSummary';
 import DuplicationApplyButton from './DuplicationApplyButton';
+import ConfirmModal from '../../common/ConfirmModal';
 import styles from './DuplicationPanel.module.scss';
 
 export default function DuplicationPanel({
@@ -14,6 +15,7 @@ export default function DuplicationPanel({
   const [mode, setMode] = useState('day');
   const [selectedWeekdays, setSelectedWeekdays] = useState([]);
   const [endDate, setEndDate] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const getValidationErrors = () => {
     const errors = [];
@@ -58,14 +60,11 @@ export default function DuplicationPanel({
     return errors;
   };
 
-  const handleApply = () => {
-    // TODO: Remplacer par un modal custom plus joli
-    const confirmed = window.confirm(
-      'Attention : Cette action écrasera les plannings existants sur les dates sélectionnées. Voulez-vous continuer ?'
-    );
+  const handleApplyClick = () => {
+    setShowConfirmModal(true);
+  };
 
-    if (!confirmed) return;
-
+  const handleConfirm = () => {
     const payload = {
       type: mode,
       source_date: sourceDate,
@@ -124,7 +123,18 @@ export default function DuplicationPanel({
         />
       </div>
 
-      <DuplicationApplyButton onClick={handleApply} disabled={!isValid} />
+      <DuplicationApplyButton onClick={handleApplyClick} disabled={!isValid} />
+
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirm}
+        title="Confirmer la duplication"
+        message="Cette action écrasera les plannings existants sur les dates sélectionnées. Voulez-vous continuer ?"
+        confirmText="Dupliquer"
+        cancelText="Annuler"
+        confirmVariant="danger"
+      />
     </div>
   );
 }

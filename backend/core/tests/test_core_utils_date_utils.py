@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from core.utils.date_utils import (
+    get_week_containing_date,
     is_delta_within_five_seconds,
     is_delta_within_one_minute,
     is_delta_within_two_minute,
@@ -111,3 +112,26 @@ def test_is_delta_within_five_seconds(delta, expected):
 )
 def test_weekdays_str_to_datetime_weekdays(label_list, weekday):
     assert weekdays_str_to_datetime_weekdays(label_list) == weekday
+
+
+@pytest.mark.parametrize(
+    "input_date,expected_start",
+    [
+        (date(2025, 1, 15), date(2025, 1, 13)),  # mercredi
+        (date(2025, 1, 13), date(2025, 1, 13)),  # lundi
+        (date(2025, 1, 19), date(2025, 1, 13)),  # dimanche
+        (date(2024, 12, 30), date(2024, 12, 30)),  # autre semaine
+    ],
+)
+def test_get_week_containing_date_valid(input_date, expected_start):
+    result = get_week_containing_date(input_date)
+
+    assert len(result) == 7
+    assert result[0] == expected_start
+    assert result == [expected_start + timedelta(days=i) for i in range(7)]
+
+
+@pytest.mark.parametrize("input_date", ["a", False, None, {}])
+def test_get_week_containing_date_invalid(input_date):
+    result = get_week_containing_date(input_date)
+    assert result == []

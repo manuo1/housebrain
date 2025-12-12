@@ -774,3 +774,398 @@ def test_duplication_duplicate_weekdays_in_list(authenticated_client):
         RoomHeatingDayPlan.objects.filter(room=room, date=date(2025, 12, 9)).count()
         == 1
     )
+
+
+# Duplication mode WEEK
+
+
+@pytest.mark.django_db
+def test_duplication_week_creates_plans_for_full_week(authenticated_client):
+    """Test WEEK duplication creates plans for all days of the source week"""
+    room = RoomFactory(id=1)
+
+    # Create patterns for each day of the week
+    monday_pattern = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}]
+    )
+    tuesday_pattern = HeatingPatternFactory(
+        slots=[{"start": "08:00", "end": "10:00", "type": "onoff", "value": "on"}]
+    )
+    wednesday_pattern = HeatingPatternFactory(
+        slots=[{"start": "09:00", "end": "11:00", "type": "onoff", "value": "on"}]
+    )
+
+    # SOURCE_DATE is Monday 2025-12-08
+    # Create plans for Monday, Tuesday, Wednesday of source week
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=SOURCE_DATE,
+        heating_pattern=monday_pattern,  # Monday
+    )
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=date(2025, 12, 9),
+        heating_pattern=tuesday_pattern,  # Tuesday
+    )
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=date(2025, 12, 10),
+        heating_pattern=wednesday_pattern,  # Wednesday
+    )
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,  # Monday 2025-12-08
+        "repeat_until": date(2025, 12, 21).strftime(
+            "%Y-%m-%d"
+        ),  # Sunday of second week
+        "room_ids": [room.id],
+        "weekdays": [],  # Not used for WEEK type
+    }
+
+    assert RoomHeatingDayPlan.objects.count() == 3  # Only source week plans
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    # 3 days × 1 week of duplication = 3 new plans
+    assert response.data["created/updated"] == 3
+
+    # Verify Monday pattern duplicated to next Monday
+    next_monday_plan = RoomHeatingDayPlan.objects.get(
+        room=room, date=date(2025, 12, 15)
+    )
+    assert next_monday_plan.heating_pattern == monday_pattern
+
+    # Verify Tuesday pattern duplicated to next Tuesday
+    next_tuesday_plan = RoomHeatingDayPlan.objects.get(
+        room=room, date=date(2025, 12, 16)
+    )
+    assert next_tuesday_plan.heating_pattern == tuesday_pattern
+
+    # Verify Wednesday pattern duplicated to next Wednesday
+    next_wednesday_plan = RoomHeatingDayPlan.objects.get(
+        room=room, date=date(2025, 12, 17)
+    )
+    assert next_wednesday_plan.heating_pattern == wednesday_pattern
+
+
+@pytest.mark.django_db
+def test_duplication_week_multiple_weeks(authenticated_client):
+    """Test WEEK duplication across multiple weeks"""
+    room = RoomFactory(id=1)
+
+    pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+
+    # Create plans for Monday and Friday of source week
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=SOURCE_DATE,
+        heating_pattern=pattern,  # Monday 2025-12-08
+    )
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=date(2025, 12, 12),
+        heating_pattern=pattern,  # Friday 2025-12-12
+    )
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 28).strftime("%Y-%m-%d"),  # 3 weeks later
+        "room_ids": [room.id],
+        "weekdays": [],
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    # 2 days × 2 weeks = 4 new plans (weeks of 15-21 and 22-28)
+    assert response.data["created/updated"] == 4
+
+    # Verify Mondays
+    assert RoomHeatingDayPlan.objects.filter(
+        room=room, date=date(2025, 12, 15)
+    ).exists()
+    assert RoomHeatingDayPlan.objects.filter(
+        room=room, date=date(2025, 12, 22)
+    ).exists()
+
+    # Verify Fridays
+    assert RoomHeatingDayPlan.objects.filter(
+        room=room, date=date(2025, 12, 19)
+    ).exists()
+    assert RoomHeatingDayPlan.objects.filter(
+        room=room, date=date(2025, 12, 26)
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_duplication_week_overrides_existing_plans(authenticated_client):
+    """Test WEEK duplication overrides existing plans in target weeks"""
+    room = RoomFactory(id=1)
+
+    old_pattern = HeatingPatternFactory(
+        slots=[{"start": "08:00", "end": "18:00", "type": "onoff", "value": "on"}]
+    )
+    new_pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+
+    # Create source plan with new pattern
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=SOURCE_DATE,
+        heating_pattern=new_pattern,  # Monday 2025-12-08
+    )
+
+    # Create existing plan with old pattern on next Monday
+    target_monday = date(2025, 12, 15)
+    RoomHeatingDayPlanFactory(
+        room=room, date=target_monday, heating_pattern=old_pattern
+    )
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 21).strftime("%Y-%m-%d"),
+        "room_ids": [room.id],
+        "weekdays": [],
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+    # Verify the plan was updated with new pattern
+    updated_plan = RoomHeatingDayPlan.objects.get(room=room, date=target_monday)
+    assert updated_plan.heating_pattern == new_pattern
+
+
+@pytest.mark.django_db
+def test_duplication_week_multiple_rooms(authenticated_client):
+    """Test WEEK duplication with multiple rooms"""
+    room_1 = RoomFactory(id=1)
+    room_2 = RoomFactory(id=2)
+
+    pattern_1 = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}]
+    )
+    pattern_2 = HeatingPatternFactory(
+        slots=[{"start": "18:00", "end": "23:00", "type": "onoff", "value": "on"}]
+    )
+
+    # Create plans for Monday for both rooms
+    RoomHeatingDayPlanFactory(room=room_1, date=SOURCE_DATE, heating_pattern=pattern_1)
+    RoomHeatingDayPlanFactory(room=room_2, date=SOURCE_DATE, heating_pattern=pattern_2)
+
+    # Create plans for Tuesday for both rooms
+    RoomHeatingDayPlanFactory(
+        room=room_1, date=date(2025, 12, 9), heating_pattern=pattern_1
+    )
+    RoomHeatingDayPlanFactory(
+        room=room_2, date=date(2025, 12, 9), heating_pattern=pattern_2
+    )
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 21).strftime("%Y-%m-%d"),
+        "room_ids": [room_1.id, room_2.id],
+        "weekdays": [],
+    }
+
+    assert RoomHeatingDayPlan.objects.count() == 4  # 2 days × 2 rooms
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    # 2 days × 2 rooms × 1 week = 4 new plans
+    assert response.data["created/updated"] == 4
+
+    # Verify each room kept its pattern
+    next_monday = date(2025, 12, 15)
+    plan_1 = RoomHeatingDayPlan.objects.get(room=room_1, date=next_monday)
+    plan_2 = RoomHeatingDayPlan.objects.get(room=room_2, date=next_monday)
+
+    assert plan_1.heating_pattern == pattern_1
+    assert plan_2.heating_pattern == pattern_2
+
+
+@pytest.mark.django_db
+def test_duplication_week_no_source_plan_for_room(authenticated_client):
+    """Test WEEK duplication when source week has no plan for a room"""
+    room_1 = RoomFactory(id=1)
+    room_2 = RoomFactory(id=2)  # This room has no source plan
+
+    pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+
+    # Only create plan for room_1
+    RoomHeatingDayPlanFactory(room=room_1, date=SOURCE_DATE, heating_pattern=pattern)
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 21).strftime("%Y-%m-%d"),
+        "room_ids": [room_1.id, room_2.id],
+        "weekdays": [],
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    # Only room_1 should have duplicated plans
+    assert RoomHeatingDayPlan.objects.filter(room=room_1).count() > 1
+    assert RoomHeatingDayPlan.objects.filter(room=room_2).count() == 0
+
+
+@pytest.mark.django_db
+def test_duplication_week_partial_week_in_source(authenticated_client):
+    """Test WEEK duplication with only some days having plans in source week"""
+    room = RoomFactory(id=1)
+
+    pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+
+    # Only create plans for Monday and Wednesday (skip Tuesday)
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=SOURCE_DATE,
+        heating_pattern=pattern,  # Monday
+    )
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=date(2025, 12, 10),
+        heating_pattern=pattern,  # Wednesday
+    )
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 21).strftime("%Y-%m-%d"),
+        "room_ids": [room.id],
+        "weekdays": [],
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    # Only 2 days duplicated
+    assert response.data["created/updated"] == 2
+
+    # Verify Monday and Wednesday were duplicated, but not Tuesday
+    assert RoomHeatingDayPlan.objects.filter(
+        room=room,
+        date=date(2025, 12, 15),  # Next Monday
+    ).exists()
+    assert not RoomHeatingDayPlan.objects.filter(
+        room=room,
+        date=date(2025, 12, 16),  # Next Tuesday
+    ).exists()
+    assert RoomHeatingDayPlan.objects.filter(
+        room=room,
+        date=date(2025, 12, 17),  # Next Wednesday
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_duplication_week_with_full_week_of_plans(authenticated_client):
+    """Test WEEK duplication with plans for all 7 days of the week"""
+    room = RoomFactory(id=1)
+    pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+
+    # Create plans for all 7 days of source week (Dec 8-14)
+    for day_offset in range(7):
+        RoomHeatingDayPlanFactory(
+            room=room,
+            date=SOURCE_DATE + timedelta(days=day_offset),
+            heating_pattern=pattern,
+        )
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 21).strftime("%Y-%m-%d"),
+        "room_ids": [room.id],
+        "weekdays": [],
+    }
+
+    assert RoomHeatingDayPlan.objects.count() == 7  # Full source week
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    # 7 days duplicated to next week
+    assert response.data["created/updated"] == 7
+
+    # Verify all 7 days were duplicated
+    for day_offset in range(7):
+        target_date = date(2025, 12, 15) + timedelta(days=day_offset)
+        assert RoomHeatingDayPlan.objects.filter(room=room, date=target_date).exists()
+
+
+@pytest.mark.django_db
+def test_duplication_week_empty_source_week(authenticated_client):
+    """Test WEEK duplication when source week has no plans at all"""
+    room = RoomFactory(id=1)
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 21).strftime("%Y-%m-%d"),
+        "room_ids": [room.id],
+        "weekdays": [],
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.data["created/updated"] == 0  # Nothing to duplicate
+    assert RoomHeatingDayPlan.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_duplication_week_weekdays_parameter_ignored(authenticated_client):
+    """Test that WEEK duplication ignores the weekdays parameter"""
+    room = RoomFactory(id=1)
+    pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+
+    # Create plan for Monday
+    RoomHeatingDayPlanFactory(room=room, date=SOURCE_DATE, heating_pattern=pattern)
+
+    data = {
+        "type": DuplicationTypes.WEEK,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_until": date(2025, 12, 21).strftime("%Y-%m-%d"),
+        "room_ids": [room.id],
+        "weekdays": ["friday"],  # Should be ignored for WEEK type
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    # Monday duplicated to next Monday (weekdays param ignored)
+    assert RoomHeatingDayPlan.objects.filter(
+        room=room,
+        date=date(2025, 12, 15),  # Monday
+    ).exists()
+    # Friday NOT created (weekdays param ignored)
+    assert not RoomHeatingDayPlan.objects.filter(
+        room=room,
+        date=date(2025, 12, 19),  # Friday
+    ).exists()

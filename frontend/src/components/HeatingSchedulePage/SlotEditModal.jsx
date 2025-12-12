@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ConfirmModal from '../common/ConfirmModal/';
 import styles from './SlotEditModal.module.scss';
 
 export default function SlotEditModal({
@@ -14,6 +15,7 @@ export default function SlotEditModal({
   const [end, setEnd] = useState(slot?.end || '00:00');
   const [value, setValue] = useState(slot?.value || '');
   const [errors, setErrors] = useState({});
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (slot) {
@@ -158,10 +160,11 @@ export default function SlotEditModal({
   };
 
   const handleDelete = () => {
-    if (
-      onDelete &&
-      window.confirm('Êtes-vous sûr de vouloir supprimer ce créneau ?')
-    ) {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (onDelete) {
       onDelete();
     }
   };
@@ -250,6 +253,17 @@ export default function SlotEditModal({
             </div>
           </div>
         </form>
+
+        <ConfirmModal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={handleConfirmDelete}
+          title="Supprimer le créneau"
+          message="Êtes-vous sûr de vouloir supprimer ce créneau ?"
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          confirmVariant="danger"
+        />
       </div>
     </div>
   );

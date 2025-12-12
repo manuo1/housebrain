@@ -1,0 +1,106 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  background-color: $bg-light;
+  border-radius: 8px;
+  padding: $gap-lg;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $gap-md;
+}
+
+.icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  margin: 0;
+  text-align: center;
+}
+
+.message {
+  font-size: $font-size-md;
+  color: $text-primary;
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.buttons {
+  display: flex;
+  gap: $gap-md;
+  width: 100%;
+  margin-top: $gap-sm;
+}
+
+.cancelButton,
+.confirmButton {
+  flex: 1;
+  padding: $gap-sm $gap-md;
+  border-radius: 4px;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.cancelButton {
+  @include button-base;
+}
+
+.confirmButton {
+  @include button-primary;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

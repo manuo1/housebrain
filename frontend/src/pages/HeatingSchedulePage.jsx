@@ -10,9 +10,10 @@ import Timeline from '../components/HeatingSchedulePage/Timeline';
 import TimelineSaveActions from '../components/HeatingSchedulePage/TimelineSaveActions';
 import DuplicationPanel from '../components/HeatingSchedulePage/Duplication/DuplicationPanel';
 import styles from './HeatingSchedulePage.module.scss';
+import duplicateHeatingPlan from '../services/duplicateHeatingPlan';
 
 export default function HeatingSchedulePage() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [calendar, setCalendar] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedDateObj, setSelectedDateObj] = useState(null);
@@ -116,8 +117,28 @@ export default function HeatingSchedulePage() {
   };
 
   const handleDuplicationApply = async (payload) => {
-    console.log('Duplication payload:', payload);
-    // TODO: POST to backend /api/heating/plans/duplicate
+    if (!accessToken) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    try {
+      const result = await duplicateHeatingPlan(payload, accessToken);
+      console.log('Duplication réussie:', result);
+
+      // Rafraîchir le calendrier après duplication
+      if (currentMonth) {
+        const data = await fetchHeatingCalendar(
+          currentMonth.year,
+          currentMonth.month
+        );
+        setCalendar(data);
+      }
+
+      console.log(`${result['created/updated']} plans créés/mis à jour`);
+    } catch (error) {
+      console.error('Erreur lors de la duplication:', error);
+    }
   };
 
   // Show loader while initial data is loading

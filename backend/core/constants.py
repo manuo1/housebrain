@@ -31,3 +31,13 @@ UNPLUGGED_MODE = os.getenv("UNPLUGGED_MODE", "False") == "True"
 
 
 MICROSECONDS_PER_SECOND = 1_000_000
+
+
+class WeekDayLabel(StrEnum):
+    MONDAY = "monday"
+    TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
+    FRIDAY = "friday"
+    SATURDAY = "saturday"
+    SUNDAY = "sunday"

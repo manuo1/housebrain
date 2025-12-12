@@ -6,6 +6,7 @@ from core.utils.date_utils import (
     is_delta_within_one_minute,
     is_delta_within_two_minute,
     parse_iso_datetime,
+    weekdays_str_to_datetime_weekdays,
 )
 from freezegun import freeze_time
 
@@ -83,3 +84,30 @@ def test_is_delta_within_five_seconds(delta, expected):
     now = datetime.now()
     other_dt = now - delta
     assert is_delta_within_five_seconds(now, other_dt) is expected
+
+
+@pytest.mark.parametrize(
+    "label_list, weekday",
+    [
+        (
+            [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+            ],
+            [0, 1, 2, 3, 4, 5, 6],
+        ),
+        (["monday"], [0]),
+        ("tuesday", None),
+        (None, None),
+        (False, None),
+        ([], []),
+        ({}, None),
+    ],
+)
+def test_weekdays_str_to_datetime_weekdays(label_list, weekday):
+    assert weekdays_str_to_datetime_weekdays(label_list) == weekday

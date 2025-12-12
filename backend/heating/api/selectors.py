@@ -42,10 +42,24 @@ def get_daily_heating_plan(day: date) -> list:
     return list(qs)
 
 
+def invalid_room_ids(room_ids: list) -> set:
+    room_ids_in_db = set(
+        Room.objects.filter(id__in=room_ids).values_list("id", flat=True)
+    )
+    return set(room_ids) - room_ids_in_db
+
+
 def invalid_room_ids_in_plans(plans: list) -> set:
     room_ids_in_request = [plan["room_id"] for plan in plans]
 
-    room_ids_in_db = set(
-        Room.objects.filter(id__in=room_ids_in_request).values_list("id", flat=True)
+    return invalid_room_ids(room_ids_in_request)
+
+
+def get_room_heating_day_plan_data(day: date, room_id: list[int]) -> list[dict]:
+    if not isinstance(day, date) or not isinstance(room_id, list):
+        return []
+    return list(
+        RoomHeatingDayPlan.objects.filter(date=day, room_id__in=room_id).values_list(
+            "room_id", "heating_pattern_id"
+        )
     )
-    return set(room_ids_in_request) - room_ids_in_db

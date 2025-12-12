@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from core.constants import WeekDayLabel
 
@@ -28,7 +28,7 @@ def parse_iso_datetime(dt_str: str) -> datetime | None:
         return None
 
 
-def weekdays_str_to_datetime_weekdays(labels: list[str]) -> list[int]:
+def weekdays_str_to_datetime_weekdays(labels: list[str]) -> list[int] | None:
     if not isinstance(labels, list):
         return
     mapping = {
@@ -51,3 +51,10 @@ def weekdays_str_to_datetime_weekdays(labels: list[str]) -> list[int]:
         result.append(mapping[enum_value])
 
     return result
+
+
+def get_week_containing_date(day: date) -> list[date]:
+    if not isinstance(day, date):
+        return []
+    start = day - timedelta(days=day.weekday())
+    return [start + timedelta(days=i) for i in range(7)]

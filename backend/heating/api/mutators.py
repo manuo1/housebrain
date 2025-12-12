@@ -27,5 +27,4 @@ def duplicate_heating_plan_with_override(
         update_fields=["heating_pattern", "updated_at"],
         unique_fields=["room", "date"],
     )
-
     return len(results)

@@ -29,6 +29,8 @@ def parse_iso_datetime(dt_str: str) -> datetime | None:
 
 
 def weekdays_str_to_datetime_weekdays(labels: list[str]) -> list[int]:
+    if not isinstance(labels, list):
+        return
     mapping = {
         WeekDayLabel.MONDAY: 0,
         WeekDayLabel.TUESDAY: 1,

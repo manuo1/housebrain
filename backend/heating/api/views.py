@@ -108,14 +108,6 @@ class DailyHeatingPlan(APIView):
 
 
 class HeatingPlanDuplication(APIView):
-    # remove after dev
-    from core.utils.env_utils import environment_is_development
-
-    if environment_is_development():
-        from rest_framework.permissions import AllowAny
-
-        permission_classes = [AllowAny]
-
     def post(self, request):
         input_serializer = HeatingPlanDuplicationSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
@@ -143,8 +135,9 @@ class HeatingPlanDuplication(APIView):
             for room_id, heating_pattern_id in get_room_heating_day_plan_data(
                 source_date, params["room_ids"]
             ):
-                result = duplicate_heating_plan_with_override(
+                room_result = duplicate_heating_plan_with_override(
                     room_id, heating_pattern_id, duplication_dates
                 )
+                result += room_result
 
         return Response({"created/updated": result}, status=status.HTTP_201_CREATED)

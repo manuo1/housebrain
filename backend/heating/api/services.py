@@ -66,6 +66,7 @@ def error_in_duplication_dates(source_date, end_date, duplication_type):
 def generate_duplication_dates(
     source_date: date, weekdays: list[int], end_date: date
 ) -> list[date]:
+    weekdays = sorted(set(weekdays))
     dates = []
     current_date = source_date + timedelta(days=1)
 

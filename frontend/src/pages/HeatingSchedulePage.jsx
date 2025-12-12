@@ -149,13 +149,17 @@ export default function HeatingSchedulePage() {
       <main className={styles.mainContent}>
         <div className={styles.header}>
           <DateHeader date={selectedDateObj} />
-          {user && (
+          {user ? (
             <TimelineSaveActions
               onCancel={undo}
               onSave={save}
               canUndo={canUndo}
               hasChanges={hasChanges}
             />
+          ) : (
+            <p className={styles.loginMessage}>
+              Vous devez être connecté pour modifier ces éléments
+            </p>
           )}
         </div>
 
@@ -180,6 +184,7 @@ export default function HeatingSchedulePage() {
             dailyPlan?.rooms.filter((r) => selectedRoomIds.includes(r.id)) || []
           }
           onApply={handleDuplicationApply}
+          user={user}
         />
       </aside>
     </div>

@@ -1,6 +1,9 @@
 import calendar
 
-from core.utils.date_utils import weekdays_str_to_datetime_weekdays
+from core.utils.date_utils import (
+    get_week_containing_date,
+    weekdays_str_to_datetime_weekdays,
+)
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from heating.api.constants import DayStatus, DuplicationTypes
@@ -116,6 +119,7 @@ class HeatingPlanDuplication(APIView):
         duplication_type = params["type"]
         source_date = params["source_date"]
         end_date = params["repeat_until"]
+        room_ids = params["room_ids"]
         # check dates
         dates_errors = error_in_duplication_dates(
             source_date, end_date, duplication_type
@@ -123,21 +127,38 @@ class HeatingPlanDuplication(APIView):
         if dates_errors:
             raise DRFValidationError(f"Invalid dates : {dates_errors}")
         # check rooms
-        invalid_ids = invalid_room_ids(params["room_ids"])
+        invalid_ids = invalid_room_ids(room_ids)
         if invalid_ids:
             raise DRFValidationError(f"Invalid room_ids : {invalid_ids}")
-        result = 0
+        created_updated = 0
         if duplication_type == DuplicationTypes.DAY:
             weekdays = weekdays_str_to_datetime_weekdays(params["weekdays"])
             duplication_dates = generate_duplication_dates(
                 source_date, weekdays, end_date
             )
             for room_id, heating_pattern_id in get_room_heating_day_plan_data(
-                source_date, params["room_ids"]
+                source_date, room_ids
             ):
-                room_result = duplicate_heating_plan_with_override(
+                plan_created_updated = duplicate_heating_plan_with_override(
                     room_id, heating_pattern_id, duplication_dates
                 )
-                result += room_result
+                created_updated += plan_created_updated
+        if duplication_type == DuplicationTypes.WEEK:
+            source_week = get_week_containing_date(source_date)
+            end_week = get_week_containing_date(end_date)
 
-        return Response({"created/updated": result}, status=status.HTTP_201_CREATED)
+            for day in source_week:
+                duplication_dates = generate_duplication_dates(
+                    day, [day.weekday()], end_week[-1]
+                )
+                for room_id, heating_pattern_id in get_room_heating_day_plan_data(
+                    day, room_ids
+                ):
+                    plan_created_updated = duplicate_heating_plan_with_override(
+                        room_id, heating_pattern_id, duplication_dates
+                    )
+                    created_updated += plan_created_updated
+
+        return Response(
+            {"created/updated": created_updated}, status=status.HTTP_201_CREATED
+        )

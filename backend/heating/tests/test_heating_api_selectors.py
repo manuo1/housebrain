@@ -4,6 +4,7 @@ import pytest
 from actuators.tests.factories import RadiatorFactory
 from heating.api.selectors import (
     get_daily_heating_plan,
+    get_room_heating_day_plan_data,
     get_slots_hashes,
     invalid_room_ids_in_plans,
 )
@@ -109,8 +110,6 @@ def test_get_daily_heating_plan_normal_cases():
         date=DEFAULT_DATE + timedelta(days=1),
         heating_pattern=heating_pattern_1,
     )
-    print(get_daily_heating_plan(DEFAULT_DATE))
-
     assert get_daily_heating_plan(DEFAULT_DATE) == [
         {
             "room_id": 1,
@@ -150,3 +149,198 @@ def test_invalid_room_ids_in_plans(plan, expected):
     RoomFactory(id=1)
     RoomFactory(id=2)
     assert invalid_room_ids_in_plans(plan) == expected
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_single_room():
+    """Test retrieving data for a single room"""
+    room = RoomFactory(id=1)
+    heating_pattern = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+
+    RoomHeatingDayPlanFactory(
+        room=room, date=DEFAULT_DATE, heating_pattern=heating_pattern
+    )
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [room.id])
+
+    assert result == [(room.id, heating_pattern.id)]
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_multiple_rooms():
+    """Test retrieving data for multiple rooms"""
+    room_1 = RoomFactory(id=1)
+    room_2 = RoomFactory(id=2)
+    room_3 = RoomFactory(id=3)
+
+    pattern_1 = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+    pattern_2 = HeatingPatternFactory(
+        slots=[{"start": "12:00", "end": "18:00", "type": "onoff", "value": "on"}]
+    )
+
+    RoomHeatingDayPlanFactory(room=room_1, date=DEFAULT_DATE, heating_pattern=pattern_1)
+    RoomHeatingDayPlanFactory(room=room_2, date=DEFAULT_DATE, heating_pattern=pattern_2)
+    RoomHeatingDayPlanFactory(room=room_3, date=DEFAULT_DATE, heating_pattern=pattern_1)
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [room_1.id, room_2.id])
+
+    assert len(result) == 2
+    assert (room_1.id, pattern_1.id) in result
+    assert (room_2.id, pattern_2.id) in result
+    assert (room_3.id, pattern_1.id) not in result
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_no_plans():
+    """Test with rooms that have no heating plans"""
+    room = RoomFactory(id=1)
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [room.id])
+
+    assert result == []
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_wrong_date():
+    """Test with date that doesn't match any plans"""
+    room = RoomFactory(id=1)
+    heating_pattern = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+
+    RoomHeatingDayPlanFactory(
+        room=room, date=DEFAULT_DATE, heating_pattern=heating_pattern
+    )
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE + timedelta(days=1), [room.id])
+
+    assert result == []
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_empty_room_list():
+    """Test with empty room_id list"""
+    room = RoomFactory(id=1)
+    heating_pattern = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+
+    RoomHeatingDayPlanFactory(
+        room=room, date=DEFAULT_DATE, heating_pattern=heating_pattern
+    )
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [])
+
+    assert result == []
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_nonexistent_room_ids():
+    """Test with room IDs that don't exist"""
+    room = RoomFactory(id=1)
+    heating_pattern = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+
+    RoomHeatingDayPlanFactory(
+        room=room, date=DEFAULT_DATE, heating_pattern=heating_pattern
+    )
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [999, 1000])
+
+    assert result == []
+
+
+@pytest.mark.parametrize(
+    "day, room_id",
+    [
+        (None, [1]),
+        (False, [1]),
+        ([], [1]),
+        ({}, [1]),
+        ("2025-12-09", [1]),
+        (2025, [1]),
+        (DEFAULT_DATE, None),
+        (DEFAULT_DATE, False),
+        (DEFAULT_DATE, {}),
+        (DEFAULT_DATE, "1"),
+        (DEFAULT_DATE, 1),
+        (DEFAULT_DATE, (1, 2)),
+        (None, None),
+        ("invalid", "invalid"),
+    ],
+)
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_incorrect_types(day, room_id):
+    """Test with incorrect parameter types"""
+    result = get_room_heating_day_plan_data(day, room_id)
+    assert result == []
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_multiple_plans_same_room():
+    """Test that only plans matching the date are returned"""
+    room = RoomFactory(id=1)
+
+    pattern_1 = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+    pattern_2 = HeatingPatternFactory(
+        slots=[{"start": "12:00", "end": "18:00", "type": "onoff", "value": "on"}]
+    )
+
+    # Plan for DEFAULT_DATE
+    RoomHeatingDayPlanFactory(room=room, date=DEFAULT_DATE, heating_pattern=pattern_1)
+
+    # Plan for different date
+    RoomHeatingDayPlanFactory(
+        room=room, date=DEFAULT_DATE + timedelta(days=1), heating_pattern=pattern_2
+    )
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [room.id])
+
+    assert result == [(room.id, pattern_1.id)]
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_duplicate_room_ids():
+    """Test with duplicate room IDs in list"""
+    room = RoomFactory(id=1)
+    heating_pattern = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+
+    RoomHeatingDayPlanFactory(
+        room=room, date=DEFAULT_DATE, heating_pattern=heating_pattern
+    )
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [room.id, room.id, room.id])
+
+    # Should only return one result despite duplicate IDs
+    assert result == [(room.id, heating_pattern.id)]
+
+
+@pytest.mark.django_db
+def test_get_room_heating_day_plan_data_returns_tuples():
+    """Test that result format is list of tuples (room_id, heating_pattern_id)"""
+    room = RoomFactory(id=1)
+    heating_pattern = HeatingPatternFactory(
+        slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
+    )
+
+    RoomHeatingDayPlanFactory(
+        room=room, date=DEFAULT_DATE, heating_pattern=heating_pattern
+    )
+
+    result = get_room_heating_day_plan_data(DEFAULT_DATE, [room.id])
+
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert isinstance(result[0], tuple)
+    assert len(result[0]) == 2
+    assert result[0][0] == room.id
+    assert result[0][1] == heating_pattern.id

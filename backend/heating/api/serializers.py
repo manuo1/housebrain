@@ -62,6 +62,7 @@ class HeatingPlansInputSerializer(serializers.Serializer):
 class HeatingPlanDuplicationSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=[t.value for t in DuplicationTypes])
     source_date = serializers.DateField()
+    repeat_since = serializers.DateField()
     repeat_until = serializers.DateField()
     room_ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1), allow_empty=False

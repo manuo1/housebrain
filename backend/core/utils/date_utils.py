@@ -28,7 +28,7 @@ def parse_iso_datetime(dt_str: str) -> datetime | None:
         return None
 
 
-def weekdays_str_to_datetime_weekdays(labels: list[str]) -> list[int] | None:
+def weekdays_str_list_to_datetime_weekdays_list(labels: list[str]) -> list[int] | None:
     if not isinstance(labels, list):
         return
     mapping = {
@@ -58,3 +58,17 @@ def get_week_containing_date(day: date) -> list[date]:
         return []
     start = day - timedelta(days=day.weekday())
     return [start + timedelta(days=i) for i in range(7)]
+
+
+def get_previous_monday(day: date) -> date | None:
+    try:
+        return day - timedelta(days=day.weekday())
+    except AttributeError:
+        return
+
+
+def get_next_sunday(day: date) -> date | None:
+    try:
+        return day - timedelta(days=day.weekday()) + timedelta(days=6)
+    except AttributeError:
+        return

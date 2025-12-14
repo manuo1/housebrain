@@ -54,28 +54,48 @@ def add_day_status(raw_calendar: list) -> list:
     return raw_calendar
 
 
-def error_in_duplication_dates(source_date, end_date, duplication_type):
-    if source_date >= end_date:
-        return "source_date must be before repeat_until"
-    if (end_date - source_date).days > 366:
-        return "Maximum 365 days between source_date and repeat_until"
-    if duplication_type == DuplicationTypes.WEEK and (end_date - source_date).days < 7:
-        return "There must be at least 7 days between source_date and repeat_until in the case of a duplication of weeks"
+def error_in_duplication_dates(source_date, start_date, end_date, duplication_type):
+    # start_date must be strictly after source_date
+    if start_date <= source_date:
+        return "start_date must be strictly after source_date"
+
+    # end_date must be strictly after start_date
+    if end_date <= start_date:
+        return "end_date must be strictly after start_date"
+
+    # For WEEK duplications, there must be at least 6 days between the start_date and end_date.
+    if duplication_type == DuplicationTypes.WEEK:
+        days_diff = (end_date - start_date).days
+        if days_diff < 6:
+            return (
+                "end_date must be at least 6 days after start_date for week duplication"
+            )
+
+    # Maximum 365 days between start_date and end_date
+    days_diff = (end_date - start_date).days
+    if days_diff > 365:
+        return "Maximum 365 days allowed between start_date and end_date"
+
+    return None
 
 
 def generate_duplication_dates(
-    source_date: date, weekdays: list[int], end_date: date
+    start_date: date, weekdays: list[int], end_date: date
 ) -> list[date]:
     weekdays = sorted(set(weekdays))
     dates = []
-    current_date = source_date + timedelta(days=1)
 
-    for weekday in sorted(weekdays):
-        days_ahead = (weekday - current_date.weekday()) % 7
-        if days_ahead == 0 and current_date <= source_date:
-            days_ahead = 7
-        next_date = current_date + timedelta(days=days_ahead)
+    for weekday in weekdays:
+        # Calculate the number of days until the next requested weekday
+        days_ahead = (weekday - start_date.weekday()) % 7
 
+        # If it's 0, it means start_date is already on this weekday
+        if days_ahead == 0:
+            next_date = start_date
+        else:
+            next_date = start_date + timedelta(days=days_ahead)
+
+        # Add all occurrences of this day until end_date
         while next_date <= end_date:
             dates.append(next_date)
             next_date += timedelta(days=7)

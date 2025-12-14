@@ -1,13 +1,13 @@
 @use '../../../styles/abstracts/variables' as *;
 @use '../../../styles/abstracts/mixins' as *;
 
-.endDate {
+.duplicationDate {
   label {
     display: block;
-    margin-bottom: $spacing-sm;
+    margin-bottom: $spacing-xs;
     font-weight: $font-weight-medium;
     color: $text-secondary;
-    font-size: $font-size-sm;
+    font-size: $font-size-xs;
   }
 
   input {
@@ -17,7 +17,7 @@
     border-radius: $radius-md;
     background: $bg-dark;
     color: $text-primary;
-    font-size: $font-size-sm;
+    font-size: $font-size-xs;
     transition: border-color 0.2s;
     text-align: center;
 

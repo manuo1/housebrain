@@ -2,12 +2,14 @@ from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from core.utils.date_utils import (
+    get_next_sunday,
+    get_previous_monday,
     get_week_containing_date,
     is_delta_within_five_seconds,
     is_delta_within_one_minute,
     is_delta_within_two_minute,
     parse_iso_datetime,
-    weekdays_str_to_datetime_weekdays,
+    weekdays_str_list_to_datetime_weekdays_list,
 )
 from freezegun import freeze_time
 
@@ -110,8 +112,8 @@ def test_is_delta_within_five_seconds(delta, expected):
         ({}, None),
     ],
 )
-def test_weekdays_str_to_datetime_weekdays(label_list, weekday):
-    assert weekdays_str_to_datetime_weekdays(label_list) == weekday
+def test_weekdays_str_list_to_datetime_weekdays_list(label_list, weekday):
+    assert weekdays_str_list_to_datetime_weekdays_list(label_list) == weekday
 
 
 @pytest.mark.parametrize(
@@ -135,3 +137,56 @@ def test_get_week_containing_date_valid(input_date, expected_start):
 def test_get_week_containing_date_invalid(input_date):
     result = get_week_containing_date(input_date)
     assert result == []
+
+
+MONDAY = date(2025, 12, 15)
+TUESDAY = date(2025, 12, 16)
+WEDNESDAY = date(2025, 12, 17)
+THURSDAY = date(2025, 12, 18)
+FRIDAY = date(2025, 12, 19)
+SATURDAY = date(2025, 12, 20)
+SUNDAY = date(2025, 12, 21)
+
+
+@pytest.mark.parametrize(
+    "input_date, result",
+    [
+        (MONDAY, MONDAY),
+        (TUESDAY, MONDAY),
+        (WEDNESDAY, MONDAY),
+        (THURSDAY, MONDAY),
+        (FRIDAY, MONDAY),
+        (SATURDAY, MONDAY),
+        (SUNDAY, MONDAY),
+        # strange cases
+        ("a", None),
+        (False, None),
+        (None, None),
+        ([], None),
+    ],
+)
+def test_get_previous_monday(input_date, result):
+    result = get_previous_monday(input_date)
+    assert result == result
+
+
+@pytest.mark.parametrize(
+    "input_date, result",
+    [
+        (MONDAY, SUNDAY),
+        (TUESDAY, SUNDAY),
+        (WEDNESDAY, SUNDAY),
+        (THURSDAY, SUNDAY),
+        (FRIDAY, SUNDAY),
+        (SATURDAY, SUNDAY),
+        (SUNDAY, SUNDAY),
+        # strange cases
+        ("a", None),
+        (False, None),
+        (None, None),
+        ([], None),
+    ],
+)
+def test_get_next_sunday(input_date, result):
+    result = get_next_sunday(input_date)
+    assert result == result

@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDate, getWeekRange } from './duplicationDateUtils';
 import styles from './DuplicationSummary.module.scss';
 
 const WEEKDAY_LABELS = {
@@ -11,54 +12,20 @@ const WEEKDAY_LABELS = {
   sunday: 'dimanches',
 };
 
-// -----------------------------------------------------------
-// Utils
-// -----------------------------------------------------------
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const [year, month, day] = dateStr.split('-');
-  return `${day}/${month}/${year}`;
-}
-
-function getWeekRange(dateStr) {
-  const date = new Date(dateStr);
-  const day = date.getDay(); // 0 = sunday ... 6 = saturday
-  const jsDay = day === 0 ? 7 : day; // convert 0→7 pour dimanche
-
-  const monday = new Date(date);
-  monday.setDate(date.getDate() - (jsDay - 1));
-
-  const sunday = new Date(date);
-  sunday.setDate(date.getDate() + (7 - jsDay));
-
-  const format = (d) =>
-    String(d.getDate()).padStart(2, '0') +
-    '/' +
-    String(d.getMonth() + 1).padStart(2, '0') +
-    '/' +
-    d.getFullYear();
-
-  return {
-    monday: monday.toISOString().slice(0, 10),
-    sunday: sunday.toISOString().slice(0, 10),
-    mondayText: format(monday),
-    sundayText: format(sunday),
-  };
-}
-
-// -----------------------------------------------------------
-// Component
-// -----------------------------------------------------------
 export default function DuplicationSummary({
   mode,
   sourceDate,
+  startDate,
   endDate,
   selectedRooms,
   selectedWeekdays,
 }) {
-  const startWeekRange = mode === 'week' ? getWeekRange(sourceDate) : null;
+  const sourceWeekRange = mode === 'week' ? getWeekRange(sourceDate) : null;
+  const startWeekRange =
+    mode === 'week' && startDate ? getWeekRange(startDate) : null;
   const endWeekRange =
     mode === 'week' && endDate ? getWeekRange(endDate) : null;
+
   const getWeekdaysList = () => {
     return selectedWeekdays.map((day) => WEEKDAY_LABELS[day]).join(', ');
   };
@@ -66,7 +33,7 @@ export default function DuplicationSummary({
   return (
     <div className={styles.summary}>
       <div className={styles.content}>
-        {/* TITRE + DATE(S) */}
+        {/* TITRE + DATE(S) SOURCE */}
         <div className={styles.section}>
           {mode !== 'week' ? (
             <>
@@ -78,7 +45,7 @@ export default function DuplicationSummary({
           ) : (
             <>
               Les planning de la semaine du :<br />
-              {startWeekRange.mondayText} au {startWeekRange.sundayText}
+              {sourceWeekRange?.mondayText} au {sourceWeekRange?.sundayText}
               <br />
               des pièces :
             </>
@@ -105,8 +72,25 @@ export default function DuplicationSummary({
         )}
 
         {/* MODE WEEK */}
-        {mode === 'week' && endDate && (
+        {mode === 'week' && (
           <div className={styles.section}>Seront dupliqués chaque semaine</div>
+        )}
+
+        {/* START DATE */}
+        {startDate && (
+          <div className={styles.section}>
+            {mode === 'week' ? (
+              <>
+                Depuis la semaine du :<br />
+                {startWeekRange?.mondayText} au {startWeekRange?.sundayText}
+              </>
+            ) : (
+              <>
+                Depuis le :<br />
+                {formatDate(startDate)}
+              </>
+            )}
+          </div>
         )}
 
         {/* END DATE */}

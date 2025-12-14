@@ -19,6 +19,12 @@
   // Spacing between sections handled by parent gap
 }
 
+.dateRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $gap-md;
+}
+
 .errors {
   background-color: $bg-lighter;
   border: 1px solid $border-light;

@@ -1,8 +1,10 @@
 import calendar
 
 from core.utils.date_utils import (
+    get_next_sunday,
+    get_previous_monday,
     get_week_containing_date,
-    weekdays_str_to_datetime_weekdays,
+    weekdays_str_list_to_datetime_weekdays_list,
 )
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
@@ -118,23 +120,24 @@ class HeatingPlanDuplication(APIView):
 
         duplication_type = params["type"]
         source_date = params["source_date"]
+        start_date = params["repeat_since"]
         end_date = params["repeat_until"]
-        room_ids = params["room_ids"]
+        room_ids = set(params["room_ids"])
         # check dates
         dates_errors = error_in_duplication_dates(
-            source_date, end_date, duplication_type
+            source_date, start_date, end_date, duplication_type
         )
         if dates_errors:
             raise DRFValidationError(f"Invalid dates : {dates_errors}")
-        # check rooms
+        # check that rooms exists
         invalid_ids = invalid_room_ids(room_ids)
         if invalid_ids:
             raise DRFValidationError(f"Invalid room_ids : {invalid_ids}")
         created_updated = 0
         if duplication_type == DuplicationTypes.DAY:
-            weekdays = weekdays_str_to_datetime_weekdays(params["weekdays"])
+            weekdays = weekdays_str_list_to_datetime_weekdays_list(params["weekdays"])
             duplication_dates = generate_duplication_dates(
-                source_date, weekdays, end_date
+                start_date, weekdays, end_date
             )
             for room_id, heating_pattern_id in get_room_heating_day_plan_data(
                 source_date, room_ids
@@ -145,15 +148,20 @@ class HeatingPlanDuplication(APIView):
                 created_updated += plan_created_updated
         if duplication_type == DuplicationTypes.WEEK:
             source_week = get_week_containing_date(source_date)
-            end_week = get_week_containing_date(end_date)
+            start_monday = get_previous_monday(start_date)
+            end_sunday = get_next_sunday(end_date)
 
-            for day in source_week:
+            # for each days of the source_week (ex: Tuesday)
+            for source_day in source_week:
+                # get dates to apply duplication (ex: all Tuesday form start_monday to end_sunday)
                 duplication_dates = generate_duplication_dates(
-                    day, [day.weekday()], end_week[-1]
+                    start_monday, [source_day.weekday()], end_sunday
                 )
+                # for each room get its heating pattern for th source_day
                 for room_id, heating_pattern_id in get_room_heating_day_plan_data(
-                    day, room_ids
+                    source_day, room_ids
                 ):
+                    # duplicate this room heating pattern on all days in duplication_dates
                     plan_created_updated = duplicate_heating_plan_with_override(
                         room_id, heating_pattern_id, duplication_dates
                     )

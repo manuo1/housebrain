@@ -1,7 +1,7 @@
 // frontend/src/components/HeatingSchedulePage/HeatingCalendar.module.scss
 
-@use '../../styles/abstracts/variables' as *;
-@use '../../styles/abstracts/mixins' as *;
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
 
 .calendar {
   padding: $spacing-base;

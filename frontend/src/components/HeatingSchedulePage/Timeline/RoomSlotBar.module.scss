@@ -1,0 +1,8 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.roomSlotBar {
+  @include flex-column;
+  gap: $gap-sm;
+  width: 100%;
+}

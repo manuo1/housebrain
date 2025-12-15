@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatFullDayLabel } from '../../utils/dateUtils';
+import { formatFullDayLabel } from '../../../utils/dateUtils';
 import styles from './DateHeader.module.scss';
 
 export default function DateHeader({ date }) {

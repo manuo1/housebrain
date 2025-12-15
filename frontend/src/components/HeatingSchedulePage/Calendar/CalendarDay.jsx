@@ -1,5 +1,5 @@
 import React from 'react';
-import { DayStatus } from '../../models/HeatingCalendar';
+import { DayStatus } from '../../../models/HeatingCalendar';
 import styles from './CalendarDay.module.scss';
 
 export default function CalendarDay({

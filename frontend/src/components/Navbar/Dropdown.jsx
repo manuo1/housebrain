@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import DropdownLink from "./DropdownLink";
-import styles from "./Dropdown.module.scss";
+import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import DropdownLink from './DropdownLink';
+import styles from './Dropdown.module.scss';
 
 export default function Dropdown({ title, links, icon }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,9 +15,9 @@ export default function Dropdown({ title, links, icon }) {
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -45,15 +45,15 @@ export default function Dropdown({ title, links, icon }) {
       onMouseLeave={handleMouseLeave}
     >
       <button
-        className={`${styles.dropdownToggle} ${isOpen ? styles.active : ""}`}
+        className={`${styles.dropdownToggle} ${isOpen ? styles.active : ''}`}
         onClick={toggleDropdown}
       >
         {icon && <span className={styles.titleIcon}>{icon}</span>}
-        {title}
+        <span className={styles.title}>{title}</span>
         <span className={styles.arrow}>▾</span>
       </button>
 
-      <div className={`${styles.dropdownMenu} ${isOpen ? styles.show : ""}`}>
+      <div className={`${styles.dropdownMenu} ${isOpen ? styles.show : ''}`}>
         {links.map((link, index) => (
           <DropdownLink
             key={index}

@@ -63,7 +63,7 @@ export default function AuthDropdown() {
         onClick={toggleDropdown}
       >
         <span className={styles.icon}>👤</span>
-        {user ? user.username : 'Connexion'}
+        {user ? '✅' : '🚫'}
       </button>
 
       <div className={`${styles.authMenu} ${isOpen ? styles.show : ''}`}>

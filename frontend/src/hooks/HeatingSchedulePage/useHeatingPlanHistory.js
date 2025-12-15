@@ -4,7 +4,7 @@ import saveDailyHeatingPlan from '../../services/saveDailyHeatingPlan';
 import { useAuth } from '../../contexts/useAuth';
 
 export function useHeatingPlanHistory(selectedDate) {
-  const { accessToken } = useAuth();
+  const { accessToken, refresh } = useAuth();
   const [dailyPlan, setDailyPlan] = useState(null);
   const [initialPlan, setInitialPlan] = useState(null);
   const [history, setHistory] = useState([]);
@@ -62,8 +62,8 @@ export function useHeatingPlanHistory(selectedDate) {
     }
 
     try {
-      // Utiliser la ref pour avoir la valeur actuelle
-      await saveDailyHeatingPlan(dailyPlanRef.current, accessToken);
+      // Utiliser la ref pour avoir la valeur actuelle et passer refresh
+      await saveDailyHeatingPlan(dailyPlanRef.current, accessToken, refresh);
 
       // Reload from backend
       const data = await fetchDailyHeatingPlan(selectedDate);
@@ -74,7 +74,7 @@ export function useHeatingPlanHistory(selectedDate) {
       console.error('Error saving daily plan:', error);
       throw error;
     }
-  }, [accessToken, selectedDate]);
+  }, [accessToken, refresh, selectedDate]);
 
   return {
     dailyPlan,

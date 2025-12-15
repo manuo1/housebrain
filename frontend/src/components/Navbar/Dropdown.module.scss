@@ -10,7 +10,7 @@
     color: $text-secondary;
     font-size: $font-size-md;
     font-weight: $font-weight-medium;
-    padding: $spacing-md $spacing-lg;
+    padding: $spacing-md clamp(0.25rem, -0.1021rem + 1.5023vw, 1.25rem);
     border-radius: $radius-base;
     cursor: pointer;
     display: flex;
@@ -84,48 +84,14 @@
   }
 }
 
-@include respond-to('md') {
-  .dropdown {
-    .dropdownToggle {
-      padding: $spacing-sm $gap-md;
-      font-size: $font-size-sm;
-      gap: 0.4rem;
-
-      .titleIcon {
-        font-size: $font-size-sm;
-      }
-
-      .arrow {
-        font-size: $font-size-xs;
-      }
-    }
-
-    .dropdownMenu {
-      min-width: 180px;
-      right: -10px;
-
-      &::before {
-        right: 15px;
-      }
-    }
-  }
-}
-
+/* Responsive */
 @include respond-to('xs') {
-  .dropdown {
-    .dropdownToggle {
-      padding: 0.4rem 0.6rem;
-      font-size: $font-size-sm;
-
-      .titleIcon {
-        font-size: $font-size-sm;
-      }
+  .dropdownToggle {
+    .title {
+      display: none;
     }
-
-    .dropdownMenu {
-      min-width: 160px;
-      border-radius: $radius-base;
-      padding: 0.4rem 0;
+    .titleIcon {
+      font-size: $font-size-xl;
     }
   }
 }

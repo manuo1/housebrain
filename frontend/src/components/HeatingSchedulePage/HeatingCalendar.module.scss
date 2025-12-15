@@ -35,6 +35,7 @@
 }
 
 .navBtn {
+  @include flex-center;
   background: transparent;
   border: none;
   color: $text-muted;
@@ -43,9 +44,6 @@
   padding: $spacing-xs;
   border-radius: $radius-round;
   transition: $transition-all;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 28px;
   height: 28px;
 

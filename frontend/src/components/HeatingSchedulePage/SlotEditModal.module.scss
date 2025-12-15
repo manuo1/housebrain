@@ -38,6 +38,7 @@
 }
 
 .formGroup {
+  @include flex-column;
   margin-bottom: $spacing-lg;
 
   label {

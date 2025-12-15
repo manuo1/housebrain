@@ -14,9 +14,7 @@
 }
 
 button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @include flex-center;
   width: 100%;
   border: none;
   background: transparent;

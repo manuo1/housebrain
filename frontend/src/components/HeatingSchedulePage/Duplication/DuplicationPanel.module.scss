@@ -2,8 +2,7 @@
 @use '../../../styles/abstracts/mixins' as *;
 
 .duplicationPanel {
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   gap: $gap-md;
   height: 100%;
 
@@ -28,7 +27,7 @@
 .errors {
   background-color: $bg-lighter;
   border: 1px solid $border-light;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   padding: $gap-sm $gap-md;
   color: #c33;
 

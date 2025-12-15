@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ConfirmModal from '../common/ConfirmModal/';
+import ConfirmModal from '../../common/ConfirmModal/';
 import styles from './SlotEditModal.module.scss';
 
 export default function SlotEditModal({

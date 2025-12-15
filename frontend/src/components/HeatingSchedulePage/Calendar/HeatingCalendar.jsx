@@ -1,5 +1,5 @@
 import React from 'react';
-import { getMonthLabel } from '../../utils/dateUtils';
+import { getMonthLabel } from '../../../utils/dateUtils';
 import CalendarDay from './CalendarDay';
 import styles from './HeatingCalendar.module.scss';
 

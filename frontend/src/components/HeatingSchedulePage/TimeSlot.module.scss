@@ -1,6 +1,8 @@
 @use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
 
 .slot {
+  @include flex-center;
   position: absolute;
   top: 0;
   height: 100%;
@@ -9,9 +11,6 @@
   transition: $transition-all;
   cursor: pointer;
   border: 2px solid transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-weight: $font-weight-semibold;
   font-size: $font-size-xs;
   color: white;

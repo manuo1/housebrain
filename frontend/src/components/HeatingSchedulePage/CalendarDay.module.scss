@@ -1,6 +1,8 @@
 @use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
 
 .dayButton {
+  @include flex-center;
   width: 28px;
   height: 28px;
   border-radius: $radius-round;
@@ -11,9 +13,6 @@
   transition: $transition-fast;
   font-weight: $font-weight-normal;
   font-size: $font-size-xs;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   &:hover {
     background: rgba(255, 255, 255, 0.1);

@@ -10,8 +10,8 @@ import {
   getNextMonday,
   getMondayOfWeek,
   getSundayOfWeek,
-} from './duplicationDateUtils';
-import { getValidationErrors } from './duplicationValidation';
+} from './utils/duplicationDateUtils';
+import { getValidationErrors } from './utils/duplicationValidation';
 import styles from './DuplicationPanel.module.scss';
 
 export default function DuplicationPanel({

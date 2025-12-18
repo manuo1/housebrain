@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatDate, getWeekRange } from './duplicationDateUtils';
+import { formatDate, getWeekRange } from './utils/duplicationDateUtils';
 import styles from './DuplicationSummary.module.scss';
 
 const WEEKDAY_LABELS = {

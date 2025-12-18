@@ -27,33 +27,6 @@ export const validateDuration = (startTime, endTime) => {
 };
 
 /**
- * Check if slot overlaps with existing slots
- * @param {string} startTime - Start time (HH:MM)
- * @param {string} endTime - End time (HH:MM)
- * @param {Array} roomSlots - Array of existing slots
- * @param {number|null} slotIndex - Index of current slot (null for new slot)
- * @returns {boolean} True if overlap detected
- */
-export const checkOverlap = (startTime, endTime, roomSlots, slotIndex) => {
-  const startMin = timeToMinutes(startTime);
-  const endMin = timeToMinutes(endTime);
-
-  for (let i = 0; i < roomSlots.length; i++) {
-    if (i === slotIndex) continue; // Skip current slot
-
-    const otherStart = timeToMinutes(roomSlots[i].start);
-    const otherEnd = timeToMinutes(roomSlots[i].end);
-
-    // No contact or overlap allowed - must have at least 1 minute gap
-    // Valid cases: end < otherStart OR start > otherEnd
-    if (!(endMin < otherStart || startMin > otherEnd)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
  * Validate slot value (temperature or on/off)
  * @param {string} val - Slot value
  * @returns {boolean}
@@ -93,7 +66,8 @@ export const checkTypeConsistency = (valueInput, roomSlots, slotIndex) => {
 };
 
 /**
- * Validate all fields of a slot
+ * Validate a slot (time, duration, value, type consistency)
+ * Does NOT check overlap - that's handled by auto-adjustment in parent component
  * @param {string} startTime - Start time (HH:MM)
  * @param {string} endTime - End time (HH:MM)
  * @param {string} valueInput - Slot value
@@ -120,14 +94,9 @@ export const validateSlot = (
     errors.time = "La durée minimum d'un créneau est de 30 minutes";
   }
 
-  // Validate overlap
-  if (!errors.time && checkOverlap(startTime, endTime, roomSlots, slotIndex)) {
-    errors.overlap = 'Ce créneau chevauche un autre créneau existant';
-  }
-
   // Validate value
   if (!validateValue(valueInput)) {
-    errors.value = 'Valeur invalide (température 0-50 ou "on"/"off")';
+    errors.value = 'Valeur invalide (température 0-30 ou "on"/"off")';
   } else if (!checkTypeConsistency(valueInput, roomSlots, slotIndex)) {
     const currentType = getValueType(valueInput);
     const expectedType = currentType === 'temp' ? 'on/off' : 'température';

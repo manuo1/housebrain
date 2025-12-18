@@ -26,7 +26,7 @@ export default function SlotEditModal({
     }
   }, [slot]);
 
-  // Validate all fields
+  // Validate slot (time, duration, value, type consistency)
   const validate = (startTime, endTime, valueInput) => {
     const newErrors = validateSlot(
       startTime,
@@ -39,7 +39,6 @@ export default function SlotEditModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  // On change handlers with validation
   const handleStartChange = (e) => {
     const newStart = e.target.value;
     setStart(newStart);
@@ -98,7 +97,7 @@ export default function SlotEditModal({
               value={start}
               onChange={handleStartChange}
               required
-              className={errors.time || errors.overlap ? styles.inputError : ''}
+              className={errors.time ? styles.inputError : ''}
             />
           </div>
 
@@ -110,13 +109,10 @@ export default function SlotEditModal({
               value={end}
               onChange={handleEndChange}
               required
-              className={errors.time || errors.overlap ? styles.inputError : ''}
+              className={errors.time ? styles.inputError : ''}
             />
             {errors.time && (
               <span className={styles.errorMessage}>{errors.time}</span>
-            )}
-            {errors.overlap && (
-              <span className={styles.errorMessage}>{errors.overlap}</span>
             )}
           </div>
 

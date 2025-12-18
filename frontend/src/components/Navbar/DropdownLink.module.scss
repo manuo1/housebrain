@@ -19,14 +19,13 @@
 }
 
 @include respond-to('xs') {
-  .dropdownLink {
-    padding: 0.65rem $spacing-sm;
-    font-size: $font-size-sm;
-    gap: $spacing-sm;
-    margin: 0 0.3rem;
+  .dropdown {
+    .dropdownToggle {
+      padding: $spacing-md $spacing-sm;
 
-    .icon {
-      font-size: $font-size-base;
+      .arrow {
+        font-size: $font-size-base;
+      }
     }
   }
 }

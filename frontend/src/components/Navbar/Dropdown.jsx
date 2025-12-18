@@ -5,8 +5,13 @@ import styles from './Dropdown.module.scss';
 
 export default function Dropdown({ title, links, icon }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const location = useLocation();
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -30,11 +35,15 @@ export default function Dropdown({ title, links, icon }) {
   };
 
   const handleMouseEnter = () => {
-    setIsOpen(true);
+    if (!isTouchDevice) {
+      setIsOpen(true);
+    }
   };
 
   const handleMouseLeave = () => {
-    setIsOpen(false);
+    if (!isTouchDevice) {
+      setIsOpen(false);
+    }
   };
 
   return (

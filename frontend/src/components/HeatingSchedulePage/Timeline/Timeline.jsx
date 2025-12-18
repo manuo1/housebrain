@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import TimelineHeader from './TimelineHeader';
 import RoomSlotBar from './RoomSlotBar';
 import SlotEditModal from './SlotEditModal';
+import { calculateOptimalSlotTimes } from './utils/slotAutoAdjust';
+import { resolveSlotOverlaps } from './utils/slotOverlapResolver';
 import styles from './Timeline.module.scss';
 
 export default function Timeline({
@@ -31,14 +33,8 @@ export default function Timeline({
   const handleEmptyClick = (room, clickTime) => {
     if (!user) return; // Block if not authenticated
 
-    // Calculate end time (1 hour later by default)
-    const [hours, minutes] = clickTime.split(':').map(Number);
-    const endMinutes = (hours * 60 + minutes + 60) % 1440; // +1h, wrap at 24h
-    const endHours = Math.floor(endMinutes / 60);
-    const endMins = endMinutes % 60;
-    const endTime = `${String(endHours).padStart(2, '0')}:${String(
-      endMins
-    ).padStart(2, '0')}`;
+    // Calculate optimal times based on adjacent slots
+    const { start, end } = calculateOptimalSlotTimes(clickTime, room.slots);
 
     // Determine default value based on existing slots
     let defaultValue = '20'; // Default temp
@@ -47,20 +43,27 @@ export default function Timeline({
     }
 
     setSelectedRoom(room);
-    setSelectedSlot({ start: clickTime, end: endTime, value: defaultValue });
+    setSelectedSlot({ start, end, value: defaultValue });
     setSelectedSlotIndex(null); // null = creation mode
     setIsCreating(true);
   };
 
   const handleSlotSave = (updatedSlot) => {
     if (onSlotUpdate && selectedRoom) {
-      if (isCreating) {
-        // Add new slot
-        onSlotUpdate(selectedRoom.id, -1, updatedSlot); // -1 = create
-      } else if (selectedSlotIndex !== null) {
-        // Update existing slot
-        onSlotUpdate(selectedRoom.id, selectedSlotIndex, updatedSlot);
-      }
+      // Resolve overlaps with existing slots
+      const result = resolveSlotOverlaps(
+        updatedSlot,
+        selectedRoom.slots,
+        isCreating ? null : selectedSlotIndex
+      );
+
+      // Pass the resolved slots to parent
+      onSlotUpdate(
+        selectedRoom.id,
+        selectedSlotIndex,
+        updatedSlot,
+        result.resolvedSlots
+      );
     }
     handleCloseModal();
   };

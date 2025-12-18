@@ -80,7 +80,12 @@ export default function HeatingSchedulePage() {
     setSelectedRoomIds(roomIds);
   };
 
-  const handleSlotUpdate = (roomId, slotIndex, updatedSlot) => {
+  const handleSlotUpdate = (
+    roomId,
+    slotIndex,
+    updatedSlot,
+    resolvedSlots = null
+  ) => {
     if (!dailyPlan) return;
 
     // Clone deep du dailyPlan
@@ -88,23 +93,17 @@ export default function HeatingSchedulePage() {
       ...dailyPlan,
       rooms: dailyPlan.rooms.map((room) => {
         if (room.id === roomId) {
+          // If we have resolvedSlots from overlap resolution, use them directly
+          if (resolvedSlots !== null) {
+            return { ...room, slots: resolvedSlots };
+          }
+
+          // Otherwise, handle simple operations (delete only)
           const newSlots = [...room.slots];
 
           if (updatedSlot === null) {
             // Delete slot
             newSlots.splice(slotIndex, 1);
-          } else if (slotIndex === -1) {
-            // Create new slot
-            newSlots.push(updatedSlot);
-            // Sort slots by start time
-            newSlots.sort((a, b) => {
-              const [aH, aM] = a.start.split(':').map(Number);
-              const [bH, bM] = b.start.split(':').map(Number);
-              return aH * 60 + aM - (bH * 60 + bM);
-            });
-          } else {
-            // Update slot
-            newSlots[slotIndex] = updatedSlot;
           }
 
           return { ...room, slots: newSlots };

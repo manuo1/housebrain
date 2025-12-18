@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from '../../common/ConfirmModal/';
+import { validateSlot } from './utils/slotValidation';
 import styles from './SlotEditModal.module.scss';
 
 export default function SlotEditModal({
@@ -25,105 +26,15 @@ export default function SlotEditModal({
     }
   }, [slot]);
 
-  // Validation helpers
-  const timeToMinutes = (timeStr) => {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
-
-  const validateTime = (startTime, endTime) => {
-    const startMin = timeToMinutes(startTime);
-    const endMin = timeToMinutes(endTime);
-    return startMin < endMin;
-  };
-
-  const checkOverlap = (startTime, endTime) => {
-    const startMin = timeToMinutes(startTime);
-    const endMin = timeToMinutes(endTime);
-
-    // Check overlap with other slots (exclude current slot)
-    for (let i = 0; i < roomSlots.length; i++) {
-      if (i === slotIndex) continue; // Skip current slot
-
-      const otherStart = timeToMinutes(roomSlots[i].start);
-      const otherEnd = timeToMinutes(roomSlots[i].end);
-
-      // No contact or overlap allowed
-      // Valid cases: end < otherStart OR start > otherEnd
-      // Invalid (overlap): NOT (end < otherStart OR start > otherEnd)
-      if (!(endMin < otherStart || startMin > otherEnd)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const validateValue = (val) => {
-    if (!val) return false;
-
-    // Check if it's on/off
-    if (val === 'on' || val === 'off') return true;
-
-    // Check if it's a valid number
-    const num = parseFloat(val);
-    return !isNaN(num) && num >= 0 && num <= 50;
-  };
-
-  const getValueType = (val) => {
-    if (val === 'on' || val === 'off') return 'onoff';
-    const num = parseFloat(val);
-    if (!isNaN(num)) return 'temp';
-    return null;
-  };
-
-  const checkTypeConsistency = (valueInput) => {
-    const newType = getValueType(valueInput);
-    if (!newType) return false;
-
-    // Check type consistency with other slots (exclude current slot)
-    for (let i = 0; i < roomSlots.length; i++) {
-      if (i === slotIndex) continue; // Skip current slot
-
-      const otherType = getValueType(roomSlots[i].value);
-      if (otherType && otherType !== newType) {
-        return false;
-      }
-    }
-    return true;
-  };
-
   // Validate all fields
   const validate = (startTime, endTime, valueInput) => {
-    const newErrors = {};
-
-    // Validate start < end
-    if (!validateTime(startTime, endTime)) {
-      newErrors.time = "L'heure de début doit être avant l'heure de fin";
-    }
-
-    // Validate minimum duration (30 min)
-    const startMin = timeToMinutes(startTime);
-    const endMin = timeToMinutes(endTime);
-    const duration = endMin - startMin;
-
-    if (!newErrors.time && duration < 30) {
-      newErrors.time = "La durée minimum d'un créneau est de 30 minutes";
-    }
-
-    // Validate overlap
-    if (!newErrors.time && checkOverlap(startTime, endTime)) {
-      newErrors.overlap = 'Ce créneau chevauche un autre créneau existant';
-    }
-
-    // Validate value
-    if (!validateValue(valueInput)) {
-      newErrors.value = 'Valeur invalide (température 0-50 ou "on"/"off")';
-    } else if (!checkTypeConsistency(valueInput)) {
-      const currentType = getValueType(valueInput);
-      const expectedType = currentType === 'temp' ? 'on/off' : 'température';
-      newErrors.value = `Tous les créneaux doivent être du même type (${expectedType} attendu)`;
-    }
-
+    const newErrors = validateSlot(
+      startTime,
+      endTime,
+      valueInput,
+      roomSlots,
+      slotIndex
+    );
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

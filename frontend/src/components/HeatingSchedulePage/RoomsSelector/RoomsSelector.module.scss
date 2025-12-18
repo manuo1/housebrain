@@ -6,6 +6,9 @@
   overflow-y: auto;
   flex: 1;
   @include custom-scrollbar;
+  @include respond-to('lg') {
+    display: None;
+  }
 }
 
 .title {

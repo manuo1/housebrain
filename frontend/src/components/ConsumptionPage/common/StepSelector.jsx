@@ -1,16 +1,16 @@
-import React from "react";
-import styles from "./StepSelector.module.scss";
-import { STEP_OPTIONS } from "../../../constants/consumptionConstants";
+import React from 'react';
+import styles from './StepSelector.module.scss';
+import { STEP_OPTIONS } from '../../../constants/consumptionConstants';
 
 export default function StepSelector({ step, onChange }) {
   return (
     <div className={styles.stepSelector}>
-      {STEP_OPTIONS.map(({ value, label }) => (
+      {STEP_OPTIONS.map(({ key, label }) => (
         <button
-          key={value}
+          key={key}
           type="button"
-          className={`${styles.button} ${step === value ? styles.active : ""}`}
-          onClick={() => onChange(value)}
+          className={`${styles.button} ${step === key ? styles.active : ''}`}
+          onClick={() => onChange(key)}
         >
           {label}
         </button>

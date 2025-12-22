@@ -1,0 +1,17 @@
+@use '../../../../styles/abstracts/variables' as *;
+@use '../../../../styles/abstracts/mixins' as *;
+
+.axisY {
+  @include flex-column;
+  justify-content: space-between;
+  padding-right: $spacing-md;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.yLabel {
+  font-size: $font-size-sm;
+  color: $text-muted;
+  text-align: right;
+  font-weight: $font-weight-medium;
+}

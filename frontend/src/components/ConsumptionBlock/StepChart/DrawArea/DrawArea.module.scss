@@ -1,0 +1,15 @@
+@use '../../../../styles/abstracts/variables' as *;
+@use '../../../../styles/abstracts/mixins' as *;
+
+.drawArea {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  @include flex-center;
+}
+
+.placeholder {
+  color: $text-disabled;
+  font-size: $font-size-sm;
+  font-style: italic;
+}

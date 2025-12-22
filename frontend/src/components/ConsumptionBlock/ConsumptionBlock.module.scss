@@ -1,0 +1,8 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.consumptionBlock {
+  @include flex-column;
+  min-height: 435px;
+  gap: $gap-sm;
+}

@@ -1,12 +1,14 @@
 import React from 'react';
 import styles from './AxisY.module.scss';
 
-const AxisY = ({ labels, unit }) => {
+const AxisY = ({ labels }) => {
+  const reversedLabels = [...labels].reverse();
+  reversedLabels[reversedLabels.length - 1] = '';
   return (
     <div className={styles.axisY}>
-      {labels.map((label, index) => (
+      {reversedLabels.map((label, index) => (
         <div key={index} className={styles.yLabel}>
-          {label} {unit}
+          {label}
         </div>
       ))}
     </div>

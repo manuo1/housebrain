@@ -3,12 +3,11 @@ export const mockConsumption = {
   type: 'watt',
   startDate: '2024-01-01',
   axisY: {
-    max: 200,
-    labels: [200, 150, 100, 50, 0],
-    unit: 'W',
+    labels: ['0 W', '50 W', '100 W', '150 W', '200 W'],
   },
+
   axisX: {
-    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+    labels: ['00:00', '06:00', '12:00', '18:00', '24:00'],
   },
   values: [
     {

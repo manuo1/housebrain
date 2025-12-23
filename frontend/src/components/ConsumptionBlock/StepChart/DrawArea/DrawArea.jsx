@@ -1,11 +1,13 @@
 import React from 'react';
 import styles from './DrawArea.module.scss';
+import DataPoint from './DataPoint/DataPoint';
 
-const DrawArea = () => {
+const DrawArea = ({ values }) => {
   return (
     <div className={styles.drawArea}>
-      {/* Les rectangles (Steps) viendront ici */}
-      <div className={styles.placeholder}>Rectangles ici</div>
+      {values.map((pointData, index) => (
+        <DataPoint key={index} pointData={pointData} />
+      ))}
     </div>
   );
 };

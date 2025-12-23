@@ -1,0 +1,7 @@
+@use '../../../../../styles/abstracts/variables' as *;
+@use '../../../../../styles/abstracts/mixins' as *;
+
+.dataPoint {
+  position: relative;
+  height: 100%;
+}

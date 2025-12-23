@@ -1,0 +1,41 @@
+@use '../../../../../styles/abstracts/variables' as *;
+@use '../../../../../styles/abstracts/mixins' as *;
+
+.hoverRectangle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  cursor: pointer;
+  // Transparent pour être invisible mais capturer les events
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff; // En dur
+  border: 1px solid #e5e7eb; // En dur
+  border-radius: 8px; // En dur
+  padding: 8px 12px; // En dur
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // En dur
+  z-index: 100;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltipTitle {
+  font-weight: 600; // En dur
+  color: #1f2937; // En dur
+  margin-bottom: 4px; // En dur
+  font-size: 14px; // En dur
+}
+
+.tooltipLine {
+  color: #6b7280; // En dur
+  font-size: 12px; // En dur
+  line-height: 1.4;
+}

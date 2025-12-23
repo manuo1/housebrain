@@ -12,7 +12,7 @@ const StepChart = ({ data }) => {
   return (
     <div className={styles.stepChart}>
       {/* Axe Y - Labels verticaux */}
-      <AxisY labels={axisY.labels} unit={axisY.unit} />
+      <AxisY labels={axisY.labels} />
 
       {/* Zone du graphique avec grille */}
       <div className={styles.chartArea}>
@@ -23,7 +23,7 @@ const StepChart = ({ data }) => {
         <HorizontalGridLines count={axisX.labels.length} />
 
         {/* Zone de dessin des rectangles */}
-        <DrawArea />
+        <DrawArea values={data.values} />
       </div>
 
       {/* Axe X - Labels horizontaux */}

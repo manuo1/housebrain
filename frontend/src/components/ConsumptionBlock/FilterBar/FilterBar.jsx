@@ -9,11 +9,13 @@ export default function FilterBar({
   onDisplayTypeChange,
   step,
   onStepChange,
+  date,
+  onDateChange,
 }) {
   return (
     <div className={styles.filterBar}>
       <TypeSelector value={displayType} onChange={onDisplayTypeChange} />
-      <DateSelector />
+      <DateSelector value={date} onChange={onDateChange} />
       <TimeStepSelector value={step} onChange={onStepChange} />
     </div>
   );

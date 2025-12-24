@@ -80,3 +80,66 @@ export function formatFullDayLabel(simpleDate) {
 
   return `${dayLabel} ${day}/${month}/${year}`;
 }
+
+/**
+ * Get today's date in YYYY-MM-DD format
+ * @returns {string}
+ */
+export function getTodayDate() {
+  return new Date().toISOString().split('T')[0];
+}
+
+/**
+ * Add days to a date string
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @param {number} days - Number of days to add (can be negative)
+ * @returns {string} - New date in YYYY-MM-DD format
+ */
+export function addDays(dateStr, days) {
+  const date = new Date(dateStr);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Format date for display (e.g., "lundi 25 décembre 2024")
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {string}
+ */
+export function formatDateLong(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+/**
+ * Format date short (e.g., "25/12/2024")
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {string}
+ */
+export function formatDateShort(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fr-FR');
+}
+
+/**
+ * Check if date is today
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {boolean}
+ */
+export function isToday(dateStr) {
+  return dateStr === getTodayDate();
+}
+
+/**
+ * Check if date is in the future
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {boolean}
+ */
+export function isFuture(dateStr) {
+  return dateStr > getTodayDate();
+}

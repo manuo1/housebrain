@@ -52,11 +52,21 @@ export default function ConsumptionBlock() {
         onDateChange={setDate}
       />
 
-      {isLoading && <div>Chargement...</div>}
-      {error && <div>Erreur : {error}</div>}
       {chartData && <StepChart data={chartData} />}
 
       <TotalsCards />
+
+      {(isLoading || error) && (
+        <div className={styles.overlay}>
+          {isLoading && <div className={styles.spinner}></div>}
+          {error && (
+            <div className={styles.error}>
+              <div className={styles.errorIcon}>⚠️</div>
+              <div className={styles.errorMessage}>Erreur : {error}</div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

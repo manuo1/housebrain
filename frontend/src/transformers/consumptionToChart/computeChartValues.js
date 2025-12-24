@@ -37,17 +37,32 @@ function computeChartValues(data, step, displayType, maxValue) {
     );
 
     // Couleurs
-    const { area_color, line_color } = computePointColors(point.tarif_period);
+    const { area_color, line_color } = computePointColors(
+      point.tarif_period,
+      displayType,
+      value
+    );
 
     // Tooltip
     const tooltip = computeTooltip(point);
 
-    // Line height (besoin du point suivant)
-    const nextPoint = data[index + 1];
-    const nextValue = nextPoint ? nextPoint[field] : null;
-    const nextHeight = nextPoint
-      ? computePointDimensions(step, nextValue, maxValue).area_height
-      : null;
+    // Line height (besoin du point suivant NON NULL)
+    let nextPoint = data[index + 1];
+    let nextValue = null;
+
+    // Chercher le prochain point avec une valeur non null
+    if (nextPoint) {
+      nextValue = nextPoint[field];
+      // Si le point suivant est null, on ne calcule pas de line_height
+      if (nextValue === null || nextValue === undefined) {
+        nextValue = null; // Force à null pour avoir line_height = 0
+      }
+    }
+
+    const nextHeight =
+      nextValue !== null && nextValue !== undefined
+        ? computePointDimensions(step, nextValue, maxValue).area_height
+        : null;
     const line_height = computeLineHeight(area_height, nextHeight);
 
     return {

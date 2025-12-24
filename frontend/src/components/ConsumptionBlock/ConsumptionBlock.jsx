@@ -46,6 +46,8 @@ export default function ConsumptionBlock() {
       <FilterBar
         displayType={displayType}
         onDisplayTypeChange={setDisplayType}
+        step={step}
+        onStepChange={setStep}
       />
 
       {isLoading && <div>Chargement...</div>}

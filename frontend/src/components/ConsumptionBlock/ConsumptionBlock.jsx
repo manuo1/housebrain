@@ -55,7 +55,7 @@ export default function ConsumptionBlock() {
 
       <StepChart data={chartData} />
 
-      <TotalsCards />
+      <TotalsCards totals={dailyConsumption?.totals} />
 
       {(isLoading || error) && (
         <div className={styles.overlay}>

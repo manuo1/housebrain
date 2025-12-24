@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './DateSelector.module.scss';
+import { addDays } from '../../../utils/dateUtils';
 
-export default function DateSelector() {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-
+export default function DateSelector({ value, onChange }) {
   const handlePrevious = () => {
-    console.log('Previous day');
+    onChange(addDays(value, -1));
   };
 
   const handleNext = () => {
-    console.log('Next day');
+    const today = new Date().toISOString().split('T')[0];
+    if (value < today) {
+      onChange(addDays(value, 1));
+    }
   };
 
   return (
@@ -17,14 +19,13 @@ export default function DateSelector() {
       <button className={styles.navButton} onClick={handlePrevious}>
         ◄
       </button>
-
       <input
         type="date"
         className={styles.datePicker}
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
+        value={value}
+        max={new Date().toISOString().split('T')[0]}
+        onChange={(e) => onChange(e.target.value)}
       />
-
       <button className={styles.navButton} onClick={handleNext}>
         ►
       </button>

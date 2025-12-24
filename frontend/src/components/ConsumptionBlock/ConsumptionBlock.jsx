@@ -9,7 +9,7 @@ import transformDailyConsumptionToChart from '../../transformers/consumptionToCh
 export default function ConsumptionBlock() {
   // States
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [step, setStep] = useState(60);
+  const [step, setStep] = useState(1);
   const [displayType, setDisplayType] = useState('wh');
   const [dailyConsumption, setDailyConsumption] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +48,8 @@ export default function ConsumptionBlock() {
         onDisplayTypeChange={setDisplayType}
         step={step}
         onStepChange={setStep}
+        date={date}
+        onDateChange={setDate}
       />
 
       {isLoading && <div>Chargement...</div>}

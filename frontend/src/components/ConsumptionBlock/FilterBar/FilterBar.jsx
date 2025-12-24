@@ -4,10 +4,10 @@ import TimeStepSelector from './TimeStepSelector';
 import DateSelector from './DateSelector';
 import styles from './FilterBar.module.scss';
 
-export default function FilterBar() {
+export default function FilterBar({ displayType, onDisplayTypeChange }) {
   return (
     <div className={styles.filterBar}>
-      <TypeSelector />
+      <TypeSelector value={displayType} onChange={onDisplayTypeChange} />
       <DateSelector />
       <TimeStepSelector />
     </div>

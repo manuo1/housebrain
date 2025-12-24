@@ -7,23 +7,12 @@ import computeTooltip from './computeTooltip';
  * Transforme les données brutes en points pour le graphique
  * @param {Array} data - Tableau de points de données brut du backend
  * @param {number} step - Pas de temps en minutes
- * @param {string} displayType - Type d'affichage ('watt', 'wh', ou 'euros')
+ * @param {string} displayType - Type d'affichage ('average_watt', 'wh', ou 'euros')
  * @param {number} maxValue - Valeur maximale de l'axe Y
  * @returns {Array} - Tableau de points formatés pour le graphique
  */
 function computeChartValues(data, step, displayType, maxValue) {
-  // Mapper le type vers le champ correspondant
-  const fieldMap = {
-    watt: 'average_watt',
-    wh: 'wh',
-    euros: 'euros',
-  };
-
-  const field = fieldMap[displayType];
-
-  if (!field) {
-    throw new Error(`Invalid display type: ${displayType}`);
-  }
+  const field = displayType;
 
   // Transformer chaque point
   const chartValues = data.map((point, index) => {

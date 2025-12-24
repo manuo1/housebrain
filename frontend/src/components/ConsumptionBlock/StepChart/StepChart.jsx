@@ -7,6 +7,19 @@ import HorizontalGridLines from './GridLines/HorizontalGridLines';
 import DrawArea from './DrawArea/DrawArea';
 
 const StepChart = ({ data }) => {
+  if (!data) {
+    return (
+      <div className={styles.stepChart}>
+        <AxisY labels={['-', '-']} />
+        <div className={styles.chartArea}>
+          <VerticalGridLines count={5} />
+          <HorizontalGridLines count={24} />
+        </div>
+        <AxisX labels={['-', '-']} />
+      </div>
+    );
+  }
+
   const { axisY, axisX } = data;
 
   return (

@@ -1,0 +1,60 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.consumptionBlock {
+  @include flex-column;
+  min-height: 435px;
+  gap: $gap-sm;
+  position: relative;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(59, 130, 246, 0.15);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  pointer-events: auto;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: rgba(17, 24, 39, 0.95);
+  padding: 30px 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  pointer-events: auto;
+}
+
+.errorIcon {
+  font-size: 48px;
+}
+
+.errorMessage {
+  color: #fca5a5;
+  font-size: 16px;
+  text-align: center;
+}

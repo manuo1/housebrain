@@ -1,0 +1,24 @@
+@use '../../../../styles/abstracts/variables' as *;
+@use '../../../../styles/abstracts/mixins' as *;
+
+.horizontalGridLines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.gridLine {
+  width: 1px;
+  height: 100%;
+  border-left: 1px dashed $border-medium;
+  opacity: 0.5;
+
+  &:first-child {
+    border-left: none;
+  }
+}

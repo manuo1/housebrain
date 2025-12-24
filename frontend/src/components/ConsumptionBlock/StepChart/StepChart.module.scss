@@ -1,0 +1,23 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.stepChart {
+  display: grid;
+  padding-left: $spacing-lg;
+  padding-right: $spacing-2xl;
+
+  grid-template-columns: auto 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 0;
+  flex: 1;
+  min-height: 280px;
+}
+
+.chartArea {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  border-left: 2px solid $border-medium;
+  border-bottom: 2px solid $border-medium;
+  min-height: 0;
+}

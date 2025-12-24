@@ -1,0 +1,25 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.dateSelector {
+  @include flex-center;
+  gap: $gap-md;
+}
+
+.navButton {
+  @include button-base;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  font-size: $font-size-lg;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.datePicker {
+  @include input-base;
+  min-width: 150px;
+  text-align: center;
+  cursor: pointer;
+}

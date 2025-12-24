@@ -38,7 +38,15 @@ function computeAxisY(data, displayType) {
   const labels = [];
 
   for (let i = 0; i <= numSteps; i++) {
-    const value = i * step;
+    let value = i * step;
+
+    // Arrondir pour éviter les problèmes de précision flottante
+    if (displayType === 'euros') {
+      value = Math.round(value * 100) / 100; // 2 décimales
+    } else {
+      value = Math.round(value); // Arrondir à l'entier
+    }
+
     labels.push(`${value}${unit}`);
   }
 

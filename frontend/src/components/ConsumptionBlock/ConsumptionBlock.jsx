@@ -20,6 +20,7 @@ export default function ConsumptionBlock() {
     const loadData = async () => {
       setIsLoading(true);
       setError(null);
+      setDailyConsumption(null);
 
       try {
         const data = await fetchDailyConsumption(date, step);
@@ -37,9 +38,9 @@ export default function ConsumptionBlock() {
 
   // Transform data pour le chart
   const chartData = useMemo(() => {
-    if (!dailyConsumption) return null;
+    if (error || !dailyConsumption) return null; // null si erreur OU pas de données
     return transformDailyConsumptionToChart(dailyConsumption, displayType);
-  }, [dailyConsumption, displayType]);
+  }, [dailyConsumption, displayType, error]);
 
   return (
     <div className={styles.consumptionBlock}>
@@ -52,7 +53,7 @@ export default function ConsumptionBlock() {
         onDateChange={setDate}
       />
 
-      {chartData && <StepChart data={chartData} />}
+      <StepChart data={chartData} />
 
       <TotalsCards />
 
@@ -62,7 +63,7 @@ export default function ConsumptionBlock() {
           {error && (
             <div className={styles.error}>
               <div className={styles.errorIcon}>⚠️</div>
-              <div className={styles.errorMessage}>Erreur : {error}</div>
+              <div className={styles.errorMessage}>Un problème est survenu</div>
             </div>
           )}
         </div>

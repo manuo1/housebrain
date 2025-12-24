@@ -1,0 +1,22 @@
+@use '../../../../../styles/abstracts/variables' as *;
+@use '../../../../../styles/abstracts/mixins' as *;
+
+.dataPoint {
+  position: relative;
+  height: 100%;
+
+  // Utilise flex pour répartir automatiquement l'espace disponible
+  // entre tous les points, évitant ainsi les erreurs d'arrondi.
+  // Le nombre exact de points doit correspondre aux données (24, 48 ou 1440)
+  // car flex: 1 divise l'espace en parts égales selon le nombre d'enfants.
+  // Particulièrement critique avec 1440 points (1/min) où chaque point
+  // ferait ~0.069% en largeur fixe, causant des erreurs d'arrondi cumulées.
+  flex: 1;
+  min-width: 0;
+
+  // Le dernier élément est légèrement plus large pour compenser
+  // la bordure droite du container et faciliter le hover
+  &:last-child {
+    padding-right: 1px;
+  }
+}

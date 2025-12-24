@@ -1,15 +1,14 @@
 import React from 'react';
-import styles from './StepSelector.module.scss';
+import styles from './TimeStepSelector.module.scss';
 import { STEP_OPTIONS } from '../../../constants/consumptionConstants';
 
-export default function StepSelector({ step, onChange }) {
+export default function TimeStepSelector({ value, onChange }) {
   return (
-    <div className={styles.stepSelector}>
+    <div className={styles.timeStepSelector}>
       {STEP_OPTIONS.map(({ key, label }) => (
         <button
           key={key}
-          type="button"
-          className={`${styles.button} ${step === key ? styles.active : ''}`}
+          className={`${styles.button} ${value === key ? styles.active : ''}`}
           onClick={() => onChange(key)}
         >
           {label}

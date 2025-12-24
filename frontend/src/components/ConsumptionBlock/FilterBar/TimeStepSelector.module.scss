@@ -1,0 +1,17 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.timeStepSelector {
+  @include flex-center;
+  gap: $gap-sm;
+}
+
+.button {
+  @include button-base;
+  height: 55px;
+  width: 130px;
+}
+
+.active {
+  @include button-active($color-primary, $glow-primary);
+}

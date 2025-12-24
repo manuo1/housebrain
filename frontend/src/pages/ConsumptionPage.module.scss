@@ -1,0 +1,17 @@
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
+.dailyConsumption {
+  @include flex-column;
+  gap: $gap-sm;
+  padding: $spacing-sm;
+  max-width: $max-width-container;
+  margin: 0 auto;
+}
+
+.graphBlock {
+  @include flex-column;
+  background: $bg-medium-dark;
+  border-radius: $radius-base;
+  box-shadow: $shadow-lg;
+}

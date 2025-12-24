@@ -1,0 +1,12 @@
+@use '../../../../../styles/abstracts/variables' as *;
+@use '../../../../../styles/abstracts/mixins' as *;
+
+.lineRectangle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: transparent;
+  box-sizing: content-box;
+  pointer-events: none;
+  z-index: 2;
+}

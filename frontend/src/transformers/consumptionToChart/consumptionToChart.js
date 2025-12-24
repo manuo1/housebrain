@@ -28,7 +28,7 @@ function transformDailyConsumptionToChart(
   const axisY = { labels };
 
   // Calcul des points du graphique
-  const values = computeChartValues(data, step, displayType, max);
+  const values = computeChartValues(data, displayType, max);
 
   return {
     axisY,

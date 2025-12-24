@@ -1,4 +1,4 @@
-import computePointDimensions from './computePointDimensions';
+import computeAreaHeight from './computeAreaHeight';
 import computePointColors from './computePointColors';
 import computeLineHeight from './computeLineHeight';
 import computeTooltip from './computeTooltip';
@@ -6,24 +6,19 @@ import computeTooltip from './computeTooltip';
 /**
  * Transforme les données brutes en points pour le graphique
  * @param {Array} data - Tableau de points de données brut du backend
- * @param {number} step - Pas de temps en minutes
  * @param {string} displayType - Type d'affichage ('average_watt', 'wh', ou 'euros')
  * @param {number} maxValue - Valeur maximale de l'axe Y
  * @returns {Array} - Tableau de points formatés pour le graphique
  */
-function computeChartValues(data, step, displayType, maxValue) {
+function computeChartValues(data, displayType, maxValue) {
   const field = displayType;
 
   // Transformer chaque point
   const chartValues = data.map((point, index) => {
     const value = point[field];
 
-    // Dimensions
-    const { width, area_height } = computePointDimensions(
-      step,
-      value,
-      maxValue
-    );
+    // Hauteur de l'aire
+    const area_height = computeAreaHeight(value, maxValue);
 
     // Couleurs
     const { area_color, line_color } = computePointColors(
@@ -50,12 +45,11 @@ function computeChartValues(data, step, displayType, maxValue) {
 
     const nextHeight =
       nextValue !== null && nextValue !== undefined
-        ? computePointDimensions(step, nextValue, maxValue).area_height
+        ? computeAreaHeight(nextValue, maxValue)
         : null;
     const line_height = computeLineHeight(area_height, nextHeight);
 
     return {
-      width,
       area_height,
       area_color,
       line_height,

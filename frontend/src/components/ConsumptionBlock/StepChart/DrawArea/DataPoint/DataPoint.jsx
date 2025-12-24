@@ -4,11 +4,11 @@ import AreaRectangle from './AreaRectangle';
 import HoverRectangle from './HoverRectangle';
 import LineRectangle from './LineRectangle';
 const DataPoint = ({ pointData }) => {
-  const { width, area_height, area_color, line_height, line_color, tooltip } =
+  const { area_height, area_color, line_height, line_color, tooltip } =
     pointData;
 
   return (
-    <div className={styles.dataPoint} style={{ width: `${width}%` }}>
+    <div className={styles.dataPoint}>
       <LineRectangle
         line_height={line_height}
         line_color={line_color}

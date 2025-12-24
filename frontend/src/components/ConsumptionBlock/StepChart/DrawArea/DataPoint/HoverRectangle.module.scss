@@ -9,33 +9,78 @@
   right: 0;
   z-index: 10;
   cursor: pointer;
-  // Transparent pour être invisible mais capturer les events
+  background-color: transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: linear-gradient(
+      to top,
+      rgba(59, 130, 246, 0.08),
+      rgba(59, 130, 246, 0.02)
+    );
+    box-shadow: inset 2px 0 0 0 rgba(59, 130, 246, 0.6),
+      inset -2px 0 0 0 rgba(59, 130, 246, 0.6);
+  }
 }
 
 .tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #ffffff; // En dur
-  border: 1px solid #e5e7eb; // En dur
-  border-radius: 8px; // En dur
-  padding: 8px 12px; // En dur
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // En dur
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 100;
   white-space: nowrap;
   pointer-events: none;
+
+  // À droite du point
+  &.right {
+    left: 100%;
+    transform: translateY(-50%) translateX(10px);
+  }
+
+  // À gauche du point
+  &.left {
+    right: 100%;
+    transform: translateY(-50%) translateX(-10px);
+  }
 }
 
 .tooltipTitle {
-  font-weight: 600; // En dur
-  color: #1f2937; // En dur
-  margin-bottom: 4px; // En dur
-  font-size: 14px; // En dur
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+  padding-bottom: 4px;
 }
 
 .tooltipLine {
-  color: #6b7280; // En dur
-  font-size: 12px; // En dur
-  line-height: 1.4;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 2px 0;
+
+  &::before {
+    content: '•';
+    color: rgba(59, 130, 246, 0.7);
+    margin-right: 6px;
+    font-weight: bold;
+  }
+}
+
+@media (hover: none) {
+  .hoverRectangle:active {
+    background: linear-gradient(
+      to top,
+      rgba(59, 130, 246, 0.12),
+      rgba(59, 130, 246, 0.04)
+    );
+  }
 }

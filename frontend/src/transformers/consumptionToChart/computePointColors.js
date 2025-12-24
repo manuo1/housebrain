@@ -3,7 +3,7 @@ import { TARIF_PERIOD_COLORS, DEFAULT_COLOR } from './constants';
 /**
  * Détermine les couleurs d'un point selon sa période tarifaire et le type d'affichage
  * @param {string|null} tarifPeriod - Période tarifaire du point
- * @param {string} displayType - Type d'affichage ('watt', 'wh', ou 'euros')
+ * @param {string} displayType - Type d'affichage ('average_watt', 'wh', ou 'euros')
  * @param {*} value - Valeur du point (pour détecter null)
  * @returns {Object} - { area_color: string, line_color: string }
  */
@@ -19,7 +19,8 @@ function computePointColors(tarifPeriod, displayType, value) {
   // Si pas de période tarifaire, couleur par défaut
   if (!tarifPeriod) {
     return {
-      area_color: displayType === 'watt' ? 'transparent' : DEFAULT_COLOR,
+      area_color:
+        displayType === 'average_watt' ? 'transparent' : DEFAULT_COLOR,
       line_color: DEFAULT_COLOR,
     };
   }
@@ -30,7 +31,7 @@ function computePointColors(tarifPeriod, displayType, value) {
   // Pour les watts : pas de remplissage, juste la ligne
   // Pour wh et euros : remplissage + ligne de la même couleur
   return {
-    area_color: displayType === 'watt' ? 'transparent' : color,
+    area_color: displayType === 'average_watt' ? 'transparent' : color,
     line_color: color,
   };
 }

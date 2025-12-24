@@ -10,22 +10,16 @@ function findMaxValue(data, field) {
 }
 
 function computeAxisY(data, displayType) {
-  const fieldMap = {
-    watt: 'average_watt',
-    wh: 'wh',
-    euros: 'euros',
-  };
-
   const unitMap = {
-    watt: ' W',
+    average_watt: ' W',
     wh: ' Wh',
     euros: ' €',
   };
 
-  const field = fieldMap[displayType];
+  const field = displayType;
   const unit = unitMap[displayType];
 
-  if (!field) {
+  if (!unit) {
     throw new Error(`Invalid display type: ${displayType}`);
   }
 
@@ -39,7 +33,7 @@ function computeAxisY(data, displayType) {
   // Ajuster le max pour qu'il soit un multiple exact du step
   const max = Math.ceil(roundedMax / step) * step;
 
-  // Générer les graduations (toujours régulières maintenant)
+  // Générer les graduations (toujours régulières)
   const numSteps = max / step;
   const labels = [];
 

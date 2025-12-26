@@ -85,7 +85,7 @@
 }
 
 /* Responsive */
-@include respond-to('xs') {
+@include respond-to('sm') {
   .dropdownToggle {
     .title {
       display: none;

@@ -44,8 +44,8 @@ export default function Navbar() {
   }, [lastScrollY]);
 
   const consumptionLinks = [
-    { to: '/teleinfo', icon: '⚡', text: 'Téléinfo Live' },
-    { to: '/consumption', icon: '📊', text: 'Historique' },
+    { to: '/teleinfo', icon: '⚡', text: 'Téléinformation' },
+    { to: '/consumption', icon: '📈', text: 'Historique' },
   ];
 
   const heatingLinks = [
@@ -57,7 +57,7 @@ export default function Navbar() {
       <div className={styles.container}>
         {/* Logo */}
         <Link to="/" className={styles.logo}>
-          <div className={styles.logoIcon}>🏠</div>
+          <img src="/favicon.png" alt="Logo" className={styles.logoIcon} />
           <span>HouseBrain</span>
         </Link>
 

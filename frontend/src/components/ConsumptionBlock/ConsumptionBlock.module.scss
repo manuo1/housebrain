@@ -4,6 +4,7 @@
 .consumptionBlock {
   @include flex-column;
   min-height: 435px;
+  min-width: 400px;
   gap: $gap-sm;
   position: relative;
 }

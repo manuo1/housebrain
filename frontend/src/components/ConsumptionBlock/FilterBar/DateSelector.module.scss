@@ -9,7 +9,7 @@
 .navButton {
   @include button-base;
   min-width: 2.5rem;
-  height: 2.5rem;
+  height: 55px;
   font-size: $font-size-lg;
 
   &:hover {
@@ -19,6 +19,7 @@
 
 .datePicker {
   @include input-base;
+  height: 55px;
   min-width: 150px;
   text-align: center;
   cursor: pointer;

@@ -4,12 +4,21 @@
 .typeSelector {
   @include flex-center;
   gap: $gap-sm;
+
+  @include respond-to('tablet') {
+    width: 100%;
+  }
 }
 
 .button {
   @include button-base;
   height: 55px;
   width: 130px;
+
+  @include respond-to('tablet') {
+    flex: 1;
+    width: auto;
+  }
 }
 
 .active {

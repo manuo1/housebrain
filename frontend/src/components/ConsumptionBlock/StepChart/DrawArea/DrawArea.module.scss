@@ -2,9 +2,9 @@
 @use '../../../../styles/abstracts/mixins' as *;
 
 .drawArea {
+  display: flex;
+  align-items: flex-end;
   position: relative;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: flex-end;
 }

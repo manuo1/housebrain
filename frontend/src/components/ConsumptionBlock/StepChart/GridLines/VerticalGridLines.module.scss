@@ -2,12 +2,12 @@
 @use '../../../../styles/abstracts/mixins' as *;
 
 .verticalGridLines {
+  @include flex-column;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  @include flex-column;
   justify-content: space-between;
   pointer-events: none;
 }

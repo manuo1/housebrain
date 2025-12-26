@@ -1,7 +1,6 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Home from '../pages/Home';
-import Consumption from '../pages/Consumption';
 import ConsumptionPage from '../pages/ConsumptionPage';
 import LiveTeleinfoPage from '../pages/LiveTeleinfoPage';
 import HeatingSchedulePage from '../pages/HeatingSchedulePage';

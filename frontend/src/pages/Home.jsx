@@ -12,9 +12,8 @@ export default function Home() {
         </div>
         <div className={styles.statsSection}>
           <div className={styles.placeholder}>
-            <span className={styles.icon}>📊</span>
-            <h2>Dashboard consommation</h2>
-            <p className={styles.constructionText}>🚧 En construction…</p>
+            <h2>Dashboard</h2>
+            <p className={styles.constructionText}>En construction…</p>
             <div className={styles.linksContainer}>
               <p className={styles.infoText}>
                 En attendant, vous pouvez consulter :
@@ -22,7 +21,7 @@ export default function Home() {
               <div className={styles.links}>
                 <Link to="/teleinfo" className={styles.link}>
                   <span className={styles.linkIcon}>⚡</span>
-                  Téléinfo Live
+                  Téléinformation
                 </Link>
                 <Link to="/consumption" className={styles.link}>
                   <span className={styles.linkIcon}>📈</span>

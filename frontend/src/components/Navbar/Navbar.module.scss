@@ -34,7 +34,10 @@
   }
 
   .logoIcon {
-    font-size: $font-size-4xl;
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    display: block;
     @include icon-glow($color-primary);
   }
 }

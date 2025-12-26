@@ -14,4 +14,18 @@
   font-size: $font-size-sm;
   color: $text-muted;
   font-weight: $font-weight-medium;
+
+  // Afficher 1 sur 4
+  @include respond-to('tablet') {
+    &:not(:nth-child(4n + 1)) {
+      display: none;
+    }
+  }
+
+  // Afficher 1 sur 2
+  @include respond-to('lg') {
+    &:not(:nth-child(2n + 1)) {
+      display: none;
+    }
+  }
 }

@@ -8,29 +8,26 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
+  @include flex-center;
+  z-index: $z-index-dropdown;
+  animation: fadeIn $transition-fast;
 }
 
 .modal {
   background-color: $bg-light;
-  border-radius: 8px;
-  padding: $gap-lg;
+  border-radius: $radius-base;
+  padding: $spacing-xl;
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  animation: slideIn 0.3s ease-out;
-  display: flex;
-  flex-direction: column;
+  box-shadow: $shadow-md;
+  animation: slideInDown $transition-base;
+  @include flex-column;
   align-items: center;
   gap: $gap-md;
 }
 
 .icon {
-  font-size: 3rem;
+  font-size: $font-size-5xl;
   line-height: 1;
 }
 
@@ -60,21 +57,15 @@
 .cancelButton,
 .confirmButton {
   flex: 1;
-  padding: $gap-sm $gap-md;
-  border-radius: 4px;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-sm;
   font-size: $font-size-md;
   font-weight: $font-weight-medium;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: $transition-all;
   border: none;
 
-  &:hover {
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  @include hover-lift;
 }
 
 .cancelButton {
@@ -83,24 +74,4 @@
 
 .confirmButton {
   @include button-primary;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }

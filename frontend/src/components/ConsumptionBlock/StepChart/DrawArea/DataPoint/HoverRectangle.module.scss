@@ -7,19 +7,19 @@
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: $z-index-overlay;
   cursor: pointer;
   background-color: transparent;
-  transition: all 0.2s ease;
+  transition: $transition-fast;
 
   &:hover {
     background: linear-gradient(
       to top,
-      rgba(59, 130, 246, 0.08),
-      rgba(59, 130, 246, 0.02)
+      rgba($color-primary, 0.08),
+      rgba($color-primary, 0.02)
     );
-    box-shadow: inset 2px 0 0 0 rgba(59, 130, 246, 0.6),
-      inset -2px 0 0 0 rgba(59, 130, 246, 0.6);
+    box-shadow: inset 2px 0 0 0 rgba($color-primary, 0.6),
+      inset -2px 0 0 0 rgba($color-primary, 0.6);
   }
 }
 
@@ -27,51 +27,48 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(17, 24, 39, 0.95);
+  background: rgba($bg-darkest, 0.95);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 10px;
-  padding: 10px 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba($color-primary, 0.3);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  box-shadow: $shadow-lg, inset 0 1px 0 rgba(255, 255, 255, 0.1);
   z-index: 100;
   white-space: nowrap;
   pointer-events: none;
 
-  // À droite du point
   &.right {
     left: 100%;
-    transform: translateY(-50%) translateX(10px);
+    transform: translateY(-50%) translateX($spacing-md);
   }
 
-  // À gauche du point
   &.left {
     right: 100%;
-    transform: translateY(-50%) translateX(-10px);
+    transform: translateY(-50%) translateX(-#{$spacing-md});
   }
 }
 
 .tooltipTitle {
-  font-weight: 600;
-  color: #f1f5f9;
-  margin-bottom: 6px;
-  font-size: 13px;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  margin-bottom: $spacing-xs;
+  font-size: $font-size-sm;
   letter-spacing: -0.01em;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
-  padding-bottom: 4px;
+  border-bottom: 1px solid rgba($color-primary, 0.3);
+  padding-bottom: $spacing-xs;
 }
 
 .tooltipLine {
-  color: #cbd5e1;
-  font-size: 12px;
+  color: $text-muted;
+  font-size: $font-size-xs;
   line-height: 1.6;
-  margin: 2px 0;
+  margin: $spacing-xs 0;
 
   &::before {
     content: '•';
-    color: rgba(59, 130, 246, 0.7);
-    margin-right: 6px;
-    font-weight: bold;
+    color: rgba($color-primary, 0.7);
+    margin-right: $spacing-xs;
+    font-weight: $font-weight-bold;
   }
 }
 
@@ -79,8 +76,8 @@
   .hoverRectangle:active {
     background: linear-gradient(
       to top,
-      rgba(59, 130, 246, 0.12),
-      rgba(59, 130, 246, 0.04)
+      rgba($color-primary, 0.12),
+      rgba($color-primary, 0.04)
     );
   }
 }

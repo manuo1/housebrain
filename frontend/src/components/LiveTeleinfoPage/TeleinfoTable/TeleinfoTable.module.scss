@@ -1,10 +1,10 @@
-@use '../../styles/abstracts/variables' as *;
-@use '../../styles/abstracts/mixins' as *;
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
 
 .table {
   width: clamp(375px, 225.3521px + 39.9061vw, 800px);
   border-collapse: collapse;
-  margin: 0 auto;
+  margin: $spacing-md auto;
   font-family: $font-family-base;
   background-color: $bg-medium-dark;
   border-radius: $radius-base;

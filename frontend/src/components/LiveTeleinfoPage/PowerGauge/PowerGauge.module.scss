@@ -1,0 +1,26 @@
+@use '../../../styles/abstracts/variables' as *;
+
+.powerGauge {
+  width: clamp(375px, 225.3521px + 39.9061vw, 800px);
+  margin: 0 auto;
+  margin-top: 10px;
+  background: $bg-darker;
+  padding: $spacing-3xl $spacing-3xl $spacing-base;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-xl, inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.gaugeContainer {
+  position: relative;
+  width: 260px;
+  height: 160px;
+  margin: 0 auto;
+}
+
+.svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 260px;
+  overflow: visible;
+}

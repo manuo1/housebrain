@@ -15,6 +15,14 @@ Système de gestion domotique pour Raspberry Pi.
 
 Voir : [docs/features/teleinfo.md](docs/features/teleinfo.md)
 
+### Capteurs Bluetooth
+- Détection automatique capteurs BTHome (température, humidité)
+- Scanner BLE passif (broadcast, sans appairage)
+- Stockage Redis avec détection de tendance
+- Affichage par pièce et pilotage chauffage
+
+Voir : [docs/features/bluetooth_sensors.md](docs/features/bluetooth_sensors.md)
+
 ### Scheduler
 - Orchestrateur de tâches périodiques (systemd timer)
 - Exécution toutes les 1 minute
@@ -23,9 +31,6 @@ Voir : [docs/features/teleinfo.md](docs/features/teleinfo.md)
 Voir : [docs/features/scheduler.md](docs/features/scheduler.md)
 
 ### Monitoring énergétique
-[Documentation à venir]
-
-### Capteurs Bluetooth
 [Documentation à venir]
 
 ### Contrôle chauffage
@@ -83,11 +88,11 @@ Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspber
 
 ### Fonctionnalités
 - [Téléinfo (Monitoring électrique)](docs/features/teleinfo.md)
+- [Capteurs Bluetooth](docs/features/bluetooth_sensors.md)
 - [Scheduler](docs/features/scheduler.md)
 - [Authentification JWT](docs/features/authentication.md)
 - [Monitoring énergétique] - Documentation à venir
 - [Contrôle chauffage] - Documentation à venir
-- [Capteurs Bluetooth] - Documentation à venir
 
 ---
 

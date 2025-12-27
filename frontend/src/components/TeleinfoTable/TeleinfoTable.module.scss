@@ -1,5 +1,5 @@
-@use '../../../styles/abstracts/variables' as *;
-@use '../../../styles/abstracts/mixins' as *;
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
 
 .table {
   width: clamp(375px, 225.3521px + 39.9061vw, 800px);

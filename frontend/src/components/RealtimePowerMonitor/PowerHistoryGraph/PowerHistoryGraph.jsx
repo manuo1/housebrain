@@ -3,10 +3,9 @@ import styles from './PowerHistoryGraph.module.scss';
 
 export default function PowerHistoryGraph({ currentPower, maxPower }) {
   const [history, setHistory] = useState([]);
-  const maxPoints = 60; // 60 secondes d'historique
+  const maxPoints = 60;
 
   useEffect(() => {
-    // Ajoute un point à chaque changement
     setHistory((prev) => {
       const newHistory = [...prev, currentPower];
       if (newHistory.length > maxPoints) {
@@ -16,7 +15,6 @@ export default function PowerHistoryGraph({ currentPower, maxPower }) {
     });
   }, [currentPower]);
 
-  // Génère le path SVG
   const generatePath = () => {
     if (history.length === 0) return '';
 
@@ -32,17 +30,6 @@ export default function PowerHistoryGraph({ currentPower, maxPower }) {
     });
 
     return path;
-  };
-
-  // Couleur selon puissance moyenne
-  const getStrokeColor = () => {
-    if (history.length === 0) return '#2dd4bf';
-    const avg = history.reduce((a, b) => a + b, 0) / history.length;
-    const percent = (avg / maxPower) * 100;
-
-    if (percent <= 30) return '#2dd4bf'; // Cyan
-    if (percent <= 60) return '#facc15'; // Jaune
-    return '#fb7185'; // Rose
   };
 
   return (
@@ -70,11 +57,11 @@ export default function PowerHistoryGraph({ currentPower, maxPower }) {
         <path
           d={generatePath()}
           fill="none"
-          stroke={getStrokeColor()}
+          stroke="#e5e7eb"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ transition: 'stroke 0.4s ease' }}
+          strokeOpacity="0.7"
         />
       </svg>
     </div>

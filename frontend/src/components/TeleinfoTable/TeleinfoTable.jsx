@@ -1,7 +1,7 @@
 import React from 'react';
-import { TELEINFO_LABELS } from '../../../constants/teleinfoConstants';
+import { TELEINFO_LABELS } from '../../constants/teleinfoConstants';
 import styles from './TeleinfoTable.module.scss';
-import { formatValue, formatOtherData } from '../../../utils/teleinfoUtils';
+import { formatValue, formatOtherData } from '../../utils/teleinfoUtils';
 
 export default function TeleinfoTable({ data }) {
   const toDisplay = {

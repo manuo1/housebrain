@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import fetchTeleinfoData from '../services/fetchTeleinfoData';
-import TeleinfoTable from '../components/LiveTeleinfoPage/TeleinfoTable/TeleinfoTable';
-import PowerGauge from '../components/LiveTeleinfoPage/PowerGauge/PowerGauge';
-import PowerHistoryGraph from '../components/LiveTeleinfoPage/PowerHistoryGraph/PowerHistoryGraph';
+import RealtimePowerMonitor from '../components/RealtimePowerMonitor/RealtimePowerMonitor';
+import TeleinfoTable from '../components/TeleinfoTable/TeleinfoTable';
 import styles from './LiveTeleinfoPage.module.scss';
 
 const DEFAULT_VOLTAGE = 230;
@@ -43,13 +42,9 @@ export default function LiveTeleinfoPage() {
       {!data && !error && <p>Loading data...</p>}
       {data && (
         <>
-          <PowerGauge
+          <RealtimePowerMonitor
             maxPower={data.maxPower}
             currentPower={data.currentPower}
-          />
-          <PowerHistoryGraph
-            currentPower={data.currentPower}
-            maxPower={data.maxPower}
           />
           <TeleinfoTable data={data} />
         </>

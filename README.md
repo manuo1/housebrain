@@ -6,6 +6,13 @@ Système de gestion domotique pour Raspberry Pi.
 
 ## Fonctionnalités
 
+### Scheduler
+- Orchestrateur de tâches périodiques (systemd timer)
+- Exécution toutes les 1 minute
+- Tâches indépendantes
+
+Voir : [docs/features/scheduler.md](docs/features/scheduler.md)
+
 ### Monitoring énergétique
 [Documentation à venir]
 
@@ -66,6 +73,7 @@ Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspber
 - [Pilotage chauffage] - Documentation à venir
 
 ### Fonctionnalités
+- [Scheduler](docs/features/scheduler.md)
 - [Authentification JWT](docs/features/authentication.md)
 - [Monitoring énergétique] - Documentation à venir
 - [Contrôle chauffage] - Documentation à venir

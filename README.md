@@ -55,14 +55,29 @@ Voir : [docs/features/scheduler.md](docs/features/scheduler.md)
 Voir : [docs/features/energy_consumption.md](docs/features/energy_consumption.md)
 
 ### Contrôle chauffage
-- Gestion des pièces (Rooms) : agrégation radiateur + capteur + config
-- 2 modes de pilotage : THERMOSTAT (consigne température) ou ONOFF (planning direct)
-- État demandé final (`requested_heating_state`) calculé selon le mode
-- API REST temps-réel avec données agrégées et états calculés
+
+**Planification :**
+- Patterns réutilisables avec déduplication (hash MD5)
+- 2 types de slots : TEMPERATURE (thermostat) ou ONOFF (direct)
+- API REST : calendrier, CRUD plannings, duplication (jour/semaine)
+- Calendrier avec statuts (EMPTY/NORMAL/DIFFERENT)
+
+Voir : [docs/features/heating_planning.md](docs/features/heating_planning.md)
+
+**Contrôle intelligent :**
+- Algorithme thermostat avec hystérésis 0.5°C et anticipation par tendance
+- Synchronisation 3 étapes (plannings → rooms → radiateurs)
+- Gestion puissance disponible avec cache Redis
+- Allumage conditionnel par listener Teleinfo
+
+Voir : [docs/features/heating_control.md](docs/features/heating_control.md)
+
+**Gestion des pièces :**
+- Agrégation radiateur + capteur + config
+- 2 modes de pilotage : THERMOSTAT ou ONOFF
+- API REST temps-réel avec données agrégées
 
 Voir : [docs/features/rooms.md](docs/features/rooms.md)
-
-[Algorithmes thermostat et plannings] - Documentation à venir
 
 ### Authentification
 - JWT avec cookies HttpOnly
@@ -117,10 +132,12 @@ Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspber
 ### Fonctionnalités
 - [Téléinfo (Monitoring électrique)](docs/features/teleinfo.md)
 - [Pilotage radiateurs](docs/features/radiator_control.md)
+- [Planification chauffage](docs/features/heating_planning.md)
+- [Contrôle chauffage](docs/features/heating_control.md)
+- [Gestion des pièces](docs/features/rooms.md)
 - [Monitoring consommation](docs/features/energy_consumption.md)
 - [Monitoring système](docs/features/monitoring.md)
 - [Capteurs Bluetooth](docs/features/bluetooth_sensors.md)
-- [Gestion des pièces](docs/features/rooms.md)
 - [Scheduler](docs/features/scheduler.md)
 - [Authentification JWT](docs/features/authentication.md)
 

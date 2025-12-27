@@ -55,7 +55,14 @@ Voir : [docs/features/scheduler.md](docs/features/scheduler.md)
 Voir : [docs/features/energy_consumption.md](docs/features/energy_consumption.md)
 
 ### Contrôle chauffage
-[Documentation à venir]
+- Gestion des pièces (Rooms) : agrégation radiateur + capteur + config
+- 2 modes de pilotage : THERMOSTAT (consigne température) ou ONOFF (planning direct)
+- État demandé final (`requested_heating_state`) calculé selon le mode
+- API REST temps-réel avec données agrégées et états calculés
+
+Voir : [docs/features/rooms.md](docs/features/rooms.md)
+
+[Algorithmes thermostat et plannings] - Documentation à venir
 
 ### Authentification
 - JWT avec cookies HttpOnly
@@ -113,9 +120,9 @@ Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspber
 - [Monitoring consommation](docs/features/energy_consumption.md)
 - [Monitoring système](docs/features/monitoring.md)
 - [Capteurs Bluetooth](docs/features/bluetooth_sensors.md)
+- [Gestion des pièces](docs/features/rooms.md)
 - [Scheduler](docs/features/scheduler.md)
 - [Authentification JWT](docs/features/authentication.md)
-- [Contrôle chauffage] - Documentation à venir
 
 ---
 

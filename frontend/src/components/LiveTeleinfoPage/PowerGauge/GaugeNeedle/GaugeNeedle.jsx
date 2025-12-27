@@ -6,7 +6,7 @@ export default function GaugeNeedle({ percent }) {
   return (
     <g
       transform={`rotate(${degrees} 50 50)`}
-      style={{ transition: 'transform 0.4s ease' }}
+      style={{ transition: 'transform 0.8s ease-out' }}
     >
       <line
         x1="50"

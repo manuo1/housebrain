@@ -40,9 +40,9 @@ export default function PowerHistoryGraph({ currentPower, maxPower }) {
     const avg = history.reduce((a, b) => a + b, 0) / history.length;
     const percent = (avg / maxPower) * 100;
 
-    if (percent <= 35) return '#2dd4bf';
-    if (percent <= 70) return '#facc15';
-    return '#fb7185';
+    if (percent <= 30) return '#2dd4bf'; // Cyan
+    if (percent <= 60) return '#facc15'; // Jaune
+    return '#fb7185'; // Rose
   };
 
   return (

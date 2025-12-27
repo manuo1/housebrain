@@ -23,6 +23,13 @@ Voir : [docs/features/teleinfo.md](docs/features/teleinfo.md)
 
 Voir : [docs/features/radiator_control.md](docs/features/radiator_control.md)
 
+### Monitoring système
+- Collecte automatique logs journalctl (6 services)
+- Filtrage intelligent par keywords
+- Consultation centralisée via admin Django
+
+Voir : [docs/features/monitoring.md](docs/features/monitoring.md)
+
 ### Capteurs Bluetooth
 - Détection automatique capteurs BTHome (température, humidité)
 - Scanner BLE passif (broadcast, sans appairage)
@@ -96,6 +103,8 @@ Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspber
 
 ### Fonctionnalités
 - [Téléinfo (Monitoring électrique)](docs/features/teleinfo.md)
+- [Pilotage radiateurs](docs/features/radiator_control.md)
+- [Monitoring système](docs/features/monitoring.md)
 - [Capteurs Bluetooth](docs/features/bluetooth_sensors.md)
 - [Scheduler](docs/features/scheduler.md)
 - [Authentification JWT](docs/features/authentication.md)

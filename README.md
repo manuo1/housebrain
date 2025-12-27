@@ -15,6 +15,14 @@ Système de gestion domotique pour Raspberry Pi.
 
 Voir : [docs/features/teleinfo.md](docs/features/teleinfo.md)
 
+### Pilotage radiateurs (Fil pilote)
+- Contrôle radiateurs électriques via MCP23017 (I2C)
+- Architecture découplée software/hardware
+- Délestage intelligent par ordre d'importance
+- Synchronisation centralisée (scheduler + listener Teleinfo)
+
+Voir : [docs/features/radiator_control.md](docs/features/radiator_control.md)
+
 ### Capteurs Bluetooth
 - Détection automatique capteurs BTHome (température, humidité)
 - Scanner BLE passif (broadcast, sans appairage)

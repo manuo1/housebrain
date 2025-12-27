@@ -46,7 +46,13 @@ Voir : [docs/features/bluetooth_sensors.md](docs/features/bluetooth_sensors.md)
 Voir : [docs/features/scheduler.md](docs/features/scheduler.md)
 
 ### Monitoring énergétique
-[Documentation à venir]
+- Historisation index Linky minute par minute (1440 points/jour)
+- Multi-résolution (1 min, 30 min, 60 min)
+- Interpolation linéaire des données manquantes
+- Calcul coûts avec pricing EDF historique
+- API REST avec totaux par période tarifaire
+
+Voir : [docs/features/energy_consumption.md](docs/features/energy_consumption.md)
 
 ### Contrôle chauffage
 [Documentation à venir]
@@ -104,11 +110,11 @@ Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspber
 ### Fonctionnalités
 - [Téléinfo (Monitoring électrique)](docs/features/teleinfo.md)
 - [Pilotage radiateurs](docs/features/radiator_control.md)
+- [Monitoring consommation](docs/features/energy_consumption.md)
 - [Monitoring système](docs/features/monitoring.md)
 - [Capteurs Bluetooth](docs/features/bluetooth_sensors.md)
 - [Scheduler](docs/features/scheduler.md)
 - [Authentification JWT](docs/features/authentication.md)
-- [Monitoring énergétique] - Documentation à venir
 - [Contrôle chauffage] - Documentation à venir
 
 ---

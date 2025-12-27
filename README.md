@@ -6,6 +6,15 @@ Système de gestion domotique pour Raspberry Pi.
 
 ## Fonctionnalités
 
+### Téléinfo (Monitoring électrique)
+- Lecture temps-réel compteur Linky (protocole série)
+- Composant critique : base de la gestion électrique
+- Parsing et validation des trames (checksum)
+- Stockage Redis
+- Gestion puissance disponible temps-réel
+
+Voir : [docs/features/teleinfo.md](docs/features/teleinfo.md)
+
 ### Scheduler
 - Orchestrateur de tâches périodiques (systemd timer)
 - Exécution toutes les 1 minute
@@ -73,6 +82,7 @@ Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspber
 - [Pilotage chauffage] - Documentation à venir
 
 ### Fonctionnalités
+- [Téléinfo (Monitoring électrique)](docs/features/teleinfo.md)
 - [Scheduler](docs/features/scheduler.md)
 - [Authentification JWT](docs/features/authentication.md)
 - [Monitoring énergétique] - Documentation à venir

@@ -1,9 +1,8 @@
 @use '../../styles/abstracts/variables' as *;
 
 .monitor {
-  width: clamp(375px, 225.3521px + 39.9061vw, 800px);
+  width: 100%;
   margin: 0 auto;
-  margin-top: 10px;
   background: $bg-darker;
   padding: 22px 28px 20px;
   border-radius: $radius-lg;

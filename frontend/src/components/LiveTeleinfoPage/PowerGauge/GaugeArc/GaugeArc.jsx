@@ -31,7 +31,7 @@ export default function GaugeArc({ percent }) {
         fill="none"
         strokeDasharray={arcLength}
         strokeDashoffset={offset}
-        style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+        style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
       />
     </g>
   );

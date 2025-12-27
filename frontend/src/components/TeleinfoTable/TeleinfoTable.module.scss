@@ -34,6 +34,10 @@
   transition: $transition-bg;
 }
 
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 .table td {
   color: $text-tertiary;
 }

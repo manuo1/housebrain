@@ -19,81 +19,90 @@
     .statsSection {
       flex: 1;
       @include flex-column;
+      gap: $gap-lg;
       min-height: 0;
       min-width: 0;
     }
 
     .statsSection {
-      .placeholder {
-        @include card-placeholder;
+      .powerCard {
+        @include card-base;
+        padding: $spacing-xl;
+        @include flex-column;
+        gap: $spacing-lg;
 
-        .icon {
-          font-size: $font-size-4xl;
-          @include icon-glow($color-primary, 0.4);
-        }
+        .tariffBadge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: $spacing-sm;
+          padding: $spacing-md $spacing-lg;
+          background: $bg-medium;
+          border: 1px solid $border-medium;
+          border-radius: $radius-base;
 
-        h2 {
-          color: $text-secondary;
-          font-size: $font-size-3xl;
-          margin: 0;
-        }
-
-        .constructionText {
-          color: $text-disabled;
-          font-size: $font-size-md;
-          margin: 0;
-        }
-
-        .linksContainer {
-          margin-top: $spacing-base;
-          @include flex-column;
-          gap: $spacing-base;
-
-          .infoText {
+          .tariffLabel {
             color: $text-muted;
             font-size: $font-size-base;
-            margin: 0;
+            font-weight: $font-weight-medium;
           }
 
-          .links {
-            @include flex-column;
-            gap: $gap-md;
-            margin-top: $spacing-sm;
+          .tariffValue {
+            color: $color-primary;
+            font-size: $font-size-lg;
+            font-weight: $font-weight-semibold;
+            @include text-glow($color-primary);
+          }
+        }
+      }
 
-            .link {
-              display: flex;
-              align-items: center;
-              gap: $spacing-sm;
-              padding: $spacing-md $spacing-lg;
-              background: $gradient-card;
-              border: 1px solid $border-light;
-              border-radius: $radius-base;
-              color: $color-primary;
-              text-decoration: none;
-              font-weight: $font-weight-medium;
-              transition: $transition-all;
-              box-shadow: $shadow-base;
+      .constructionCard {
+        @include card-base;
+        padding: $spacing-xl;
+        @include flex-column;
+        gap: $spacing-md;
+        align-items: center;
 
-              .linkIcon {
-                font-size: $font-size-xl;
-                @include icon-glow($color-primary);
-              }
+        .infoText {
+          color: $text-muted;
+          font-size: $font-size-base;
+          text-align: center;
+          margin: 0;
+        }
 
-              &:hover {
-                background: linear-gradient(145deg, #3a3a3a 0%, #333 100%);
-                border-color: $color-primary;
-                transform: translateY(-2px);
-                box-shadow: $shadow-primary-hover;
+        .link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: $spacing-sm;
+          padding: $spacing-md $spacing-lg;
+          background: $gradient-card;
+          border: 1px solid $border-light;
+          border-radius: $radius-base;
+          color: $color-primary;
+          text-decoration: none;
+          font-weight: $font-weight-medium;
+          transition: $transition-all;
+          box-shadow: $shadow-base;
 
-                .linkIcon {
-                  @include icon-glow($color-primary, 0.5);
-                }
-              }
+          .linkIcon {
+            font-size: $font-size-xl;
+            @include icon-glow($color-primary);
+          }
 
-              &:active {
-                transform: translateY(0);
-              }
+          &:hover {
+            background: linear-gradient(145deg, #3a3a3a 0%, #333 100%);
+            border-color: $color-primary;
+            transform: translateY(-2px);
+            box-shadow: $shadow-primary-hover;
+
+            .linkIcon {
+              @include icon-glow($color-primary, 0.5);
             }
+          }
+
+          &:active {
+            transform: translateY(0);
           }
         }
       }

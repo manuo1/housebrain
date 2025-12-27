@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import fetchTeleinfoData from '../services/fetchTeleinfoData';
-import RealtimePowerMonitor from '../components/RealtimePowerMonitor/RealtimePowerMonitor';
 import TeleinfoTable from '../components/TeleinfoTable/TeleinfoTable';
 import styles from './LiveTeleinfoPage.module.scss';
-
-const DEFAULT_VOLTAGE = 230;
 
 export default function LiveTeleinfoPage() {
   const [data, setData] = useState(null);
@@ -40,15 +37,7 @@ export default function LiveTeleinfoPage() {
     <div className={styles.container}>
       {error && <p className={styles.error}>Error: {error}</p>}
       {!data && !error && <p>Loading data...</p>}
-      {data && (
-        <>
-          <RealtimePowerMonitor
-            maxPower={data.maxPower}
-            currentPower={data.currentPower}
-          />
-          <TeleinfoTable data={data} />
-        </>
-      )}
+      {data && <TeleinfoTable data={data} />}
     </div>
   );
 }

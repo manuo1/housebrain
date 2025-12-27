@@ -1,6 +1,9 @@
+@use '../../../styles/abstracts/variables' as *;
+
 .gaugeContainer {
   position: relative;
-  width: 260px;
+  width: 100%;
+  max-width: 260px;
   height: 160px;
   margin: 0 auto;
 }
@@ -9,6 +12,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 260px;
+  width: 100%;
+  max-width: 260px;
   overflow: visible;
 }

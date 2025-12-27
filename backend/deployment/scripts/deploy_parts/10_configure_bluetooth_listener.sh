@@ -1,5 +1,5 @@
 #!/bin/bash
-# # Configuration de Bluetooth Listener
+# Configuration de Bluetooth Listener
 source /home/admin/housebrain/backend/.venv/bin/activate
 
 BLEAK_VERSION="0.22.3"
@@ -20,8 +20,7 @@ sudo systemctl start bluetooth-listener.service
 
 # Vérification du service
 if systemctl is-active --quiet bluetooth-listener.service; then
-    echo "Teleinfo Listener est actif."
+    echo "Bluetooth Listener est actif."
 else
-    echo "Teleinfo Listener n'a pas démarré correctement."
+    echo "Bluetooth Listener n'a pas démarré correctement."
 fi
-

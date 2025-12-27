@@ -1,18 +1,11 @@
-@use '../../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/variables' as *;
 
-.graphContainer {
+.monitor {
   width: clamp(375px, 225.3521px + 39.9061vw, 800px);
   margin: 0 auto;
-  margin-top: $spacing-lg;
+  margin-top: 10px;
   background: $bg-darker;
-  padding: $spacing-base;
+  padding: 22px 28px 20px;
   border-radius: $radius-lg;
   box-shadow: $shadow-xl, inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  height: 120px;
-}
-
-.svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
 }

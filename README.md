@@ -2,29 +2,8 @@
 
 Système de gestion domotique pour Raspberry Pi avec monitoring énergétique et contrôle de chauffage.
 
----
+**Version de démonstration :** https://housebrain.emmanuel-oudot.fr/
 
-## Fonctionnalités
-
-### Monitoring électrique temps-réel
-Visualisation en direct des données du compteur Linky (Téléinfo).
-[Documentation à venir]
-
-### Analyse de consommation
-Historique et graphiques de consommation électrique avec calcul des coûts.
-[Documentation à venir]
-
-### Planification du chauffage
-Éditeur de plannings horaires par pièce avec duplication facilitée.
-[Documentation à venir]
-
-### Contrôle des radiateurs
-Pilotage intelligent des radiateurs avec régulation thermostatique.
-[Documentation à venir]
-
-### Dashboard pièces
-Vue d'ensemble température et état chauffage par pièce.
-[Documentation à venir]
 
 ---
 
@@ -91,10 +70,11 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 - [Live Téléinfo](docs/frontend/live_teleinfo.md)
 - [Graphiques personnalisés](docs/frontend/custom_charts.md)
 - [Page Consommation](docs/frontend/consumption_page.md)
-- Documentation autres pages à venir
+- [Page Planification Chauffage](docs/frontend/heating_schedule_page.md)
+- [Timeline - Éditeur de créneaux](docs/frontend/heating_timeline.md)
+- [Calendrier et sélection](docs/frontend/heating_calendar.md)
+- [Système de duplication](docs/frontend/heating_duplication.md)
 
-**Features / Guide utilisateur :**
-- Documentation à venir
 
 ---
 

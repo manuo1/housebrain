@@ -1,4 +1,4 @@
-# Authentification JWT
+# Authentification JWT - Backend
 
 Système d'authentification avec JWT et cookies HttpOnly pour HouseBrain.
 
@@ -18,11 +18,10 @@ Système d'authentification avec JWT et cookies HttpOnly pour HouseBrain.
 
 ---
 
-## Backend
+## Configuration Django
 
-### Configuration
+### Settings (base.py)
 
-**Settings (base.py) :**
 ```python
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -42,7 +41,11 @@ SIMPLE_JWT = {
 }
 ```
 
-### Endpoints
+---
+
+## Endpoints API
+
+### Routes d'authentification
 
 | Endpoint | Méthode | Description |
 |----------|---------|-------------|
@@ -51,68 +54,105 @@ SIMPLE_JWT = {
 | `/api/auth/me/` | GET | Informations utilisateur connecté |
 | `/api/auth/logout/` | POST | Déconnexion (supprime cookie refresh) |
 
-### Views personnalisées
+---
 
-**CookieTokenObtainPairView :**
-- Hérite de `TokenObtainPairView`
+## Views personnalisées
+
+### CookieTokenObtainPairView
+
+**Hérite de :** `TokenObtainPairView`
+
+**Fonctionnement :**
+- Reçoit `username` et `password` en POST
 - Place le refresh token dans un cookie HttpOnly
 - Retourne uniquement l'access token en JSON
 
-**CookieTokenRefreshView :**
-- Hérite de `TokenRefreshView`
-- Lit le refresh token depuis le cookie
-- Retourne un nouvel access token
-
----
-
-## Frontend
-
-### Context API
-
-**AuthProvider :**
-```javascript
+**Réponse :**
+```json
 {
-  user,           // Objet utilisateur { username }
-  accessToken,    // Access token JWT
-  login,          // Fonction de connexion
-  logout,         // Fonction de déconnexion
-  refresh,        // Fonction de refresh manuel
-  loading,        // État de chargement initial
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc..."
 }
 ```
 
-### Services
-
-**login(username, password) :**
-- POST `/api/auth/login/`
-- Retourne `{ access }`
-
-**refresh() :**
-- POST `/api/auth/refresh/`
-- Lit refresh token depuis cookie
-- Retourne `{ access }`
-
-**getUser(token) :**
-- GET `/api/auth/me/`
-- Header `Authorization: Bearer {token}`
-- Retourne `{ username }`
-
-**logout() :**
-- POST `/api/auth/logout/`
-- Supprime cookie refresh token
-
-### fetchWithAuth
-
-Wrapper fetch avec retry automatique :
-```javascript
-fetchWithAuth(url, options, refreshCallback)
+**Cookie défini :**
+```
+Set-Cookie: refresh_token=eyJ0eXAiOiJKV1QiLCJhbGc...;
+            HttpOnly; Secure; SameSite=Strict; Max-Age=604800
 ```
 
-Comportement :
-1. Effectue la requête
-2. Si 401, appelle `refreshCallback()` pour obtenir nouveau token
-3. Retry la requête avec le nouveau token
-4. Si échec refresh, throw error
+### CookieTokenRefreshView
+
+**Hérite de :** `TokenRefreshView`
+
+**Fonctionnement :**
+- Lit le refresh token depuis le cookie `refresh_token`
+- Valide le refresh token
+- Retourne un nouvel access token
+
+**Réponse :**
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}
+```
+
+---
+
+## Gestion des erreurs
+
+### Codes d'erreur HTTP
+
+**401 Unauthorized :**
+- Token invalide
+- Refresh token manquant
+- Refresh token expiré
+- Credentials incorrects
+
+**403 Forbidden :**
+- Permissions insuffisantes pour l'action demandée
+
+---
+
+## Sécurité
+
+### Configuration des cookies
+
+```python
+# Production settings
+httponly=True     # Pas accessible via JavaScript
+secure=True       # Transmission HTTPS uniquement
+samesite='Strict' # Protection CSRF
+max_age=604800    # 7 jours
+```
+
+### Headers de sécurité
+
+**Authorization standard :**
+```
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGc...
+```
+
+### HTTPS obligatoire en production
+
+```python
+# settings/production.py
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+```
+
+---
+
+## Durée de vie des tokens
+
+| Token | Durée | Usage |
+|-------|-------|-------|
+| Access token | 15 minutes | Authentification des requêtes API |
+| Refresh token | 7 jours | Renouvellement de l'access token |
+
+**Stratégie :**
+- Access token courte durée → sécurité renforcée
+- Refresh token longue durée → meilleure UX (pas de reconnexion fréquente)
 
 ---
 
@@ -144,41 +184,6 @@ Comportement :
 1. POST /api/auth/logout/
 2. Backend delete cookie refresh_token
 3. Frontend clear user et accessToken
-```
-
----
-
-## Gestion des erreurs
-
-### Backend
-- Token invalide : 401 Unauthorized
-- Refresh token manquant : 401 Unauthorized
-- Refresh token expiré : 401 Unauthorized
-
-### Frontend
-- Refresh échoué : déconnexion automatique
-- 401 non récupérable : message "Session expired"
-
----
-
-## Sécurité
-
-### Cookies
-- `httponly=True` : pas accessible via JavaScript
-- `secure=True` : transmission HTTPS uniquement
-- `samesite='Strict'` : protection CSRF
-
-### Tokens
-- Access token courte durée (15 min)
-- Refresh token longue durée (7 jours)
-- Header Authorization standard
-
-### HTTPS
-Configuration obligatoire en production :
-```python
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 ```
 
 ---

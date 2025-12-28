@@ -1,90 +1,30 @@
 # HouseBrain
 
-Système de gestion domotique pour Raspberry Pi.
+Système de gestion domotique pour Raspberry Pi avec monitoring énergétique et contrôle de chauffage.
 
 ---
 
 ## Fonctionnalités
 
-### Téléinfo (Monitoring électrique)
-- Lecture temps-réel compteur Linky (protocole série)
-- Composant critique : base de la gestion électrique
-- Parsing et validation des trames (checksum)
-- Stockage Redis
-- Gestion puissance disponible temps-réel
+### Monitoring électrique temps-réel
+Visualisation en direct des données du compteur Linky (Téléinfo).
+[Documentation à venir]
 
-Voir : [docs/features/teleinfo.md](docs/features/teleinfo.md)
+### Analyse de consommation
+Historique et graphiques de consommation électrique avec calcul des coûts.
+[Documentation à venir]
 
-### Pilotage radiateurs (Fil pilote)
-- Contrôle radiateurs électriques via MCP23017 (I2C)
-- Architecture découplée software/hardware
-- Délestage intelligent par ordre d'importance
-- Synchronisation centralisée (scheduler + listener Teleinfo)
+### Planification du chauffage
+Éditeur de plannings horaires par pièce avec duplication facilitée.
+[Documentation à venir]
 
-Voir : [docs/features/radiator_control.md](docs/features/radiator_control.md)
+### Contrôle des radiateurs
+Pilotage intelligent des radiateurs avec régulation thermostatique.
+[Documentation à venir]
 
-### Monitoring système
-- Collecte automatique logs journalctl (6 services)
-- Filtrage intelligent par keywords
-- Consultation centralisée via admin Django
-
-Voir : [docs/features/monitoring.md](docs/features/monitoring.md)
-
-### Capteurs Bluetooth
-- Détection automatique capteurs BTHome (température, humidité)
-- Scanner BLE passif (broadcast, sans appairage)
-- Stockage Redis avec détection de tendance
-- Affichage par pièce et pilotage chauffage
-
-Voir : [docs/features/bluetooth_sensors.md](docs/features/bluetooth_sensors.md)
-
-### Scheduler
-- Orchestrateur de tâches périodiques (systemd timer)
-- Exécution toutes les 1 minute
-- Tâches indépendantes
-
-Voir : [docs/features/scheduler.md](docs/features/scheduler.md)
-
-### Monitoring énergétique
-- Historisation index Linky minute par minute (1440 points/jour)
-- Multi-résolution (1 min, 30 min, 60 min)
-- Interpolation linéaire des données manquantes
-- Calcul coûts avec pricing EDF historique
-- API REST avec totaux par période tarifaire
-
-Voir : [docs/features/energy_consumption.md](docs/features/energy_consumption.md)
-
-### Contrôle chauffage
-
-**Planification :**
-- Patterns réutilisables avec déduplication (hash MD5)
-- 2 types de slots : TEMPERATURE (thermostat) ou ONOFF (direct)
-- API REST : calendrier, CRUD plannings, duplication (jour/semaine)
-- Calendrier avec statuts (EMPTY/NORMAL/DIFFERENT)
-
-Voir : [docs/features/heating_planning.md](docs/features/heating_planning.md)
-
-**Contrôle intelligent :**
-- Algorithme thermostat avec hystérésis 0.5°C et anticipation par tendance
-- Synchronisation 3 étapes (plannings → rooms → radiateurs)
-- Gestion puissance disponible avec cache Redis
-- Allumage conditionnel par listener Teleinfo
-
-Voir : [docs/features/heating_control.md](docs/features/heating_control.md)
-
-**Gestion des pièces :**
-- Agrégation radiateur + capteur + config
-- 2 modes de pilotage : THERMOSTAT ou ONOFF
-- API REST temps-réel avec données agrégées
-
-Voir : [docs/features/rooms.md](docs/features/rooms.md)
-
-### Authentification
-- JWT avec cookies HttpOnly
-- Access token 15 min, Refresh token 7 jours
-- Routes publiques (lecture) / Routes protégées (écriture)
-
-Voir : [docs/features/authentication.md](docs/features/authentication.md)
+### Dashboard pièces
+Vue d'ensemble température et état chauffage par pièce.
+[Documentation à venir]
 
 ---
 
@@ -93,53 +33,76 @@ Voir : [docs/features/authentication.md](docs/features/authentication.md)
 ### Backend
 - Django 5.2 + Django REST Framework
 - SQLite / Redis
+- Services systemd : Gunicorn, Teleinfo Listener, Bluetooth Listener, Scheduler
 
 ### Frontend
-- React 19
+- React 19 + Vite 6
+- Graphiques custom (CSS/HTML)
+- Authentification JWT
 
-### Services
-- Nginx, Gunicorn
-- Teleinfo Listener, Bluetooth Listener
-- Scheduler (systemd timer)
+### Stack
+- Nginx
+- PySerial (Téléinfo), Bleak (Bluetooth)
+- MCP23017 (I2C), GPIO
 
 ---
 
 ## Installation
 
-Voir : [docs/software/raspberry_install.md](docs/software/raspberry_install.md)
+Voir la documentation complète : [docs/software/raspberry_install.md](docs/software/raspberry_install.md)
 
-Déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspberry_app_deployment.md)
+Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software/raspberry_app_deployment.md)
 
 ---
 
 ## Documentation
 
 ### Installation et configuration
-- [Installation Raspberry Pi](docs/software/raspberry_install.md)
-- [Déploiement application](docs/software/raspberry_app_deployment.md)
+- [Installation initiale du Raspberry Pi](docs/software/raspberry_install.md)
+- [Déploiement de l'application](docs/software/raspberry_app_deployment.md)
 - [Configuration HTTPS](docs/software/raspberry_https_setup.md)
 
 ### Maintenance
 - [Mise à jour](docs/software/raspberry_app_update.md)
-- [Redémarrage services](docs/software/restart_services.md)
-- [Logs](docs/software/see_logs.md)
+- [Redémarrage des services](docs/software/restart_services.md)
+- [Consultation des logs](docs/software/see_logs.md)
 - [Désinstallation](docs/software/raspberry_app_remove_full.md)
 
 ### Hardware
 - [Branchement Téléinfo](docs/hardware/teleinfo_branchement.md)
-- [Pilotage chauffage] - Documentation à venir
+- Pilotage chauffage MCP23017 - Documentation à venir
 
-### Fonctionnalités
-- [Téléinfo (Monitoring électrique)](docs/features/teleinfo.md)
-- [Pilotage radiateurs](docs/features/radiator_control.md)
-- [Planification chauffage](docs/features/heating_planning.md)
-- [Contrôle chauffage](docs/features/heating_control.md)
-- [Gestion des pièces](docs/features/rooms.md)
-- [Monitoring consommation](docs/features/energy_consumption.md)
-- [Monitoring système](docs/features/monitoring.md)
-- [Capteurs Bluetooth](docs/features/bluetooth_sensors.md)
-- [Scheduler](docs/features/scheduler.md)
-- [Authentification JWT](docs/features/authentication.md)
+### Architecture technique
+
+**Backend :**
+- [Téléinfo - Lecture compteur](docs/backend/teleinfo.md)
+- [Pilotage radiateurs](docs/backend/radiator_control.md)
+- [Planification chauffage](docs/backend/heating_planning.md)
+- [Contrôle chauffage](docs/backend/heating_control.md)
+- [Gestion des pièces](docs/backend/rooms.md)
+- [Monitoring consommation](docs/backend/energy_consumption.md)
+- [Monitoring système](docs/backend/monitoring.md)
+- [Capteurs Bluetooth](docs/backend/bluetooth_sensors.md)
+- [Scheduler](docs/backend/scheduler.md)
+- [Authentification JWT - Backend](docs/backend/authentication.md)
+
+**Frontend :**
+- [Authentification JWT - Frontend](docs/frontend/authentication.md)
+- [Live Téléinfo](docs/frontend/live_teleinfo.md)
+- Documentation autres pages à venir
+
+---
+
+## Services
+
+| Service | Description |
+|---------|-------------|
+| nginx | Serveur web |
+| gunicorn | Application Django |
+| redis-server | Cache |
+| teleinfo-listener | Lecture Linky |
+| bluetooth-listener | Communication BLE |
+| housebrain-periodic.timer | Tâches périodiques |
 
 ---
 

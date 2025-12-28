@@ -89,7 +89,12 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 **Frontend :**
 - [Authentification JWT - Frontend](docs/frontend/authentication.md)
 - [Live Téléinfo](docs/frontend/live_teleinfo.md)
+- [Graphiques personnalisés](docs/frontend/custom_charts.md)
+- [Page Consommation](docs/frontend/consumption_page.md)
 - Documentation autres pages à venir
+
+**Features / Guide utilisateur :**
+- Documentation à venir
 
 ---
 

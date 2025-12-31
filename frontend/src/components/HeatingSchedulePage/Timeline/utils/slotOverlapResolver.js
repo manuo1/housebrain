@@ -119,6 +119,51 @@ export const findSlotCoveredAtEnd = (
 };
 
 /**
+ * Find slot where the new slot is completely inside it (needs splitting)
+ * @param {Object} newSlot - New slot with start and end
+ * @param {Array} existingSlots - Array of existing slots
+ * @param {number|null} excludeIndex - Index to exclude (when modifying existing slot)
+ * @returns {Object|null} Object with slotIndex and split slots (before/after), or null
+ */
+export const findSlotToSplit = (
+  newSlot,
+  existingSlots,
+  excludeIndex = null
+) => {
+  const newStart = timeToMinutes(newSlot.start);
+  const newEnd = timeToMinutes(newSlot.end);
+
+  for (let i = 0; i < existingSlots.length; i++) {
+    if (i === excludeIndex) continue;
+
+    const slot = existingSlots[i];
+    const slotStart = timeToMinutes(slot.start);
+    const slotEnd = timeToMinutes(slot.end);
+
+    // New slot is completely inside this slot (needs splitting)
+    if (newStart > slotStart && newEnd < slotEnd) {
+      // Create before slot: original start -> 1 minute before new slot
+      const beforeEnd = minutesToTime(newStart - 1);
+      const beforeSlot = { ...slot, end: beforeEnd };
+      const beforeValid = validateDuration(slot.start, beforeEnd);
+
+      // Create after slot: 1 minute after new slot -> original end
+      const afterStart = minutesToTime(newEnd + 1);
+      const afterSlot = { ...slot, start: afterStart };
+      const afterValid = validateDuration(afterStart, slot.end);
+
+      return {
+        slotIndex: i,
+        beforeSlot: beforeValid ? beforeSlot : null,
+        afterSlot: afterValid ? afterSlot : null,
+      };
+    }
+  }
+
+  return null;
+};
+
+/**
  * Resolve all overlaps caused by a new/modified slot
  * Returns a new array of slots with adjustments and removals applied
  * @param {Object} newSlot - New slot with start and end (and value)
@@ -131,21 +176,71 @@ export const resolveSlotOverlaps = (
   existingSlots,
   slotIndex = null
 ) => {
-  // Step 1: Find fully covered slots (to remove)
+  // Step 1: Check if new slot splits an existing slot
+  const splitResult = findSlotToSplit(newSlot, existingSlots, slotIndex);
+
+  if (splitResult) {
+    // Handle split case separately
+    const resolvedSlots = [];
+    const removedIndices = new Set();
+
+    existingSlots.forEach((slot, index) => {
+      if (index === slotIndex) {
+        // Skip the slot being modified
+        return;
+      }
+
+      if (index === splitResult.slotIndex) {
+        // Replace with split slots (only valid ones)
+        if (splitResult.beforeSlot) {
+          resolvedSlots.push(splitResult.beforeSlot);
+        }
+        if (splitResult.afterSlot) {
+          resolvedSlots.push(splitResult.afterSlot);
+        }
+
+        // Track if original was removed (both parts invalid)
+        if (!splitResult.beforeSlot && !splitResult.afterSlot) {
+          removedIndices.add(index);
+        }
+      } else {
+        // Keep other slots as is
+        resolvedSlots.push(slot);
+      }
+    });
+
+    // Add the new slot
+    resolvedSlots.push(newSlot);
+
+    // Sort by start time
+    resolvedSlots.sort((a, b) => {
+      return timeToMinutes(a.start) - timeToMinutes(b.start);
+    });
+
+    return {
+      resolvedSlots,
+      removedCount: removedIndices.size,
+      adjustedCount:
+        (splitResult.beforeSlot ? 1 : 0) + (splitResult.afterSlot ? 1 : 0),
+      splitCount: splitResult.beforeSlot && splitResult.afterSlot ? 1 : 0,
+    };
+  }
+
+  // Step 2: Find fully covered slots (to remove)
   const fullyCoveredIndices = findFullyCoveredSlots(
     newSlot,
     existingSlots,
     slotIndex
   );
 
-  // Step 2: Find slot covered at start (to adjust end)
+  // Step 3: Find slot covered at start (to adjust end)
   const coveredAtStart = findSlotCoveredAtStart(
     newSlot,
     existingSlots,
     slotIndex
   );
 
-  // Step 3: Find slot covered at end (to adjust start)
+  // Step 4: Find slot covered at end (to adjust start)
   const coveredAtEnd = findSlotCoveredAtEnd(newSlot, existingSlots, slotIndex);
 
   // Build the new slots array
@@ -216,5 +311,6 @@ export const resolveSlotOverlaps = (
     adjustedCount:
       (coveredAtStart?.adjustedSlot ? 1 : 0) +
       (coveredAtEnd?.adjustedSlot ? 1 : 0),
+    splitCount: 0,
   };
 };

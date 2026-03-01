@@ -1,0 +1,23 @@
+import styles from "./DataPoint.module.scss";
+import AreaRectangle from "./AreaRectangle";
+import HoverRectangle from "./HoverRectangle";
+import LineRectangle from "./LineRectangle";
+import { ChartPoint } from "../../../../transformers/consumptionToChart/computeChartValues";
+
+interface DataPointProps {
+  pointData: ChartPoint;
+}
+
+const DataPoint = ({ pointData }: DataPointProps) => {
+  const { area_height, area_color, line_height, line_color, tooltip } = pointData;
+
+  return (
+    <div className={styles.dataPoint}>
+      <LineRectangle line_height={line_height} line_color={line_color} area_height={area_height} />
+      <AreaRectangle area_height={area_height} area_color={area_color} />
+      <HoverRectangle tooltip={tooltip} />
+    </div>
+  );
+};
+
+export default DataPoint;

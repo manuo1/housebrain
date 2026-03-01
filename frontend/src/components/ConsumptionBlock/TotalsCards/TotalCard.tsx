@@ -1,7 +1,12 @@
-import React from 'react';
-import styles from './TotalCard.module.scss';
+import styles from "./TotalCard.module.scss";
 
-export default function TotalCard({ label, kwh, euros }) {
+interface TotalCardProps {
+  label: string;
+  kwh: string;
+  euros: string;
+}
+
+export default function TotalCard({ label, kwh, euros }: TotalCardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.label}>{label} : </div>

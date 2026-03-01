@@ -1,20 +1,14 @@
-import React from 'react';
+interface GaugeArcProps {
+  percent: number;
+}
 
-export default function GaugeArc({ percent }) {
+export default function GaugeArc({ percent }: GaugeArcProps) {
   const arcLength = 126;
   const offset = arcLength - (arcLength * percent) / 100;
 
   return (
     <g>
-      {/* Arc de fond */}
-      <path
-        d="M10 50 A40 40 0 0 1 90 50"
-        stroke="#1f2535"
-        strokeWidth="10"
-        fill="none"
-      />
-
-      {/* Gradient */}
+      <path d="M10 50 A40 40 0 0 1 90 50" stroke="#1f2535" strokeWidth="10" fill="none" />
       <defs>
         <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#2dd4bf" />
@@ -22,8 +16,6 @@ export default function GaugeArc({ percent }) {
           <stop offset="100%" stopColor="#fb7185" />
         </linearGradient>
       </defs>
-
-      {/* Arc rempli */}
       <path
         d="M10 50 A40 40 0 0 1 90 50"
         stroke="url(#gaugeGrad)"
@@ -31,7 +23,7 @@ export default function GaugeArc({ percent }) {
         fill="none"
         strokeDasharray={arcLength}
         strokeDashoffset={offset}
-        style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
+        style={{ transition: "stroke-dashoffset 1.2s ease-out" }}
       />
     </g>
   );

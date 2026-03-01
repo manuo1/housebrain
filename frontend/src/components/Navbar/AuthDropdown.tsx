@@ -1,47 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../../contexts/useAuth';
-import styles from './AuthDropdown.module.scss';
+import { useState, useRef, useEffect, FormEvent } from "react";
+import { useAuth } from "../../contexts/useAuth";
+import styles from "./AuthDropdown.module.scss";
 
 export default function AuthDropdown() {
   const { user, login, logout, loading } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const dropdownRef = useRef(null);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        setError('');
+        setError("");
       }
     }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
-    setError('');
+    setError("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
-
     try {
       await login(username, password);
-      setUsername('');
-      setPassword('');
+      setUsername("");
+      setPassword("");
       setIsOpen(false);
     } catch {
-      setError('Identifiants incorrects');
+      setError("Identifiants incorrects");
     } finally {
       setIsSubmitting(false);
     }
@@ -52,21 +48,19 @@ export default function AuthDropdown() {
     setIsOpen(false);
   };
 
-  if (loading) {
-    return null;
-  }
+  if (loading) return null;
 
   return (
     <div className={styles.authDropdown} ref={dropdownRef}>
       <button
-        className={`${styles.authToggle} ${isOpen ? styles.active : ''}`}
+        className={`${styles.authToggle} ${isOpen ? styles.active : ""}`}
         onClick={toggleDropdown}
       >
         <span className={styles.icon}>👤</span>
-        {user ? '✅' : '🚫'}
+        {user ? "✅" : "🚫"}
       </button>
 
-      <div className={`${styles.authMenu} ${isOpen ? styles.show : ''}`}>
+      <div className={`${styles.authMenu} ${isOpen ? styles.show : ""}`}>
         {user ? (
           <div className={styles.userMenu}>
             <div className={styles.userInfo}>
@@ -80,9 +74,7 @@ export default function AuthDropdown() {
         ) : (
           <form onSubmit={handleSubmit} className={styles.loginForm}>
             <h3 className={styles.formTitle}>Connexion</h3>
-
             {error && <div className={styles.error}>{error}</div>}
-
             <div className={styles.formGroup}>
               <input
                 type="text"
@@ -94,7 +86,6 @@ export default function AuthDropdown() {
                 className={styles.input}
               />
             </div>
-
             <div className={styles.formGroup}>
               <input
                 type="password"
@@ -106,13 +97,8 @@ export default function AuthDropdown() {
                 className={styles.input}
               />
             </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={styles.submitButton}
-            >
-              {isSubmitting ? 'Connexion...' : 'Se connecter'}
+            <button type="submit" disabled={isSubmitting} className={styles.submitButton}>
+              {isSubmitting ? "Connexion..." : "Se connecter"}
             </button>
           </form>
         )}

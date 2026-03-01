@@ -1,6 +1,6 @@
 export const DEFAULT_VOLTAGE = 230;
 
-export const PTEC_LABELS = {
+export const PTEC_LABELS: Record<string, string> = {
   "TH..": "Base",
   "HC..": "Heures Creuses",
   "HP..": "Heures Pleines",
@@ -15,13 +15,13 @@ export const PTEC_LABELS = {
   DEFAULT: "Inconnu",
 };
 
-export const TELEINFO_LABELS = {
+export const TELEINFO_LABELS: Record<string, string> = {
   ADCO: "Identifiant du compteur",
   OPTARIF: "Option tarifaire",
   ISOUSC: "Intensité souscrite",
   BASE: "Index option Base",
   HCHC: "Index Heures Creuses",
-  HCHP: "	Index Heures Pleines",
+  HCHP: "Index Heures Pleines",
   EJPHN: "Index EJP Heures Normales",
   EJPHPM: "Index EJP Heures de Pointe Mobile",
   BBRHCJB: "Index Tempo Heures Creuses Jours Bleus",
@@ -42,7 +42,7 @@ export const TELEINFO_LABELS = {
   PMAX: "Puissance maximale triphasée",
 };
 
-export const INDEX_LABELS = {
+export const INDEX_LABELS: Record<string, string> = {
   BASE: "Consommation",
   HCHC: "Heures Creuses",
   HCHP: "Heures Pleines",
@@ -57,7 +57,7 @@ export const INDEX_LABELS = {
   missing_indexes: "Extrapolées",
 };
 
-export const TELEINFO_UNITS = {
+export const TELEINFO_UNITS: Record<string, string> = {
   ISOUSC: "A",
   IINST: "A",
   IMAX: "A",
@@ -76,7 +76,7 @@ export const TELEINFO_UNITS = {
   BBRHPJR: "Wh",
 };
 
-export const OPTARIF_LABELS = {
+export const OPTARIF_LABELS: Record<string, string> = {
   BASE: "Base",
   "HC..": "Heures Pleines/Creuses",
   "EJP.": "Effacement Jour de Pointe",

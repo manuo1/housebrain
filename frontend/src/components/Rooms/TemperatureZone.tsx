@@ -1,14 +1,21 @@
-import React from 'react';
-import SignalBars from './SignalBars';
-import TemperatureTrend from './TemperatureTrend';
-import styles from './TemperatureZone.module.scss';
+import SignalBars from "./SignalBars";
+import TemperatureTrend from "./TemperatureTrend";
+import styles from "./TemperatureZone.module.scss";
+import { TemperatureTrend as TrendType } from "../../models/Room";
+
+interface TemperatureZoneProps {
+  temperature: number | null;
+  trend: TrendType;
+  macAddress: string;
+  signalStrength: number;
+}
 
 export default function TemperatureZone({
   temperature,
   trend,
   macAddress,
   signalStrength,
-}) {
+}: TemperatureZoneProps) {
   return (
     <div className={styles.temperatureZone}>
       <span className={styles.label}>Température</span>

@@ -1,9 +1,13 @@
-import React from 'react';
-import HeatingZone from './HeatingZone';
-import TemperatureZone from './TemperatureZone';
-import styles from './RoomCard.module.scss';
+import HeatingZone from "./HeatingZone";
+import TemperatureZone from "./TemperatureZone";
+import styles from "./RoomCard.module.scss";
+import Room from "../../models/Room";
 
-export default function RoomCard({ room }) {
+interface RoomCardProps {
+  room: Room;
+}
+
+export default function RoomCard({ room }: RoomCardProps) {
   const hasRadiator = room.radiator.id !== null;
 
   return (

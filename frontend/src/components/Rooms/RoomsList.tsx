@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import fetchRoomsData from '../../services/fetchRoomsData';
-import RoomCard from './RoomCard';
-import styles from './RoomsList.module.scss';
+import { useState, useEffect } from "react";
+import fetchRoomsData from "../../services/fetchRoomsData";
+import RoomCard from "./RoomCard";
+import styles from "./RoomsList.module.scss";
+import Room from "../../models/Room";
 
 export default function RoomsList() {
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadRooms();
-    // Polling toutes les 10s
     const interval = setInterval(loadRooms, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -21,7 +21,7 @@ export default function RoomsList() {
       const data = await fetchRoomsData();
       setRooms(data);
     } catch (err) {
-      setError('Erreur lors du chargement des pièces');
+      setError("Erreur lors du chargement des pièces");
       console.error(err);
     } finally {
       setLoading(false);

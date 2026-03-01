@@ -1,8 +1,13 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./DropdownLink.module.scss";
 
-export default function DropdownLink({ to, icon, text }) {
+interface DropdownLinkProps {
+  to: string;
+  icon?: string;
+  text: string;
+}
+
+export default function DropdownLink({ to, icon, text }: DropdownLinkProps) {
   const location = useLocation();
   const isActive = location.pathname === to;
 

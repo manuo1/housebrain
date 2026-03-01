@@ -1,11 +1,13 @@
 export default class SimpleDate {
-  constructor(year, month, day) {
+  year: number;
+  month: number;
+  day: number;
+  iso_weekday: number;
+
+  constructor(year: number, month: number, day: number) {
     if (!SimpleDate.isValid(year, month, day)) {
       throw new Error(
-        `Invalid date encountered: ${year}-${String(month).padStart(
-          2,
-          '0'
-        )}-${String(day).padStart(2, '0')}.`
+        `Invalid date encountered: ${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}.`
       );
     }
 
@@ -16,24 +18,22 @@ export default class SimpleDate {
   }
 
   // --- Private helpers ---
-  static #isLeap(year) {
+  static #isLeap(year: number): boolean {
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
   }
 
-  static #getMaxDaysInMonth(month, year) {
+  static #getMaxDaysInMonth(month: number, year: number): number {
     if (month === 2) return 28 + (SimpleDate.#isLeap(year) ? 1 : 0);
-    // 30 days in Apr, Jun, Sep, Nov; 31 in others
     const thirtyDaysMonths = [4, 6, 9, 11];
     return thirtyDaysMonths.includes(month) ? 30 : 31;
   }
-  static #computeISOWeekday(year, month, day) {
+
+  static #computeISOWeekday(year: number, month: number, day: number): number {
     let y = year;
     const m = month;
     const d = day;
 
-    // Sakamoto table
     const t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
-
     if (m < 3) y -= 1;
 
     const w =
@@ -45,15 +45,15 @@ export default class SimpleDate {
         d) %
       7;
 
-    return w === 0 ? 7 : w; // ISO 1–7
+    return w === 0 ? 7 : w;
   }
 
   // --- Validation ---
-  static isValid(year, month, day) {
+  static isValid(year: number, month: number, day: number): boolean {
     if (
-      typeof year !== 'number' ||
-      typeof month !== 'number' ||
-      typeof day !== 'number'
+      typeof year !== "number" ||
+      typeof month !== "number" ||
+      typeof day !== "number"
     )
       return false;
     if (month < 1 || month > 12 || day < 1) return false;
@@ -62,20 +62,17 @@ export default class SimpleDate {
   }
 
   // --- String representations ---
-  toISO() {
-    return `${String(this.year).padStart(4, '0')}-${String(this.month).padStart(
-      2,
-      '0'
-    )}-${String(this.day).padStart(2, '0')}`;
+  toISO(): string {
+    return `${String(this.year).padStart(4, "0")}-${String(this.month).padStart(2, "0")}-${String(this.day).padStart(2, "0")}`;
   }
 
-  toString() {
+  toString(): string {
     return this.toISO();
   }
 
   // --- Factory ---
-  static fromISODate(isoString) {
-    const parts = isoString.split('-').map(Number);
+  static fromISODate(isoString: string): SimpleDate {
+    const parts = isoString.split("-").map(Number);
     if (parts.length !== 3) {
       throw new Error(
         `Invalid ISO date format: ${isoString}. Expected YYYY-MM-DD.`

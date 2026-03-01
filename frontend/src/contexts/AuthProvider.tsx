@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import AuthContext from './AuthContext';
-import loginApi from '../services/auth/login';
-import logoutApi from '../services/auth/logout';
-import refreshApi from '../services/auth/refresh';
-import getUserApi from '../services/auth/getUser';
+import { useState, useEffect, useCallback, ReactNode } from "react";
+import AuthContext, { User } from "./AuthContext";
+import loginApi from "../services/auth/login";
+import logoutApi from "../services/auth/logout";
+import refreshApi from "../services/auth/refresh";
+import getUserApi from "../services/auth/getUser";
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function init() {
@@ -32,25 +36,25 @@ export function AuthProvider({ children }) {
     init();
   }, []);
 
-  const login = useCallback(async (username, password) => {
+  const login = useCallback(async (username: string, password: string): Promise<void> => {
     const { access } = await loginApi(username, password);
     setAccessToken(access);
     const userData = await getUserApi(access);
     setUser(userData);
   }, []);
 
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (): Promise<void> => {
     try {
       await logoutApi();
     } catch (error) {
-      console.error('Logout API failed:', error);
+      console.error("Logout API failed:", error);
     } finally {
       setUser(null);
       setAccessToken(null);
     }
   }, []);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<string> => {
     try {
       const { access } = await refreshApi();
       setAccessToken(access);
@@ -58,18 +62,11 @@ export function AuthProvider({ children }) {
     } catch {
       setUser(null);
       setAccessToken(null);
-      throw new Error('Refresh failed');
+      throw new Error("Refresh failed");
     }
   }, []);
 
-  const value = {
-    user,
-    accessToken,
-    login,
-    logout,
-    refresh,
-    loading,
-  };
+  const value = { user, accessToken, login, logout, refresh, loading };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

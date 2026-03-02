@@ -1,33 +1,40 @@
-import React, { useEffect } from 'react';
-import styles from './ConfirmModal.module.scss';
+import { useEffect, MouseEvent } from "react";
+import styles from "./ConfirmModal.module.scss";
+
+type ConfirmVariant = "danger" | "primary";
+
+interface ConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title?: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  confirmVariant?: ConfirmVariant;
+}
 
 export default function ConfirmModal({
   isOpen,
   onClose,
   onConfirm,
-  title = 'Confirmation',
+  title = "Confirmation",
   message,
-  confirmText = 'Confirmer',
-  cancelText = 'Annuler',
-  confirmVariant = 'danger', // 'danger' | 'primary'
-}) {
+  confirmText = "Confirmer",
+  cancelText = "Annuler",
+  confirmVariant = "danger",
+}: ConfirmModalProps) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    document.body.style.overflow = isOpen ? "hidden" : "unset";
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+  const handleOverlayClick = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
   };
 
   const handleConfirm = () => {
@@ -42,11 +49,7 @@ export default function ConfirmModal({
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.message}>{message}</p>
         <div className={styles.buttons}>
-          <button
-            className={styles.cancelButton}
-            onClick={onClose}
-            type="button"
-          >
+          <button className={styles.cancelButton} onClick={onClose} type="button">
             {cancelText}
           </button>
           <button

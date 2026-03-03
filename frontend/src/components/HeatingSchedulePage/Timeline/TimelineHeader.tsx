@@ -1,5 +1,4 @@
-import React from 'react';
-import styles from './TimelineHeader.module.scss';
+import styles from "./TimelineHeader.module.scss";
 
 export default function TimelineHeader() {
   return (

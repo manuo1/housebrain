@@ -1,45 +1,46 @@
-import React, { useState } from 'react';
-import TimelineHeader from './TimelineHeader';
-import RoomSlotBar from './RoomSlotBar';
-import SlotEditModal from './SlotEditModal';
-import { calculateOptimalSlotTimes } from './utils/slotAutoAdjust';
-import { resolveSlotOverlaps } from './utils/slotOverlapResolver';
-import styles from './Timeline.module.scss';
+import { useState } from "react";
+import TimelineHeader from "./TimelineHeader";
+import RoomSlotBar from "./RoomSlotBar";
+import SlotEditModal from "./SlotEditModal";
+import { calculateOptimalSlotTimes } from "./utils/slotAutoAdjust";
+import { resolveSlotOverlaps } from "./utils/slotOverlapResolver";
+import styles from "./Timeline.module.scss";
+import { PlanRoom, Slot } from "../../../models/DailyHeatingPlan";
+import { User } from "../../../contexts/AuthContext";
 
-export default function Timeline({
-  rooms,
-  selectedRoomIds,
-  onSlotUpdate,
-  user,
-}) {
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [selectedSlotIndex, setSelectedSlotIndex] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
+interface TimelineProps {
+  rooms: PlanRoom[];
+  selectedRoomIds: (number | null)[];
+  onSlotUpdate: (roomId: number | null, slotIndex: number | null, updatedSlot: Slot | null, resolvedSlots?: Slot[]) => void;
+  user: User | null;
+}
 
-  const filteredRooms = rooms.filter((room) =>
-    selectedRoomIds.includes(room.id)
-  );
+export default function Timeline({ rooms, selectedRoomIds, onSlotUpdate, user }: TimelineProps) {
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<PlanRoom | null>(null);
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
 
-  const handleSlotClick = (room, slotData, slotIndex) => {
+  const filteredRooms = rooms.filter((room) => selectedRoomIds.includes(room.id));
+
+  const handleSlotClick = (room: PlanRoom, slotData: Slot, slotIndex: number) => {
     if (!user) return; // Block if not authenticated
-
     setSelectedRoom(room);
     setSelectedSlot(slotData);
     setSelectedSlotIndex(slotIndex);
     setIsCreating(false);
   };
 
-  const handleEmptyClick = (room, clickTime) => {
+  const handleEmptyClick = (room: PlanRoom, clickTime: string) => {
     if (!user) return; // Block if not authenticated
 
     // Calculate optimal times based on adjacent slots
     const { start, end } = calculateOptimalSlotTimes(clickTime, room.slots);
 
     // Determine default value based on existing slots
-    let defaultValue = '20'; // Default temp
+    let defaultValue = "20"; // Default temp
     if (room.slots.length > 0) {
-      defaultValue = room.slots[0].value; // Use same type as existing slots
+      defaultValue = String(room.slots[0].value); // Use same type as existing slots
     }
 
     setSelectedRoom(room);
@@ -48,7 +49,7 @@ export default function Timeline({
     setIsCreating(true);
   };
 
-  const handleSlotSave = (updatedSlot) => {
+  const handleSlotSave = (updatedSlot: Slot) => {
     if (onSlotUpdate && selectedRoom) {
       // Resolve overlaps with existing slots
       const result = resolveSlotOverlaps(
@@ -58,12 +59,7 @@ export default function Timeline({
       );
 
       // Pass the resolved slots to parent
-      onSlotUpdate(
-        selectedRoom.id,
-        selectedSlotIndex,
-        updatedSlot,
-        result.resolvedSlots
-      );
+      onSlotUpdate(selectedRoom.id, selectedSlotIndex, updatedSlot, result.resolvedSlots);
     }
     handleCloseModal();
   };

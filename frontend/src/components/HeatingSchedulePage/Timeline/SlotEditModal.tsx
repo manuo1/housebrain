@@ -1,82 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import ConfirmModal from '../../common/ConfirmModal/';
-import { validateSlot } from './utils/slotValidation';
-import styles from './SlotEditModal.module.scss';
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import ConfirmModal from "../../common/ConfirmModal";
+import { validateSlot } from "./utils/slotValidation";
+import styles from "./SlotEditModal.module.scss";
+import { Slot } from "../../../models/DailyHeatingPlan";
 
-export default function SlotEditModal({
-  slot,
-  roomSlots,
-  slotIndex,
-  isCreating,
-  onSave,
-  onDelete,
-  onClose,
-}) {
-  const [start, setStart] = useState(slot?.start || '00:00');
-  const [end, setEnd] = useState(slot?.end || '00:00');
-  const [value, setValue] = useState(slot?.value || '');
-  const [errors, setErrors] = useState({});
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+interface SlotErrors {
+  time?: string;
+  value?: string;
+}
+
+interface SlotEditModalProps {
+  slot: Slot | null;
+  roomSlots: Slot[];
+  slotIndex: number | null;
+  isCreating: boolean;
+  onSave: (slot: Slot) => void;
+  onDelete?: () => void;
+  onClose: () => void;
+}
+
+export default function SlotEditModal({ slot, roomSlots, slotIndex, isCreating, onSave, onDelete, onClose }: SlotEditModalProps) {
+  const [start, setStart] = useState<string>(slot?.start || "00:00");
+  const [end, setEnd] = useState<string>(slot?.end || "00:00");
+  const [value, setValue] = useState<string>(slot?.value != null ? String(slot.value) : "");
+  const [errors, setErrors] = useState<SlotErrors>({});
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   useEffect(() => {
     if (slot) {
       setStart(slot.start);
       setEnd(slot.end);
-      setValue(slot.value);
+      setValue(slot.value != null ? String(slot.value) : "");
     }
   }, [slot]);
 
   // Validate slot (time, duration, value, type consistency)
-  const validate = (startTime, endTime, valueInput) => {
-    const newErrors = validateSlot(
-      startTime,
-      endTime,
-      valueInput,
-      roomSlots,
-      slotIndex
-    );
+  const validate = (startTime: string, endTime: string, valueInput: string): boolean => {
+    const newErrors = validateSlot(startTime, endTime, valueInput, roomSlots, slotIndex);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleStartChange = (e) => {
+  const handleStartChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newStart = e.target.value;
     setStart(newStart);
     validate(newStart, end, value);
   };
 
-  const handleEndChange = (e) => {
+  const handleEndChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newEnd = e.target.value;
     setEnd(newEnd);
     validate(start, newEnd, value);
   };
 
-  const handleValueChange = (e) => {
+  const handleValueChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setValue(newValue);
     validate(start, end, newValue);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (validate(start, end, value)) {
       onSave({ start, end, value });
     }
   };
 
-  const handleCancel = () => {
-    onClose();
-  };
-
-  const handleDelete = () => {
-    setShowDeleteConfirm(true);
-  };
-
   const handleConfirmDelete = () => {
-    if (onDelete) {
-      onDelete();
-    }
+    if (onDelete) onDelete();
   };
 
   const isValid = Object.keys(errors).length === 0 && start && end && value;
@@ -86,7 +77,7 @@ export default function SlotEditModal({
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <h3>{isCreating ? 'Créer un créneau' : 'Modifier le créneau'}</h3>
+        <h3>{isCreating ? "Créer un créneau" : "Modifier le créneau"}</h3>
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
@@ -97,7 +88,7 @@ export default function SlotEditModal({
               value={start}
               onChange={handleStartChange}
               required
-              className={errors.time ? styles.inputError : ''}
+              className={errors.time ? styles.inputError : ""}
             />
           </div>
 
@@ -109,11 +100,9 @@ export default function SlotEditModal({
               value={end}
               onChange={handleEndChange}
               required
-              className={errors.time ? styles.inputError : ''}
+              className={errors.time ? styles.inputError : ""}
             />
-            {errors.time && (
-              <span className={styles.errorMessage}>{errors.time}</span>
-            )}
+            {errors.time && <span className={styles.errorMessage}>{errors.time}</span>}
           </div>
 
           <div className={styles.formGroup}>
@@ -125,37 +114,23 @@ export default function SlotEditModal({
               onChange={handleValueChange}
               placeholder="20.5 ou on/off"
               required
-              className={errors.value ? styles.inputError : ''}
+              className={errors.value ? styles.inputError : ""}
             />
-            {errors.value && (
-              <span className={styles.errorMessage}>{errors.value}</span>
-            )}
+            {errors.value && <span className={styles.errorMessage}>{errors.value}</span>}
           </div>
 
           <div className={styles.actions}>
             {!isCreating && (
-              <button
-                type="button"
-                className={styles.btnDanger}
-                onClick={handleDelete}
-              >
+              <button type="button" className={styles.btnDanger} onClick={() => setShowDeleteConfirm(true)}>
                 Supprimer
               </button>
             )}
             <div className={styles.rightActions}>
-              <button
-                type="button"
-                className={styles.btnSecondary}
-                onClick={handleCancel}
-              >
+              <button type="button" className={styles.btnSecondary} onClick={onClose}>
                 Annuler
               </button>
-              <button
-                type="submit"
-                className={styles.btnPrimary}
-                disabled={!isValid}
-              >
-                {isCreating ? 'Créer' : 'Valider'}
+              <button type="submit" className={styles.btnPrimary} disabled={!isValid}>
+                {isCreating ? "Créer" : "Valider"}
               </button>
             </div>
           </div>

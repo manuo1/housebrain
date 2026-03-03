@@ -1,21 +1,18 @@
-import { timeToMinutes, minutesToTime } from './slotCalculations';
+import { timeToMinutes, minutesToTime } from "./slotCalculations";
+import { Slot } from "../../../../models/DailyHeatingPlan";
 
-/**
- * Find slots before and after a given time
- * @param {string} clickTime - Time clicked (HH:MM)
- * @param {Array} slots - Array of existing slots
- * @returns {Object} Object with slotBefore and slotAfter
- */
-export const findAdjacentSlots = (clickTime, slots) => {
+interface AdjacentSlots {
+  slotBefore: Slot | null;
+  slotAfter: Slot | null;
+}
+
+export const findAdjacentSlots = (clickTime: string, slots: Slot[]): AdjacentSlots => {
   const clickMin = timeToMinutes(clickTime);
-
-  let slotBefore = null;
-  let slotAfter = null;
+  let slotBefore: Slot | null = null;
+  let slotAfter: Slot | null = null;
 
   // Sort slots by start time
-  const sortedSlots = [...slots].sort((a, b) => {
-    return timeToMinutes(a.start) - timeToMinutes(b.start);
-  });
+  const sortedSlots = [...slots].sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
   for (const slot of sortedSlots) {
     const slotStart = timeToMinutes(slot.start);
@@ -32,13 +29,7 @@ export const findAdjacentSlots = (clickTime, slots) => {
   return { slotBefore, slotAfter };
 };
 
-/**
- * Calculate optimal start and end times for a new slot based on click position
- * @param {string} clickTime - Time clicked (HH:MM)
- * @param {Array} slots - Array of existing slots
- * @returns {Object} Object with start and end times
- */
-export const calculateOptimalSlotTimes = (clickTime, slots) => {
+export const calculateOptimalSlotTimes = (clickTime: string, slots: Slot[]): { start: string; end: string } => {
   const clickMin = timeToMinutes(clickTime);
   const { slotBefore, slotAfter } = findAdjacentSlots(clickTime, slots);
 
@@ -47,8 +38,7 @@ export const calculateOptimalSlotTimes = (clickTime, slots) => {
 
   // If there's a slot before, start 1 minute after it ends
   if (slotBefore) {
-    const beforeEnd = timeToMinutes(slotBefore.end);
-    startMin = beforeEnd + 1;
+    startMin = timeToMinutes(slotBefore.end) + 1;
   } else {
     // No slot before: start at beginning of day (00:00)
     startMin = 0;
@@ -56,8 +46,7 @@ export const calculateOptimalSlotTimes = (clickTime, slots) => {
 
   // If there's a slot after, end 1 minute before it starts
   if (slotAfter) {
-    const afterStart = timeToMinutes(slotAfter.start);
-    endMin = afterStart - 1;
+    endMin = timeToMinutes(slotAfter.start) - 1;
   } else {
     // No slot after: end at end of day (23:59)
     endMin = 1439;

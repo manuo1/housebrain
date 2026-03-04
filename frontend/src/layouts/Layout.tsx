@@ -1,7 +1,6 @@
-import React from "react";
-import { Outlet } from "react-router-dom";
-import Navbar from "../components/Navbar/Navbar";
-import styles from "./Layout.module.scss";
+import { Outlet } from 'react-router-dom';
+import Navbar from '../components/Navbar/Navbar';
+import styles from './Layout.module.scss';
 
 export default function Layout() {
   return (

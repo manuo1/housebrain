@@ -1,6 +1,5 @@
-import React from 'react';
-import ConsumptionBlock from '../components/ConsumptionBlock/ConsumptionBlock';
-import styles from './ConsumptionPage.module.scss';
+import ConsumptionBlock from "../components/ConsumptionBlock/ConsumptionBlock";
+import styles from "./ConsumptionPage.module.scss";
 
 export default function DailyConsumptionPage() {
   return (

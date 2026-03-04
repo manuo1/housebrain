@@ -13,7 +13,7 @@ import { User } from "../../../contexts/AuthContext";
 
 type DuplicationMode = "day" | "week";
 
-interface DuplicationPayload {
+export interface DuplicationPayload {
   type: DuplicationMode;
   source_date: string;
   repeat_since: string;

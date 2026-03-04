@@ -4,7 +4,7 @@ import styles from "./RealtimePowerMonitor.module.scss";
 
 interface RealtimePowerMonitorProps {
   maxPower: number | null;
-  currentPower: number | undefined;
+  currentPower: number | null | undefined;
 }
 
 export default function RealtimePowerMonitor({ maxPower, currentPower }: RealtimePowerMonitorProps) {

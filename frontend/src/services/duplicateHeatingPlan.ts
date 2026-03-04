@@ -1,12 +1,13 @@
 import fetchWithAuth from "./fetchWithAuth";
+import { DuplicationPayload } from "../components/HeatingSchedulePage/Duplication/DuplicationPanel";
 
 type RefreshCallback = () => Promise<string>;
 
 export default async function duplicateHeatingPlan(
-  duplicationData: Record<string, unknown>,
+  duplicationData: DuplicationPayload,
   accessToken: string,
   refreshCallback: RefreshCallback
-): Promise<unknown> {
+): Promise<Record<string, unknown>> {
   const response = await fetchWithAuth(
     "/api/heating/plans/duplicate/",
     {
@@ -19,11 +20,9 @@ export default async function duplicateHeatingPlan(
     },
     refreshCallback
   );
-
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     throw new Error(error.detail || `HTTP error! status: ${response.status}`);
   }
-
   return response.json();
 }

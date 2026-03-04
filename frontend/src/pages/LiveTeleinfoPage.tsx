@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import fetchTeleinfoData from '../services/fetchTeleinfoData';
-import TeleinfoTable from '../components/TeleinfoTable/TeleinfoTable';
-import styles from './LiveTeleinfoPage.module.scss';
+import { useEffect, useState } from "react";
+import fetchTeleinfoData from "../services/fetchTeleinfoData";
+import TeleinfoTable from "../components/TeleinfoTable/TeleinfoTable";
+import styles from "./LiveTeleinfoPage.module.scss";
+import TeleinfoData from "../models/TeleinfoData";
 
 export default function LiveTeleinfoPage() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
+  const [data, setData] = useState<TeleinfoData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -19,7 +20,7 @@ export default function LiveTeleinfoPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err.message || 'Failed to fetch teleinfo data');
+          setError((err as Error).message || "Failed to fetch teleinfo data");
         }
       }
     }

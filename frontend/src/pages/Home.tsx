@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import RoomsList from '../components/Rooms/RoomsList';
-import RealtimePowerMonitor from '../components/RealtimePowerMonitor/RealtimePowerMonitor';
-import fetchTeleinfoData from '../services/fetchTeleinfoData';
-import styles from './Home.module.scss';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import RoomsList from "../components/Rooms/RoomsList";
+import RealtimePowerMonitor from "../components/RealtimePowerMonitor/RealtimePowerMonitor";
+import fetchTeleinfoData from "../services/fetchTeleinfoData";
+import styles from "./Home.module.scss";
+import TeleinfoData from "../models/TeleinfoData";
 
 export default function Home() {
-  const [teleinfoData, setTeleinfoData] = useState(null);
+  const [teleinfoData, setTeleinfoData] = useState<TeleinfoData | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -14,11 +15,9 @@ export default function Home() {
     async function fetchData() {
       try {
         const data = await fetchTeleinfoData();
-        if (isMounted) {
-          setTeleinfoData(data);
-        }
+        if (isMounted) setTeleinfoData(data);
       } catch (err) {
-        console.error('Failed to fetch teleinfo data:', err);
+        console.error("Failed to fetch teleinfo data:", err);
       }
     }
 
@@ -43,17 +42,15 @@ export default function Home() {
               <div className={styles.tariffBadge}>
                 <span className={styles.tariffLabel}>Période tarifaire :</span>
                 <span className={styles.tariffValue}>
-                  {teleinfoData.PTECLabel || 'N/A'}
+                  {teleinfoData.PTECLabel || "N/A"}
                 </span>
               </div>
-
               <RealtimePowerMonitor
                 maxPower={teleinfoData.maxPower}
                 currentPower={teleinfoData.currentPower}
               />
             </div>
           )}
-
           <div className={styles.constructionCard}>
             <p className={styles.infoText}>
               Récapitulatif de consommation en cours de construction.

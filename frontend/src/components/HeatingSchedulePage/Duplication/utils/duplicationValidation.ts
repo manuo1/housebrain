@@ -15,7 +15,7 @@ export function getStartDateMin(mode: DuplicationMode, sourceDate: string): stri
 export function getEndDateMin(mode: DuplicationMode, startDate: string): string {
   if (!startDate) return "";
   if (mode === "week") return getSundayOfWeek(startDate);
-  return addDays(startDate, 1);
+  return startDate;
 }
 
 export function getEndDateMax(startDate: string): string {
@@ -79,7 +79,10 @@ export const getValidationErrors = ({
   }
 
   if (startDate && endDate) {
-    if (new Date(endDate) <= new Date(startDate)) {
+    if (mode === "day" && new Date(endDate) < new Date(startDate)) {
+      errors.push("La date de fin doit être égale ou après la date de début");
+    }
+    if (mode === "week" && new Date(endDate) <= new Date(startDate)) {
       errors.push("La date de fin doit être après la date de début");
     }
   }

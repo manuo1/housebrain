@@ -1,13 +1,14 @@
+import { getDayShort } from "../../../utils/dateUtils";
 import styles from "./WeekdaySelector.module.scss";
 
-const WEEKDAYS = [
-  { key: "monday", label: "L" },
-  { key: "tuesday", label: "M" },
-  { key: "wednesday", label: "M" },
-  { key: "thursday", label: "J" },
-  { key: "friday", label: "V" },
-  { key: "saturday", label: "S" },
-  { key: "sunday", label: "D" },
+const WEEKDAYS: { key: string; isoWeekday: number }[] = [
+  { key: "monday",    isoWeekday: 1 },
+  { key: "tuesday",   isoWeekday: 2 },
+  { key: "wednesday", isoWeekday: 3 },
+  { key: "thursday",  isoWeekday: 4 },
+  { key: "friday",    isoWeekday: 5 },
+  { key: "saturday",  isoWeekday: 6 },
+  { key: "sunday",    isoWeekday: 7 },
 ];
 
 interface WeekdaySelectorProps {
@@ -34,7 +35,7 @@ export default function WeekdaySelector({ selectedDays, onChange }: WeekdaySelec
             className={selectedDays.includes(day.key) ? styles.active : ""}
             onClick={() => toggleDay(day.key)}
           >
-            {day.label}
+            {getDayShort(day.isoWeekday)}
           </button>
         ))}
       </div>

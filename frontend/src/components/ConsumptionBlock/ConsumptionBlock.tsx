@@ -18,7 +18,7 @@ export interface ChartData {
 export default function ConsumptionBlock() {
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [step, setStep] = useState<number>(1);
-  const [displayType, setDisplayType] = useState<DisplayType>("wh");
+  const [displayType, setDisplayType] = useState<DisplayType>("average_watt");
   const [dailyConsumption, setDailyConsumption] = useState<DailyIndexes | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

@@ -58,11 +58,12 @@ def error_in_duplication_dates(source_date, start_date, end_date, duplication_ty
     # start_date must be strictly after source_date
     if start_date <= source_date:
         return "start_date must be strictly after source_date"
-
-    # end_date must be strictly after start_date
-    if end_date <= start_date:
+    # For DAY duplications, end_date can be equal to start_date (single day copy)
+    # For WEEK duplications, end_date must be strictly after start_date
+    if duplication_type == DuplicationTypes.WEEK and end_date <= start_date:
         return "end_date must be strictly after start_date"
-
+    if duplication_type == DuplicationTypes.DAY and end_date < start_date:
+        return "end_date must be equal to or after start_date"
     # For WEEK duplications, there must be at least 6 days between the start_date and end_date.
     if duplication_type == DuplicationTypes.WEEK:
         days_diff = (end_date - start_date).days
@@ -70,12 +71,10 @@ def error_in_duplication_dates(source_date, start_date, end_date, duplication_ty
             return (
                 "end_date must be at least 6 days after start_date for week duplication"
             )
-
     # Maximum 365 days between start_date and end_date
     days_diff = (end_date - start_date).days
     if days_diff > 365:
         return "Maximum 365 days allowed between start_date and end_date"
-
     return None
 
 

@@ -5,8 +5,14 @@ import DuplicationDate from "./DuplicationDate";
 import DuplicationSummary from "./DuplicationSummary";
 import DuplicationApplyButton from "./DuplicationApplyButton";
 import ConfirmModal from "../../common/ConfirmModal";
-import { addDays, getNextMonday, getMondayOfWeek, getSundayOfWeek } from "./utils/duplicationDateUtils";
-import { getValidationErrors } from "./utils/duplicationValidation";
+import {
+  getStartDateMin,
+  getEndDateMin,
+  getEndDateMax,
+  snapStartDate,
+  snapEndDate,
+  getValidationErrors,
+} from "./utils/duplicationValidation";
 import styles from "./DuplicationPanel.module.scss";
 import { PlanRoom } from "../../../models/DailyHeatingPlan";
 import { User } from "../../../contexts/AuthContext";
@@ -36,22 +42,22 @@ export default function DuplicationPanel({ sourceDate, selectedRooms, onApply, u
   const [endDate, setEndDate] = useState<string>("");
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
 
-  const startDateMin = mode === "week" ? getNextMonday(sourceDate) : addDays(sourceDate, 1);
-  const endDateMin = startDate ? (mode === "week" ? getSundayOfWeek(startDate) : addDays(startDate, 1)) : "";
-  const endDateMax = startDate ? addDays(startDate, 365) : "";
+  const startDateMin = getStartDateMin(mode, sourceDate);
+  const endDateMin = getEndDateMin(mode, startDate);
+  const endDateMax = getEndDateMax(startDate);
 
   useEffect(() => {
     if (sourceDate) {
-      setStartDate(mode === "week" ? getNextMonday(sourceDate) : addDays(sourceDate, 1));
+      setStartDate(getStartDateMin(mode, sourceDate));
     }
   }, [sourceDate, mode]);
 
   const handleStartDateChange = (newDate: string) => {
-    setStartDate(mode === "week" && newDate ? getMondayOfWeek(newDate) : newDate);
+    setStartDate(snapStartDate(mode, newDate));
   };
 
   const handleEndDateChange = (newDate: string) => {
-    setEndDate(mode === "week" && newDate ? getSundayOfWeek(newDate) : newDate);
+    setEndDate(snapEndDate(mode, newDate));
   };
 
   const handleConfirm = () => {

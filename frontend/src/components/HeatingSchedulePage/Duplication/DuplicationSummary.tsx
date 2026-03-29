@@ -1,12 +1,12 @@
-import { formatDate, getWeekRange } from "./utils/duplicationDateUtils";
+import { formatDateDD_MM_YYYY, getWeekRange, getDayLabel } from "../../../utils/dateUtils";
 import styles from "./DuplicationSummary.module.scss";
 import { PlanRoom } from "../../../models/DailyHeatingPlan";
 
 type DuplicationMode = "day" | "week";
 
-const WEEKDAY_LABELS: Record<string, string> = {
-  monday: "lundis", tuesday: "mardis", wednesday: "mercredis",
-  thursday: "jeudis", friday: "vendredis", saturday: "samedis", sunday: "dimanches",
+const WEEKDAY_ISO: Record<string, number> = {
+  monday: 1, tuesday: 2, wednesday: 3,
+  thursday: 4, friday: 5, saturday: 6, sunday: 7,
 };
 
 interface DuplicationSummaryProps {
@@ -22,14 +22,16 @@ export default function DuplicationSummary({ mode, sourceDate, startDate, endDat
   const sourceWeekRange = mode === "week" ? getWeekRange(sourceDate) : null;
   const startWeekRange = mode === "week" && startDate ? getWeekRange(startDate) : null;
   const endWeekRange = mode === "week" && endDate ? getWeekRange(endDate) : null;
-  const getWeekdaysList = () => selectedWeekdays.map((day) => WEEKDAY_LABELS[day]).join(", ");
+
+  const getWeekdaysList = () =>
+    selectedWeekdays.map((day) => getDayLabel(WEEKDAY_ISO[day]).toLowerCase() + "s").join(", ");
 
   return (
     <div className={styles.summary}>
       <div className={styles.content}>
         <div className={styles.section}>
           {mode !== "week" ? (
-            <>Le planning du :<br />{formatDate(sourceDate)}<br />des pièces :</>
+            <>Le planning du :<br />{formatDateDD_MM_YYYY(sourceDate)}<br />des pièces :</>
           ) : (
             <>Les planning de la semaine du :<br />{sourceWeekRange?.mondayText} au {sourceWeekRange?.sundayText}<br />des pièces :</>
           )}
@@ -48,12 +50,12 @@ export default function DuplicationSummary({ mode, sourceDate, startDate, endDat
         {mode === "week" && <div className={styles.section}>Seront dupliqués chaque semaine</div>}
         {startDate && (
           <div className={styles.section}>
-            {mode === "week" ? (<>Depuis la semaine du :<br />{startWeekRange?.mondayText} au {startWeekRange?.sundayText}</>) : (<>Depuis le :<br />{formatDate(startDate)}</>)}
+            {mode === "week" ? (<>Depuis la semaine du :<br />{startWeekRange?.mondayText} au {startWeekRange?.sundayText}</>) : (<>Depuis le :<br />{formatDateDD_MM_YYYY(startDate)}</>)}
           </div>
         )}
         {endDate && (
           <div className={styles.section}>
-            {mode === "week" ? (<>Jusqu'à la semaine du :<br />{endWeekRange?.mondayText} au {endWeekRange?.sundayText}</>) : (<>Jusqu'au :<br />{formatDate(endDate)}</>)}
+            {mode === "week" ? (<>Jusqu'à la semaine du :<br />{endWeekRange?.mondayText} au {endWeekRange?.sundayText}</>) : (<>Jusqu'au :<br />{formatDateDD_MM_YYYY(endDate)}</>)}
           </div>
         )}
       </div>

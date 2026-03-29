@@ -69,6 +69,7 @@ export function getTodayDate(): string {
 }
 
 export function addDays(dateStr: string, days: number): string {
+  if (!dateStr) return "";
   const date = new Date(dateStr);
   date.setDate(date.getDate() + days);
   return date.toISOString().split("T")[0];
@@ -89,10 +90,62 @@ export function formatDateShort(dateStr: string): string {
   return date.toLocaleDateString("fr-FR");
 }
 
+export function formatDateDD_MM_YYYY(dateStr: string): string {
+  if (!dateStr) return "";
+  const [year, month, day] = dateStr.split("-");
+  return `${day}/${month}/${year}`;
+}
+
 export function isToday(dateStr: string): boolean {
   return dateStr === getTodayDate();
 }
 
 export function isFuture(dateStr: string): boolean {
   return dateStr > getTodayDate();
+}
+
+// --- Fonctions semaine (pour la duplication) ---
+
+export function getMondayOfWeek(dateStr: string): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const day = date.getDay();
+  const jsDay = day === 0 ? 7 : day;
+  return addDays(dateStr, -(jsDay - 1));
+}
+
+export function getSundayOfWeek(dateStr: string): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const day = date.getDay();
+  const jsDay = day === 0 ? 7 : day;
+  return addDays(dateStr, 7 - jsDay);
+}
+
+export function getNextMonday(dateStr: string): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const day = date.getDay();
+  const jsDay = day === 0 ? 7 : day;
+  const daysUntilNextMonday = 8 - jsDay;
+  return addDays(dateStr, daysUntilNextMonday);
+}
+
+export interface WeekRange {
+  monday: string;
+  sunday: string;
+  mondayText: string;
+  sundayText: string;
+}
+
+export function getWeekRange(dateStr: string): WeekRange | null {
+  if (!dateStr) return null;
+  const monday = getMondayOfWeek(dateStr);
+  const sunday = getSundayOfWeek(dateStr);
+  return {
+    monday,
+    sunday,
+    mondayText: formatDateDD_MM_YYYY(monday),
+    sundayText: formatDateDD_MM_YYYY(sunday),
+  };
 }

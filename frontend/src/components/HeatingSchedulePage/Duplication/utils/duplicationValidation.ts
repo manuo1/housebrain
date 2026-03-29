@@ -1,6 +1,41 @@
 import { PlanRoom } from "../../../../models/DailyHeatingPlan";
+import { addDays, getMondayOfWeek, getSundayOfWeek, getNextMonday } from "../../../../utils/dateUtils";
 
 type DuplicationMode = "day" | "week";
+
+export const MAX_DUPLICATION_DAYS = 365;
+
+// --- Contraintes de dates pour les datepickers ---
+
+export function getStartDateMin(mode: DuplicationMode, sourceDate: string): string {
+  if (mode === "week") return getNextMonday(sourceDate);
+  return addDays(sourceDate, 1);
+}
+
+export function getEndDateMin(mode: DuplicationMode, startDate: string): string {
+  if (!startDate) return "";
+  if (mode === "week") return getSundayOfWeek(startDate);
+  return addDays(startDate, 1);
+}
+
+export function getEndDateMax(startDate: string): string {
+  if (!startDate) return "";
+  return addDays(startDate, MAX_DUPLICATION_DAYS);
+}
+
+// --- Snap de date selon le mode semaine ---
+
+export function snapStartDate(mode: DuplicationMode, newDate: string): string {
+  if (mode === "week" && newDate) return getMondayOfWeek(newDate);
+  return newDate;
+}
+
+export function snapEndDate(mode: DuplicationMode, newDate: string): string {
+  if (mode === "week" && newDate) return getSundayOfWeek(newDate);
+  return newDate;
+}
+
+// --- Validation ---
 
 interface ValidationParams {
   mode: DuplicationMode;
@@ -62,8 +97,8 @@ export const getValidationErrors = ({
     const diffDays = Math.floor(
       (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
     );
-    if (diffDays > 365) {
-      errors.push("La période ne peut pas dépasser 365 jours");
+    if (diffDays > MAX_DUPLICATION_DAYS) {
+      errors.push(`La période ne peut pas dépasser ${MAX_DUPLICATION_DAYS} jours`);
     }
   }
 

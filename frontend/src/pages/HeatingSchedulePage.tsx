@@ -131,9 +131,9 @@ export default function HeatingSchedulePage() {
   };
 
   const handleAiRequest = async (instruction: string) => {
-    if (!dailyPlan || !selectedDate || !accessToken) return;
+    if (!dailyPlan || !accessToken) return;
     const newPlan = await applyAiPlanModification(
-      { date: selectedDate, instruction, plan: dailyPlan.raw },
+      { instruction, plan: dailyPlan.raw },
       accessToken,
       refresh
     );

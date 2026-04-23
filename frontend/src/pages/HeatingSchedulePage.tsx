@@ -15,6 +15,7 @@ import duplicateHeatingPlan from "../services/duplicateHeatingPlan";
 import HeatingCalendarModel from "../models/HeatingCalendar";
 import { Slot } from "../models/DailyHeatingPlan";
 import DailyHeatingPlan from "../models/DailyHeatingPlan";
+import applyAiPlanModification from "../services/applyAiPlanModification";
 
 interface CurrentMonth {
   year: number;
@@ -130,8 +131,13 @@ export default function HeatingSchedulePage() {
   };
 
   const handleAiRequest = async (instruction: string) => {
-    // TODO: appel service Django + applyChange avec le plan retourné
-    console.log("Instruction IA reçue:", instruction);
+    if (!dailyPlan || !selectedDate || !accessToken) return;
+    const newPlan = await applyAiPlanModification(
+      { date: selectedDate, instruction, plan: dailyPlan.raw },
+      accessToken,
+      refresh
+    );
+    applyChange(newPlan);
   };
 
   if (!calendar || !selectedDate) {

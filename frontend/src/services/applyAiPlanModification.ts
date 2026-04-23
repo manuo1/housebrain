@@ -2,12 +2,11 @@ import fetchWithAuth from "./fetchWithAuth";
 import DailyHeatingPlan from "../models/DailyHeatingPlan";
 import mockDailyHeatingPlan from "../mocks/mockDailyHeatingPlan";
 
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 type RefreshCallback = () => Promise<string>;
 
 interface AiModifyPayload {
-  date: string;
   instruction: string;
   plan: object;
 }
@@ -22,7 +21,7 @@ export default async function applyAiPlanModification(
   }
 
   const response = await fetchWithAuth(
-    "/api/heating/plans/ai-modify/",
+    "/api/ai/heating/modify/",
     {
       method: "POST",
       headers: {

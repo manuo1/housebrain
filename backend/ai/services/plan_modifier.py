@@ -1,0 +1,100 @@
+import json
+import logging
+
+from ai.services.groq_client import GroqClient
+from ai.services.prompt_builder import build_prompt
+from ai.services.prompts.heating import get_system_prompt, get_user_prompt
+from django.core.exceptions import ValidationError as DjangoValidationError
+from heating.models import HeatingPattern
+from rest_framework.exceptions import ValidationError as DRFValidationError
+
+logger = logging.getLogger("django")
+
+
+def _get_llm_client():
+    """
+    Returns the active LLM client.
+    Swap this function to change provider (e.g. return AnthropicClient()).
+    """
+    return GroqClient()
+
+
+def _parse_llm_response(raw_response: str) -> dict:
+    """
+    Parses the raw LLM text response into a dict.
+    Strips markdown code blocks if the model added them despite instructions.
+    """
+    text = raw_response.strip()
+
+    # Strip markdown code block if present (defensive)
+    if text.startswith("```"):
+        lines = text.splitlines()
+        # Remove first line (```json or ```) and last line (```)
+        text = "\n".join(lines[1:-1]).strip()
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as e:
+        logger.error(
+            "Failed to parse LLM response as JSON: %s\nRaw response: %s",
+            e,
+            raw_response,
+        )
+        raise DRFValidationError("Le modèle IA n'a pas retourné un format valide.")
+
+
+def _validate_plan(plan: dict) -> None:
+    """
+    Validates the plan returned by the LLM.
+    Checks structure and runs HeatingPattern.clean() on each room's slots
+    to enforce all business rules (overlap, duration, type consistency, etc.).
+    """
+    if not isinstance(plan, dict):
+        raise DRFValidationError("Le plan retourné par l'IA est invalide.")
+
+    if "rooms" not in plan or not isinstance(plan["rooms"], list):
+        raise DRFValidationError("Le plan retourné par l'IA ne contient pas de pièces.")
+
+    for room in plan["rooms"]:
+        room_name = room.get("name", f"room_id={room.get('room_id')}")
+        slots = room.get("slots", [])
+
+        try:
+            # Reuse existing HeatingPattern validation logic
+            HeatingPattern.get_or_create_from_slots(slots)
+        except DjangoValidationError as e:
+            logger.warning("Invalid slots for room %s: %s", room_name, e)
+            raise DRFValidationError(
+                f"Le plan généré contient des créneaux invalides pour '{room_name}' : {e.message}"
+            )
+
+
+def modify_heating_plan(instruction: str, plan: dict) -> dict:
+    """
+    Main entry point for AI-based heating plan modification.
+
+    Args:
+        instruction: The user's natural language instruction
+        plan: The current heating plan as a dict (dailyPlan.raw from the frontend)
+
+    Returns:
+        The modified heating plan as a dict, validated and ready to be returned to the frontend
+    """
+    system_prompt, user_prompt = build_prompt(
+        get_system_prompt(),
+        get_user_prompt(instruction, plan),
+    )
+
+    client = _get_llm_client()
+    logger.info(
+        "Sending heating plan modification request to LLM - instruction: %s",
+        instruction,
+    )
+
+    raw_response = client.generate(system_prompt, user_prompt)
+    logger.info("LLM raw response: %s", raw_response)
+
+    modified_plan = _parse_llm_response(raw_response)
+    _validate_plan(modified_plan)
+
+    return modified_plan

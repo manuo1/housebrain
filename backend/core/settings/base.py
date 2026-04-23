@@ -162,3 +162,9 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": False,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+
+# ============================================
+# AI
+# ============================================
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")

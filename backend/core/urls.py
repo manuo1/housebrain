@@ -15,6 +15,7 @@ api_patterns = [
     path("rooms/", include("rooms.api.urls")),
     path("teleinfo/", include("teleinfo.api.urls")),
     path("heating/", include("heating.api.urls")),
+    path("ai/", include("ai.api.urls")),
 ]
 
 backend_patterns = [

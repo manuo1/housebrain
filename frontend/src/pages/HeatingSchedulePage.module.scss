@@ -45,14 +45,17 @@
   overflow: hidden;
 
   .header {
+    @include flex-column;
+    gap: $gap-sm;
+  }
+
+  .headerTop {
     @include flex-between;
     gap: $gap-base;
 
-    h2 {
-      margin: 0;
-      font-size: $font-size-3xl;
-      color: $text-secondary;
-      font-weight: $font-weight-semibold;
+    @include respond-to('sm') {
+      flex-wrap: wrap;
+      gap: $gap-sm;
     }
   }
 
@@ -66,6 +69,18 @@
     overflow-y: auto;
     @include custom-scrollbar;
   }
+}
+
+.loginMessage {
+  font-size: $font-size-sm;
+  color: $text-muted;
+  margin: 0;
+}
+
+.loading {
+  @include flex-center;
+  height: 100%;
+  color: $text-muted;
 }
 
 // ============================================
@@ -83,7 +98,6 @@
   @include custom-scrollbar;
 
   @include respond-to('lg') {
-    // width: 100%;
-    display: None;
+    display: none;
   }
 }

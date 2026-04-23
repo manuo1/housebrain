@@ -9,6 +9,7 @@ import DateHeader from "../components/HeatingSchedulePage/DateHeader/DateHeader"
 import Timeline from "../components/HeatingSchedulePage/Timeline/Timeline";
 import TimelineSaveActions from "../components/HeatingSchedulePage/Timeline/TimelineSaveActions";
 import DuplicationPanel, { DuplicationPayload } from "../components/HeatingSchedulePage/Duplication/DuplicationPanel";
+import AiPlanInput from "../components/HeatingSchedulePage/AiPlanInput/AiPlanInput";
 import styles from "./HeatingSchedulePage.module.scss";
 import duplicateHeatingPlan from "../services/duplicateHeatingPlan";
 import HeatingCalendarModel from "../models/HeatingCalendar";
@@ -37,7 +38,6 @@ export default function HeatingSchedulePage() {
       try {
         const data = await fetchHeatingCalendar(undefined, undefined);
         setCalendar(data);
-
         if (data.today) {
           setSelectedDate(data.today.toISO());
           setSelectedDateObj(data.today);
@@ -53,7 +53,6 @@ export default function HeatingSchedulePage() {
   // Fetch calendar when month changes
   useEffect(() => {
     if (!currentMonth) return;
-
     async function loadCalendar() {
       try {
         const data = await fetchHeatingCalendar(currentMonth!.year, currentMonth!.month);
@@ -92,20 +91,15 @@ export default function HeatingSchedulePage() {
     resolvedSlots: Slot[] | null = null
   ) => {
     if (!dailyPlan) return;
-
     const newPlan = Object.assign(
       Object.create(Object.getPrototypeOf(dailyPlan)),
       dailyPlan,
       {
         rooms: dailyPlan.rooms.map((room) => {
           if (room.id === roomId) {
-            // If we have resolvedSlots from overlap resolution, use them directly
             if (resolvedSlots !== null) return { ...room, slots: resolvedSlots };
-
-            // Otherwise, handle simple operations (delete only)
             const newSlots = [...room.slots];
             if (updatedSlot === null && slotIndex !== null) {
-              // Delete slot
               newSlots.splice(slotIndex, 1);
             }
             return { ...room, slots: newSlots };
@@ -114,7 +108,6 @@ export default function HeatingSchedulePage() {
         }),
       }
     ) as DailyHeatingPlan;
-
     applyChange(newPlan);
   };
 
@@ -123,24 +116,24 @@ export default function HeatingSchedulePage() {
       console.error("User not authenticated");
       return;
     }
-
     try {
       const result = await duplicateHeatingPlan(payload, accessToken, refresh);
       console.log("Duplication réussie:", result);
-
-      // Rafraîchir le calendrier après duplication
       if (currentMonth) {
         const data = await fetchHeatingCalendar(currentMonth.year, currentMonth.month);
         setCalendar(data);
       }
-
     } catch (error) {
       console.error("Erreur lors de la duplication:", error);
       alert(`Erreur: ${(error as Error).message}`);
     }
   };
 
-  // Show loader while initial data is loading
+  const handleAiRequest = async (instruction: string) => {
+    // TODO: appel service Django + applyChange avec le plan retourné
+    console.log("Instruction IA reçue:", instruction);
+  };
+
   if (!calendar || !selectedDate) {
     return (
       <div className={styles.loading}>
@@ -167,18 +160,23 @@ export default function HeatingSchedulePage() {
 
       <main className={styles.mainContent}>
         <div className={styles.header}>
-          <DateHeader date={selectedDateObj} />
-          {user ? (
-            <TimelineSaveActions
-              onCancel={undo}
-              onSave={save}
-              canUndo={canUndo}
-              hasChanges={hasChanges}
-            />
-          ) : (
-            <p className={styles.loginMessage}>
-              Vous devez être connecté pour modifier ces éléments
-            </p>
+          <div className={styles.headerTop}>
+            <DateHeader date={selectedDateObj} />
+            {user ? (
+              <TimelineSaveActions
+                onCancel={undo}
+                onSave={save}
+                canUndo={canUndo}
+                hasChanges={hasChanges}
+              />
+            ) : (
+              <p className={styles.loginMessage}>
+                Vous devez être connecté pour modifier ces éléments
+              </p>
+            )}
+          </div>
+          {user && (
+            <AiPlanInput onSubmit={handleAiRequest} />
           )}
         </div>
 

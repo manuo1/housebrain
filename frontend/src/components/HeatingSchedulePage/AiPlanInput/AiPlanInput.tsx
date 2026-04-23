@@ -10,6 +10,7 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
   const [expanded, setExpanded] = useState(false);
   const [instruction, setInstruction] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
     if (expanded) {
       setExpanded(false);
       setInstruction("");
+      setError(null);
     } else {
       setExpanded(true);
     }
@@ -30,12 +32,14 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
   const handleSubmit = async () => {
     if (!instruction.trim() || loading) return;
     setLoading(true);
+    setError(null);
     try {
       await onSubmit(instruction.trim());
+      // Succès : on ferme et on vide
       setInstruction("");
       setExpanded(false);
-    } catch (error) {
-      console.error("Erreur modification IA:", error);
+    } catch (err) {
+      setError((err as Error).message || "Impossible de générer les modifications.");
     } finally {
       setLoading(false);
     }
@@ -49,8 +53,11 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
     if (e.key === "Escape") {
       setExpanded(false);
       setInstruction("");
+      setError(null);
     }
   };
+
+  const btnLabel = loading ? "Réflexion..." : "Appliquer";
 
   return (
     <div className={styles.wrapper}>
@@ -68,14 +75,20 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
         <div className={styles.inner}>
           <textarea
             ref={textareaRef}
-            className={styles.textarea}
+            className={`${styles.textarea} ${error ? styles.textareaError : ""}`}
             placeholder="Ex : augmente de 2°C toutes les pièces pendant 2h à partir de 18h"
             value={instruction}
-            onChange={(e) => setInstruction(e.target.value)}
+            onChange={(e) => {
+              setInstruction(e.target.value);
+              if (error) setError(null);
+            }}
             onKeyDown={handleKeyDown}
             rows={2}
             disabled={loading}
           />
+          {error && (
+            <p className={styles.errorMessage}>{error}</p>
+          )}
           <div className={styles.inputFooter}>
             <button
               className={styles.submitBtn}
@@ -83,7 +96,7 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
               disabled={loading || !instruction.trim()}
               type="button"
             >
-              {loading ? "Envoi..." : "Appliquer"}
+              {btnLabel}
             </button>
           </div>
         </div>

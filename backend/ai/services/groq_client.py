@@ -1,4 +1,5 @@
 import logging
+import re
 
 from ai.services.llm_client import LLMClient
 from django.conf import settings
@@ -7,7 +8,26 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 
 logger = logging.getLogger("django")
 
+# Model used: llama-3.3-70b is Groq's best free model for structured JSON generation.
+# Alternatives: "mixtral-8x7b-32768", "llama-3.1-8b-instant" (faster, less accurate)
 GROQ_MODEL = "llama-3.3-70b-versatile"
+
+
+def _parse_retry_delay(error_message: str) -> str | None:
+    """
+    Extracts the retry delay from a Groq rate limit error message.
+    Example input: "Please try again in 58m46.848s."
+    Returns a human-readable string like "58 minutes" or "45 secondes".
+    """
+    # Match patterns like "58m46s", "2m3.5s", "45.2s", "3m"
+    match = re.search(r"try again in (?:(\d+)m)?(?:[\d.]+s)?", error_message)
+    if match:
+        minutes = match.group(1)
+        if minutes:
+            return f"{minutes} minute{'s' if int(minutes) > 1 else ''}"
+        # Only seconds — round up to 1 minute
+        return "moins d'une minute"
+    return None
 
 
 class GroqClient(LLMClient):
@@ -40,14 +60,19 @@ class GroqClient(LLMClient):
 
         except RateLimitError as e:
             logger.warning("Groq rate limit reached: %s", e)
-            raise DRFValidationError(
-                "Le service IA est temporairement indisponible (quota atteint). Réessayez dans quelques minutes."
-            )
+            retry_delay = _parse_retry_delay(str(e))
+            if retry_delay:
+                message = f"Le service IA a atteint sa limite quotidienne. Réessayez dans {retry_delay}."
+            else:
+                message = "Le service IA a atteint sa limite quotidienne. Réessayez plus tard."
+            raise DRFValidationError(message)
+
         except APIError as e:
             logger.error("Groq API error: %s", e)
             raise DRFValidationError(
                 "Le service IA est temporairement indisponible. Réessayez dans quelques instants."
             )
+
         except Exception as e:
             logger.error("Unexpected Groq error: %s", e)
             raise DRFValidationError(

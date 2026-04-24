@@ -7,8 +7,6 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 
 logger = logging.getLogger("django")
 
-# Model used: llama-3.3-70b is Groq's best free model for structured JSON generation.
-# Alternatives: "mixtral-8x7b-32768", "llama3-8b-8192" (faster, less accurate)
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 

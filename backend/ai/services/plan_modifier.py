@@ -29,7 +29,6 @@ def _parse_llm_response(raw_response: str) -> dict:
     # Strip markdown code block if present (defensive)
     if text.startswith("```"):
         lines = text.splitlines()
-        # Remove first line (```json or ```) and last line (```)
         text = "\n".join(lines[1:-1]).strip()
 
     try:
@@ -40,6 +39,24 @@ def _parse_llm_response(raw_response: str) -> dict:
             e,
             raw_response,
         )
+        raise DRFValidationError("Le modèle IA n'a pas retourné un format valide.")
+
+
+def _check_success(parsed: dict) -> None:
+    """
+    Checks the success field returned by the LLM.
+    Raises DRFValidationError with the reason if success is False.
+    """
+    success = parsed.get("success")
+
+    if success is False:
+        reason = parsed.get("reason") or "La modification n'a pas pu être appliquée."
+        logger.warning("LLM reported failure: %s", reason)
+        raise DRFValidationError(reason)
+
+    if success is not True:
+        # Malformed response — missing or unexpected success field
+        logger.warning("LLM response missing 'success' field: %s", parsed)
         raise DRFValidationError("Le modèle IA n'a pas retourné un format valide.")
 
 
@@ -60,7 +77,6 @@ def _validate_plan(plan: dict) -> None:
         slots = room.get("slots", [])
 
         try:
-            # Reuse existing HeatingPattern validation logic
             HeatingPattern.get_or_create_from_slots(slots)
         except DjangoValidationError as e:
             logger.warning("Invalid slots for room %s: %s", room_name, e)
@@ -94,7 +110,15 @@ def modify_heating_plan(instruction: str, plan: dict) -> dict:
     raw_response = client.generate(system_prompt, user_prompt)
     logger.info("LLM raw response: %s", raw_response)
 
-    modified_plan = _parse_llm_response(raw_response)
-    _validate_plan(modified_plan)
+    parsed = _parse_llm_response(raw_response)
 
-    return modified_plan
+    # Check if LLM reported a failure
+    _check_success(parsed)
+
+    # Remove meta fields before validation and return
+    parsed.pop("success", None)
+    parsed.pop("reason", None)
+
+    _validate_plan(parsed)
+
+    return parsed

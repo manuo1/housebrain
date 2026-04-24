@@ -1,6 +1,7 @@
 import json
 
 from ai.services.prompts.heating_rules import get_rules
+from django.utils import timezone
 
 
 def get_system_prompt() -> str:
@@ -15,13 +16,15 @@ You are a heating schedule assistant. Your job is to modify a home heating plan 
 ## Your task
 - Read the current heating plan provided by the user
 - Apply the requested modification following the rules below
-- Return the updated plan in the exact same JSON format
+- Always return a JSON object with the structure below, whether the modification succeeded or not
 
 ## Output format
 Return ONLY a valid JSON object, with no explanation, no markdown, no code block.
-The JSON must strictly follow this structure:
+The JSON must always contain these fields:
 
 {{
+  "success": true or false,
+  "reason": "" if success is true, or a short explanation in the same language as the instruction if success is false,
   "date": "YYYY-MM-DD",
   "rooms": [
     {{
@@ -45,17 +48,11 @@ The JSON must strictly follow this structure:
 
 
 def get_user_prompt(instruction: str, plan: dict) -> str:
-    """
-    User prompt for heating plan modification.
+    now = timezone.localtime(timezone.now())
+    current_time = now.strftime("%H:%M")
 
-    Args:
-        instruction: The user's natural language instruction
-        plan: The current heating plan as a dict (dailyPlan.raw from the frontend)
-
-    Returns:
-        The formatted user prompt string
-    """
-    return f"""Current heating plan:
+    return f"""Current time: {current_time}
+Current heating plan:
 {json.dumps(plan, ensure_ascii=False, indent=2)}
 
 Instruction: {instruction}

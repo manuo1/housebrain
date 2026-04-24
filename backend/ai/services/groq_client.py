@@ -2,7 +2,8 @@ import logging
 
 from ai.services.llm_client import LLMClient
 from django.conf import settings
-from groq import Groq
+from groq import APIError, Groq, RateLimitError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 
 logger = logging.getLogger("django")
 
@@ -38,6 +39,19 @@ class GroqClient(LLMClient):
                 max_tokens=4096,
             )
             return response.choices[0].message.content
-        except Exception as e:
+
+        except RateLimitError as e:
+            logger.warning("Groq rate limit reached: %s", e)
+            raise DRFValidationError(
+                "Le service IA est temporairement indisponible (quota atteint). Réessayez dans quelques minutes."
+            )
+        except APIError as e:
             logger.error("Groq API error: %s", e)
-            raise
+            raise DRFValidationError(
+                "Le service IA est temporairement indisponible. Réessayez dans quelques instants."
+            )
+        except Exception as e:
+            logger.error("Unexpected Groq error: %s", e)
+            raise DRFValidationError(
+                "Une erreur inattendue s'est produite lors de la communication avec le service IA."
+            )

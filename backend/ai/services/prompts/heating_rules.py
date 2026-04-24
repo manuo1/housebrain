@@ -15,27 +15,33 @@ def get_rules() -> str:
 - A room can have an empty slots array [] if no heating is scheduled for that day
 
 ### Overlap resolution rules
-When the modification creates a conflict with existing slots in a room, apply the following:
+When the new slot conflicts with existing slots, you MUST resolve the conflict before returning.
+Never return overlapping slots — the result must always be a valid non-overlapping list.
 
-1. **New slot fully covers an existing slot** (new start <= existing start AND new end >= existing end):
-   → Remove the existing slot entirely
+**Case 1 — New slot fully covers an existing slot:**
+Existing: 10:00-12:00. New: 09:00-13:00.
+→ Remove the existing slot. Result: [09:00-13:00]
 
-2. **New slot partially overlaps the start of an existing slot** (new slot ends inside an existing slot):
-   → Adjust the existing slot: set its start to (new slot end + 1 minute)
-   → If the adjusted slot would be shorter than 30 minutes → remove it entirely
+**Case 2 — New slot partially overlaps the END of an existing slot:**
+Existing: 08:00-16:00 at 21°. New: 12:00-18:00 at 19°.
+→ Trim the existing slot: set its end to 11:59. Result: [08:00-11:59 at 21°, 12:00-18:00 at 19°]
+→ If the trimmed slot would be shorter than 30 minutes → remove it entirely.
 
-3. **New slot partially overlaps the end of an existing slot** (new slot starts inside an existing slot):
-   → Adjust the existing slot: set its end to (new slot start - 1 minute)
-   → If the adjusted slot would be shorter than 30 minutes → remove it entirely
+**Case 3 — New slot partially overlaps the START of an existing slot:**
+Existing: 14:00-20:00 at 21°. New: 12:00-15:00 at 19°.
+→ Trim the existing slot: set its start to 15:01. Result: [12:00-15:00 at 19°, 15:01-20:00 at 21°]
+→ If the trimmed slot would be shorter than 30 minutes → remove it entirely.
 
-4. **New slot is entirely inside an existing slot** (new start > existing start AND new end < existing end):
-   → Split the existing slot into two parts:
-     - Before part: existing start → new slot start - 1 minute
-     - After part: new slot end + 1 minute → existing end
-   → Keep only the parts that are >= 30 minutes, discard those that are too short
+**Case 4 — New slot is entirely INSIDE an existing slot:**
+Existing: 08:00-20:00 at 21°. New: 12:00-14:00 at 19°.
+→ Split the existing slot into two parts:
+  - Before: 08:00-11:59 at 21°
+  - After:  14:01-20:00 at 21°
+→ Keep only parts that are >= 30 minutes, discard shorter ones.
+Result: [08:00-11:59 at 21°, 12:00-14:00 at 19°, 14:01-20:00 at 21°]
 
 ### Scope rules
-- Only modify rooms explicitly mentioned in the instruction, or all rooms if the instruction says "all rooms" or equivalent
+- Only modify rooms explicitly mentioned in the instruction, or all rooms if the instruction says "all rooms", "toutes les pièces" or equivalent
 - Do not invent room_ids or room names — only use those present in the input plan
 - Do not change the type (temp/onoff) of existing slots unless explicitly asked
 
@@ -45,13 +51,17 @@ When the modification creates a conflict with existing slots in a room, apply th
 - If the instruction asks to remove degrees and the result goes below 0, cap at 0
 
 ### Ambiguous time references (interpret as follows if not specified)
-- "morning" → 06:00 to 09:00
-- "midday" / "lunch" → 11:30 to 13:30
-- "afternoon" → 13:00 to 18:00
-- "evening" → 18:00 to 22:00
-- "night" → 22:00 to 23:59
+- "morning" / "matin" → 06:00 to 09:00
+- "midday" / "midi" / "lunch" / "déjeuner" → 11:30 to 13:30
+- "afternoon" / "après-midi" → 13:00 to 18:00
+- "evening" / "soir" → 18:00 to 22:00
+- "night" / "nuit" → 22:00 to 23:59
 
-### Fallback rule
-- If the instruction is impossible to apply, contradictory, or completely unclear → return the original plan unchanged
-- Never return anything other than the JSON object, no explanation, no markdown
+### Success and failure reporting
+- If the modification was applied successfully: set "success" to true and "reason" to ""
+- If the instruction is impossible to apply, contradictory, refers to a room that does not exist,
+  or is completely unclear: set "success" to false and explain why in "reason",
+  using the same language as the user's instruction
+- In all cases (success or failure), always return the full rooms array with the current state of the plan
+- Never return anything other than the JSON object
 """

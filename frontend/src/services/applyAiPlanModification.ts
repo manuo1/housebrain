@@ -34,8 +34,12 @@ export default async function applyAiPlanModification(
   );
 
   if (!response.ok) {
+    console.log(response)
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || `HTTP error! status: ${response.status}`);
+    const message = Array.isArray(error)
+      ? error.join(" ")
+      : error.detail || `Erreur ${response.status}`;
+    throw new Error(message);
   }
 
   const rawData = await response.json();

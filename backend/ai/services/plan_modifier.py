@@ -55,9 +55,45 @@ def _check_success(parsed: dict) -> None:
         raise DRFValidationError(reason)
 
     if success is not True:
-        # Malformed response — missing or unexpected success field
         logger.warning("LLM response missing 'success' field: %s", parsed)
         raise DRFValidationError("Le modèle IA n'a pas retourné un format valide.")
+
+
+def _infer_slot_type(slot: dict) -> dict:
+    """
+    Infers and injects the 'type' field if missing.
+    Groq sometimes omits 'type' when recopying existing slots from the input plan,
+    because dailyPlan.raw from the frontend does not include this field.
+
+    Rules:
+    - value is "on" or "off" → type "onoff"
+    - value is numeric (int, float, or numeric string) → type "temp", value cast to float
+    """
+    if "type" in slot:
+        return slot
+
+    value = slot.get("value")
+
+    if str(value).lower() in ("on", "off"):
+        slot["type"] = "onoff"
+    else:
+        slot["type"] = "temp"
+        try:
+            slot["value"] = float(str(value))
+        except (ValueError, TypeError):
+            pass  # Let _validate_plan catch the invalid value
+
+    return slot
+
+
+def _normalize_plan(plan: dict) -> dict:
+    """
+    Normalizes the plan returned by the LLM before validation.
+    Currently: infers missing 'type' fields on all slots.
+    """
+    for room in plan.get("rooms", []):
+        room["slots"] = [_infer_slot_type(slot) for slot in room.get("slots", [])]
+    return plan
 
 
 def _validate_plan(plan: dict) -> None:
@@ -111,14 +147,12 @@ def modify_heating_plan(instruction: str, plan: dict) -> dict:
     logger.info("LLM raw response: %s", raw_response)
 
     parsed = _parse_llm_response(raw_response)
-
-    # Check if LLM reported a failure
     _check_success(parsed)
 
-    # Remove meta fields before validation and return
     parsed.pop("success", None)
     parsed.pop("reason", None)
 
+    _normalize_plan(parsed)
     _validate_plan(parsed)
 
     return parsed

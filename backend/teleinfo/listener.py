@@ -27,7 +27,14 @@ class TeleinfoListener:
         self.buffer = {}
         self.teleinfo = {}
         self.should_manage_radiator_power = False
+        self._last_watchdog_notify = time.monotonic()
         set_teleinfo_data_in_cache({"last_read": None})
+
+    def _notify_watchdog_if_needed(self) -> None:
+        now = time.monotonic()
+        if now - self._last_watchdog_notify >= 10:  # toutes les 10s
+            notify_watchdog()
+            self._last_watchdog_notify = now
 
     def start(self) -> None:
         """Starts the listener process."""
@@ -50,6 +57,7 @@ class TeleinfoListener:
 
     def _fetch_data(self, connection: serial.Serial) -> None:
         """Fetch data from the serial connection."""
+        self._notify_watchdog_if_needed()
         try:
             if connection.in_waiting:
                 self._process_data(connection.readline())
@@ -69,7 +77,6 @@ class TeleinfoListener:
             self.teleinfo.update({"last_read": timezone.now().isoformat()})
             self.buffer.clear()
             set_teleinfo_data_in_cache(self.teleinfo)
-            notify_watchdog()
             # Alternate power management cycles to allow teleinfo
             # to reflect changes before applying new modifications
             if self.should_manage_radiator_power:

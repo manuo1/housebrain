@@ -1,6 +1,10 @@
 [Unit]
 Description=Teleinfo Listener Service
-After=network.target
+After=network.target dev-ttyS0.device
+# Give the kernel a short delay to finish initializing the USB-serial
+# device before starting the script, since it may not be fully ready
+# right after boot.
+ExecStartPre=/bin/sleep 5
 
 [Service]
 User=admin
@@ -9,11 +13,11 @@ WorkingDirectory=/home/admin/housebrain/backend
 ExecStart=/home/admin/housebrain/backend/.venv/bin/python3 manage.py run_teleinfo_listener
 Restart=always
 Environment="DJANGO_SETTINGS_MODULE=core.settings.production"
-
-# Configuration du Watchdog
-WatchdogSec=15s  
-RestartSec=5s  
-Type=simple  
+# Watchdog: gives the service a comfortable margin in case startup
+# (opening the serial port, Django init) takes longer than usual.
+WatchdogSec=30s
+RestartSec=5s
+Type=simple
 
 [Install]
 WantedBy=multi-user.target

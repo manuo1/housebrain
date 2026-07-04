@@ -32,28 +32,52 @@ class TeleinfoListener:
 
     def _notify_watchdog_if_needed(self) -> None:
         now = time.monotonic()
-        if now - self._last_watchdog_notify >= 10:  # toutes les 10s
+        if now - self._last_watchdog_notify >= 10:  # every 10s
             notify_watchdog()
             self._last_watchdog_notify = now
 
     def start(self) -> None:
         """Starts the listener process."""
-        try:
-            with serial.Serial(
-                port=SerialConfig.PORT.value,
-                baudrate=SerialConfig.BAUDRATE.value,
-                parity=SerialConfig.PARITY.value,
-                stopbits=SerialConfig.STOPBITS.value,
-                bytesize=SerialConfig.BYTESIZE.value,
-                timeout=SerialConfig.TIMEOUT.value,
-            ) as serial_connection:
-                logger.info(f"{LoggerLabel.TELEINFOLISTENER} Listening for data...")
+        # Retry loop for recoverable serial errors only (port not ready yet,
+        # transient USB glitch). This avoids tearing down the whole Django
+        # process for a hiccup that a simple reopen can fix. Any other
+        # (unexpected) exception is intentionally left to propagate: it
+        # kills the process and lets systemd's Restart=always take over,
+        # instead of silently looping on a possibly broken state.
+        while True:
+            # Ping the watchdog right before the blocking serial.Serial()
+            # call. Without this, no ping is sent between process startup
+            # and the end of the port opening: if that takes longer than
+            # WatchdogSec (seen right after a reboot, when the USB-serial
+            # device isn't fully stable yet), systemd kills the process
+            # thinking it's stuck.
+            notify_watchdog()
+            try:
+                with serial.Serial(
+                    port=SerialConfig.PORT.value,
+                    baudrate=SerialConfig.BAUDRATE.value,
+                    parity=SerialConfig.PARITY.value,
+                    stopbits=SerialConfig.STOPBITS.value,
+                    bytesize=SerialConfig.BYTESIZE.value,
+                    timeout=SerialConfig.TIMEOUT.value,
+                ) as serial_connection:
+                    # Port opened successfully: restart with a full 10s
+                    # window for the next ping, regardless of how long the
+                    # opening took.
+                    self._last_watchdog_notify = time.monotonic()
+                    notify_watchdog()
+                    logger.info(f"{LoggerLabel.TELEINFOLISTENER} Listening for data...")
 
-                while True:
-                    self._fetch_data(serial_connection)
-        except serial.SerialException as e:
-            logger.error(f"{LoggerLabel.TELEINFOLISTENER} Cannot open serial port: {e}")
-            time.sleep(5)
+                    while True:
+                        self._fetch_data(serial_connection)
+            except serial.SerialException as e:
+                logger.error(
+                    f"{LoggerLabel.TELEINFOLISTENER} Cannot open serial port: {e}"
+                )
+                # Notify before sleeping so this wait doesn't add to a
+                # watchdog window already in progress before the exception.
+                notify_watchdog()
+                time.sleep(5)
 
     def _fetch_data(self, connection: serial.Serial) -> None:
         """Fetch data from the serial connection."""

@@ -7,7 +7,10 @@ from heating.services.heating_synchronization import (
     synchronize_room_heating_states_with_radiators,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
 )
-from monitoring.services.log_service import collect_and_save_journalctl_system_logs
+from monitoring.services.log_service import (
+    cleanup_system_logs_if_needed,
+    collect_and_save_journalctl_system_logs,
+)
 
 logger = logging.getLogger("django")
 
@@ -21,3 +24,4 @@ class Command(BaseCommand):
         synchronize_room_heating_states_with_radiators()
         RadiatorSyncService.synchronize_database_and_hardware()
         collect_and_save_journalctl_system_logs()
+        cleanup_system_logs_if_needed()

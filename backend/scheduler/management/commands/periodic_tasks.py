@@ -2,6 +2,7 @@ import logging
 
 from actuators.services.radiator_synchronization import RadiatorSyncService
 from consumption.mutators import save_teleinfo_data
+from core.services.system_metrics import log_system_metrics
 from django.core.management.base import BaseCommand
 from heating.services.heating_synchronization import (
     synchronize_room_heating_states_with_radiators,
@@ -19,3 +20,4 @@ class Command(BaseCommand):
         synchronize_room_requested_heating_states_with_room_heating_day_plan()
         synchronize_room_heating_states_with_radiators()
         RadiatorSyncService.synchronize_database_and_hardware()
+        log_system_metrics()

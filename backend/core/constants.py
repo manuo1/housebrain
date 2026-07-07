@@ -21,6 +21,7 @@ class LoggerLabel(StrEnum):
     PERIODIC_TASKS = "[Periodic Tasks]"
     CONSUMPTION = "[Consumption]"
     MCPDRIVER = "[MCP23017 Driver]"
+    MONITORING = "[Monitoring]"
     RADIATORSYNC = "[Radiator Synchronisation]"
     BLUETOOTHLISTENER = "[BluetoothListener]"
     LOADSHEDDING = "[loadShedding]"

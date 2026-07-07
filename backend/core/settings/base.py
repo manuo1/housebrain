@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     "authentication",
     "consumption",
     "heating",
-    "monitoring",
     "rest_framework",
     "rest_framework_simplejwt",
     "rooms",

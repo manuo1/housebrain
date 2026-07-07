@@ -60,7 +60,6 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 - [Contrôle chauffage](docs/backend/heating_control.md)
 - [Gestion des pièces](docs/backend/rooms.md)
 - [Monitoring consommation](docs/backend/energy_consumption.md)
-- [Monitoring système](docs/backend/monitoring.md)
 - [Capteurs Bluetooth](docs/backend/bluetooth_sensors.md)
 - [Scheduler](docs/backend/scheduler.md)
 - [Authentification JWT - Backend](docs/backend/authentication.md)

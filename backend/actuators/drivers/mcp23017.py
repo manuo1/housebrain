@@ -3,6 +3,8 @@ Driver to control MCP23017 via I2C
 """
 
 import logging
+import signal
+from contextlib import contextmanager
 
 import board
 import busio
@@ -12,6 +14,8 @@ from core.constants import UNPLUGGED_MODE, LoggerLabel
 
 logger = logging.getLogger("django")
 
+I2C_TIMEOUT_SECONDS = 5
+
 
 class MCP23017Error(Exception):
     """Exception for MCP23017 driver errors"""
@@ -19,6 +23,20 @@ class MCP23017Error(Exception):
     def __init__(self, message, pin_state=MCP23017PinState.UNDEFINED):
         super().__init__(message)
         self.pin_state = pin_state  # MCP23017PinState enum
+
+
+@contextmanager
+def _i2c_timeout(seconds: int, description: str):
+    def _handler(signum, frame):
+        raise TimeoutError(f"I2C operation timed out after {seconds}s: {description}")
+
+    previous_handler = signal.signal(signal.SIGALRM, _handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, previous_handler)
 
 
 class MCP23017Driver:
@@ -34,21 +52,25 @@ class MCP23017Driver:
         if UNPLUGGED_MODE:
             logger.info(f"{LoggerLabel.MCPDRIVER}UNPLUGGED mode: MCP23017 simulation")
             return
-
         try:
-            self.i2c = busio.I2C(board.SCL, board.SDA)
-            self.mcp = MCP23017(self.i2c)
+            with _i2c_timeout(I2C_TIMEOUT_SECONDS, "connect"):
+                self.i2c = busio.I2C(board.SCL, board.SDA)
+                self.mcp = MCP23017(self.i2c)
             logger.debug(f"{LoggerLabel.MCPDRIVER} MCP23017 connected successfully")
-        except ValueError as e:
+        except (ValueError, TimeoutError) as e:
             logger.error(f"{LoggerLabel.MCPDRIVER} I2C connection error: {e}")
             self.i2c = None
             self.mcp = None
+
+    def _reset_connection(self):
+        """Force a reconnection attempt on the next call (after a timeout/hang)."""
+        self.mcp = None
+        self.i2c = None
 
     def _ensure_connection(self):
         """Check connection, try to reconnect if necessary"""
         if UNPLUGGED_MODE:
             return
-
         if self.mcp is None:
             self._connect()
             if self.mcp is None:
@@ -57,11 +79,9 @@ class MCP23017Driver:
     def set_pin(self, pin_number: int, state: bool):
         """
         Change pin state and verify the result
-
         Args:
             pin_number: Pin number (0-15)
             state: True for ON, False for OFF
-
         Raises:
             MCP23017Error: On error with pin state details
         """
@@ -70,17 +90,14 @@ class MCP23017Driver:
                 f"{LoggerLabel.MCPDRIVER} UNPLUGGED mode: set_pin({pin_number}, {state})"
             )
             return
-
         self._ensure_connection()
-
         try:
-            # Set pin state
-            mcp_pin = self.mcp.get_pin(pin_number)
-            mcp_pin.switch_to_output(value=state)
-
-            # Verify that the state was applied correctly
-            actual_state = self.get_pin(pin_number)
-
+            with _i2c_timeout(I2C_TIMEOUT_SECONDS, f"set_pin({pin_number})"):
+                # Set pin state
+                mcp_pin = self.mcp.get_pin(pin_number)
+                mcp_pin.switch_to_output(value=state)
+                # Verify that the state was applied correctly
+                actual_state = self.get_pin(pin_number)
             if actual_state != state:
                 pin_state_str = (
                     MCP23017PinState.ON if actual_state else MCP23017PinState.OFF
@@ -92,11 +109,13 @@ class MCP23017Driver:
                     f"Pin {pin_number} state incorrect: requested {requested_state_str}, actual state {pin_state_str}",
                     pin_state=pin_state_str,
                 )
-
             logger.debug(
                 f"{LoggerLabel.MCPDRIVER} Pin {pin_number} set to {'ON' if state else 'OFF'}"
             )
-
+        except TimeoutError as e:
+            logger.error(f"{LoggerLabel.MCPDRIVER} {e}")
+            self._reset_connection()
+            raise MCP23017Error(f"I2C timeout on pin {pin_number}: {e}")
         except ValueError as e:
             # MCP23017 error (invalid pin, etc.)
             raise MCP23017Error(f"MCP23017 error on pin {pin_number}: {e}")
@@ -110,13 +129,10 @@ class MCP23017Driver:
     def get_pin(self, pin_number: int) -> bool:
         """
         Read current pin state
-
         Args:
             pin_number: Pin number (0-15)
-
         Returns:
             bool: True if ON, False if OFF
-
         Raises:
             MCP23017Error: On read error
         """
@@ -125,17 +141,19 @@ class MCP23017Driver:
                 f"{LoggerLabel.MCPDRIVER} UNPLUGGED mode: get_pin({pin_number}) -> False"
             )
             return False
-
         self._ensure_connection()
-
         try:
-            mcp_pin = self.mcp.get_pin(pin_number)
-            state = mcp_pin.value
+            with _i2c_timeout(I2C_TIMEOUT_SECONDS, f"get_pin({pin_number})"):
+                mcp_pin = self.mcp.get_pin(pin_number)
+                state = mcp_pin.value
             logger.debug(
                 f"{LoggerLabel.MCPDRIVER} Pin {pin_number} state: {'ON' if state else 'OFF'}"
             )
             return state
-
+        except TimeoutError as e:
+            logger.error(f"{LoggerLabel.MCPDRIVER} {e}")
+            self._reset_connection()
+            raise MCP23017Error(f"I2C timeout reading pin {pin_number}: {e}")
         except ValueError as e:
             # MCP23017 error (invalid pin, etc.)
             raise MCP23017Error(f"MCP23017 error on pin {pin_number}: {e}")
@@ -157,7 +175,6 @@ class MCP23017Driver:
         }
         """
         pins_state: dict[int, dict] = {}
-
         for pin in range(16):
             try:
                 pin_value = self.get_pin(pin)
@@ -168,7 +185,6 @@ class MCP23017Driver:
                     "state": MCP23017PinState.UNDEFINED,
                     "error": str(e),
                 }
-
         return pins_state
 
 

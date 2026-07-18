@@ -28,12 +28,23 @@ for service in "${SERVICES[@]}"; do
 done
 
 # Vérification de l'application Django
+# Retry avec un court délai : juste après un (re)démarrage de gunicorn/nginx,
+# le premier appel peut échouer le temps que le service soit pleinement prêt.
 APP_URL="http://$(hostname -I | awk '{print $1}')/backend/admin/"
+APP_OK=0
 
-if curl --output /dev/null --silent --head --fail "$APP_URL"; then
+for attempt in 1 2 3 4 5; do
+    if curl --output /dev/null --silent --head --fail "$APP_URL"; then
+        APP_OK=1
+        break
+    fi
+    sleep 2
+done
+
+if [ "$APP_OK" = "1" ]; then
     print_success "L'application HouseBrain est accessible à $APP_URL"
 else
-    print_error "L'application HouseBrain n'est pas accessible."
+    print_error "L'application HouseBrain n'est pas accessible (après 5 tentatives)."
 fi
 
 # Vérification des fichiers essentiels

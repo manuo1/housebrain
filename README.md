@@ -45,7 +45,6 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 - [Mise à jour](docs/software/raspberry_app_update.md)
 - [Redémarrage des services](docs/software/restart_services.md)
 - [Consultation des logs](docs/software/see_logs.md)
-- [Désinstallation](docs/software/raspberry_app_remove_full.md)
 
 ### Hardware
 - [Branchement Téléinfo](docs/hardware/teleinfo_branchement.md)
@@ -87,6 +86,7 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 | teleinfo-listener | Lecture Linky |
 | bluetooth-listener | Communication BLE |
 | housebrain-periodic.timer | Tâches périodiques |
+| certbot.timer | Renouvellement HTTPS automatique |
 
 ---
 

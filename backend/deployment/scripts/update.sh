@@ -17,6 +17,11 @@ echo -e "${GREEN}[✔] Mise à jour de HouseBrain...${NC}"
 
 cd "$REPO_DIR"
 
+# Ignore les changements de bit exécutable (chmod +x appliqué par run_deploy_parts.sh
+# à chaque exécution) : les scripts sont commités depuis Windows sans ce bit, donc
+# Git le voit sinon comme une modif locale alors que le contenu n'a pas changé.
+git config core.fileMode false
+
 # Sécurité : ce Pi ne doit jamais avoir de modif locale (tout vient du repo distant).
 # Si des modifs locales traînent, on arrête plutôt que de les écraser silencieusement.
 if [ -n "$(git status --porcelain)" ]; then

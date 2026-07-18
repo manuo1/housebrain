@@ -28,13 +28,25 @@ for service in "${SERVICES[@]}"; do
 done
 
 # Vérification de l'application Django
+# Utilise le bon en-tête Host pour que nginx route vers le bon vhost : depuis que
+# Certbot gère --redirect, un Host qui ne correspond pas au domaine configuré
+# tombe sur un 404 (comportement voulu de Certbot, pas un souci applicatif).
 # Retry avec un court délai : juste après un (re)démarrage de gunicorn/nginx,
 # le premier appel peut échouer le temps que le service soit pleinement prêt.
-APP_URL="http://$(hostname -I | awk '{print $1}')/backend/admin/"
+cd /home/admin/housebrain/backend
+source .env 2>/dev/null || true
+
+if [ -n "$DOMAINS" ] && [ "$DOMAINS" != "ma-super-app.fr,www.ma-super-app.fr" ]; then
+    CHECK_HOST=$(echo "$DOMAINS" | cut -d',' -f1)
+else
+    CHECK_HOST=$(hostname -I | awk '{print $1}')
+fi
+
+APP_URL="http://127.0.0.1/backend/admin/"
 APP_OK=0
 
 for attempt in 1 2 3 4 5; do
-    if curl --output /dev/null --silent --head --fail "$APP_URL"; then
+    if curl --output /dev/null --silent --head --fail -H "Host: $CHECK_HOST" "$APP_URL"; then
         APP_OK=1
         break
     fi
@@ -42,9 +54,9 @@ for attempt in 1 2 3 4 5; do
 done
 
 if [ "$APP_OK" = "1" ]; then
-    print_success "L'application HouseBrain est accessible à $APP_URL"
+    print_success "L'application HouseBrain est accessible (Host: $CHECK_HOST)"
 else
-    print_error "L'application HouseBrain n'est pas accessible (après 5 tentatives)."
+    print_error "L'application HouseBrain n'est pas accessible (Host: $CHECK_HOST, après 5 tentatives)."
 fi
 
 # Vérification des fichiers essentiels

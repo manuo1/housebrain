@@ -1,329 +1,151 @@
-# Configuration HTTPS avec Let's Encrypt
+# HTTPS avec Let's Encrypt
 
-Ce guide détaille la procédure de mise en place du certificat SSL/TLS avec Let's Encrypt pour sécuriser l'application HouseBrain.
+Depuis le module `17_configure_certbot.sh`, l'obtention et le renouvellement du
+certificat HTTPS sont **automatiques** : ce document sert de référence sur ce qui
+se passe sous le capot, les prérequis que tu dois toi-même mettre en place (DNS,
+box), et du troubleshooting si quelque chose ne marche pas comme prévu.
 
-## 📋 Prérequis
+## Prérequis (à faire toi-même, pas automatisable)
 
-- Raspberry Pi accessible depuis Internet
-- Nom de domaine configuré (ex: `votredomaine.fr`)
-- Ports 80 et 443 redirigés vers le Raspberry Pi via la box Internet
-- Nginx installé et configuré
-- Django tournant avec Gunicorn
+- Nom de domaine configuré chez ton registrar, avec un enregistrement DNS de type
+  **A** pointant vers ton IP publique :
+  ```
+  housebrain.tondomaine.fr  →  Ton_IP_Publique
+  ```
+  Vérification : `nslookup housebrain.tondomaine.fr`
+- Redirections de ports sur ta box : port externe 80 → Pi:80 (validation Let's
+  Encrypt), port externe 443 → Pi:443 (application HTTPS)
 
-## 🌐 1. Configuration DNS
+## Configuration à renseigner
 
-### Chez votre registrar (OVH, Gandi, etc.)
-
-Créez un enregistrement DNS de type **A** :
-
-```
-housebrain.votredomaine.fr  →  Votre_IP_Publique
-```
-
-**Vérification :**
-```bash
-# Testez la résolution DNS
-nslookup housebrain.votredomaine.fr
-```
-
-## 🔧 2. Redirection des ports (Box Internet)
-
-Configurez les redirections NAT/PAT suivantes :
-
-| Port externe | Port interne | Protocole | Usage |
-|-------------|--------------|-----------|-------|
-| 80 | 80 | TCP | HTTP (validation Let's Encrypt) |
-| 443 | 443 | TCP | HTTPS (application) |
-
-**Commentaire suggéré :** `HTTPS - Caddy → Django (housebrain)`
-
-## 🔐 3. Installation de Certbot
-
-Certbot est le client officiel Let's Encrypt pour obtenir et renouveler automatiquement les certificats SSL.
+Dans `/home/admin/housebrain/backend/.env` :
 
 ```bash
-# Mise à jour des paquets
-sudo apt update
-
-# Installation de Certbot avec le plugin Nginx
-sudo apt install certbot python3-certbot-nginx -y
-
-# Vérification
-certbot --version
+DOMAINS=housebrain.tondomaine.fr
+CERTBOT_EMAIL=ton@email.fr
 ```
 
-## 📝 4. Préparation de la configuration Nginx
+`CERTBOT_EMAIL` sert uniquement aux alertes d'expiration envoyées par Let's
+Encrypt.
 
-**Avant d'obtenir le certificat**, assurez-vous que votre configuration Nginx contient le bon `server_name` :
+## Ce que fait l'automatisation
 
-```bash
-# Éditez votre configuration Nginx
-sudo nano /etc/nginx/sites-available/housebrain
-```
+À chaque déploiement ou mise à jour (`deploy.sh` / `update.sh`), le module
+`17_configure_certbot.sh` :
+1. Installe Certbot + le plugin Nginx s'ils sont absents
+2. Obtient le certificat (ou ne fait rien s'il est déjà valide et loin de
+   l'expiration — `--keep-until-expiring`)
+3. Applique/réapplique le bloc HTTPS dans la config Nginx (`listen 443 ssl`,
+   chemins des certs) et la redirection HTTP → HTTPS
+4. Vérifie que `certbot.timer` (renouvellement automatique) est actif
 
-**Modifiez la ligne `server_name` :**
+C'est rejoué à **chaque** déploiement, pas seulement la première fois : ça évite
+que la config Nginx générée par `03_configure_nginx.sh` (HTTP simple) écrase le
+bloc HTTPS ajouté par Certbot, comme c'était le cas avant cette automatisation.
 
-```nginx
-server {
-    listen 80;
-    server_name housebrain.votredomaine.fr;  # ⚠️ Utilisez votre vrai domaine
+Si `DOMAINS` n'est pas configuré, ce module est simplement ignoré (l'application
+reste utilisable en HTTP sur le réseau local).
 
-    # ... reste de la configuration
-}
-```
+## Configuration Django associée
 
-**Testez et rechargez :**
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-## 🎉 5. Obtention du certificat SSL
-
-Lancez Certbot en mode automatique :
-
-```bash
-sudo certbot --nginx -d housebrain.votredomaine.fr
-```
-
-**Répondez aux questions :**
-
-1. **Email :** Votre adresse email (pour les alertes d'expiration)
-2. **Conditions d'utilisation :** Acceptez (`Y`)
-3. **Newsletter EFF :** À votre convenance (`Y` ou `N`)
-
-**Certbot va automatiquement :**
-- ✅ Valider votre domaine via HTTP-01 challenge
-- ✅ Obtenir le certificat Let's Encrypt
-- ✅ Modifier votre configuration Nginx pour activer HTTPS
-- ✅ Configurer la redirection HTTP → HTTPS
-
-## ✅ 6. Vérification de la configuration
-
-### Configuration Nginx générée
-
-Certbot ajoute automatiquement ces sections :
-
-```nginx
-server {
-    server_name housebrain.votredomaine.fr;
-
-    # ... votre configuration existante ...
-
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/housebrain.votredomaine.fr/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/housebrain.votredomaine.fr/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-}
-
-server {
-    if ($host = housebrain.votredomaine.fr) {
-        return 301 https://$host$request_uri;
-    }
-
-    listen 80;
-    server_name housebrain.votredomaine.fr;
-    return 404;
-}
-```
-
-### Test du renouvellement automatique
-
-```bash
-# Simulation (dry-run) du renouvellement
-sudo certbot renew --dry-run
-```
-
-**Résultat attendu :**
-```
-Congratulations, all simulated renewals succeeded
-```
-
-### Vérification du timer systemd
-
-Le renouvellement automatique est géré par un timer systemd :
-
-```bash
-sudo systemctl status certbot.timer
-```
-
-**Le certificat se renouvelle automatiquement tous les 60 jours** (valide 90 jours).
-
-## 🐍 7. Configuration Django (Production)
-
-Ajoutez les paramètres de sécurité HTTPS dans `backend/core/settings/production.py` :
+Les réglages de sécurité HTTPS sont déjà en place dans
+`backend/core/settings/production.py` (rien à faire) :
 
 ```python
-# ============================================
-# SÉCURITÉ HTTPS
-# ============================================
-
-# Force HTTPS
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# Cookies sécurisés
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
-# HSTS (HTTP Strict Transport Security) - 1 an
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 ```
 
-**Rechargez Gunicorn :**
+## Vérifications manuelles
 
 ```bash
-sudo systemctl restart gunicorn
-```
-
-## 🌐 8. Tests finaux
-
-### Test dans le navigateur
-
-1. **Accès HTTPS :**
-   ```
-   https://housebrain.votredomaine.fr
-   ```
-   ✅ Vous devez voir le cadenas vert 🔒
-
-2. **Redirection HTTP → HTTPS :**
-   ```
-   http://housebrain.votredomaine.fr
-   ```
-   ✅ Doit rediriger automatiquement vers HTTPS
-
-### Vérification du certificat
-
-Cliquez sur le cadenas 🔒 dans la barre d'adresse :
-- **Émis par :** Let's Encrypt
-- **Valide pendant :** 90 jours (renouvelé automatiquement)
-
-### Test du grade SSL (optionnel)
-
-Analysez votre configuration SSL :
-```
-https://www.ssllabs.com/ssltest/analyze.html?d=housebrain.votredomaine.fr
-```
-
-**Objectif :** Note **A** ou **A+**
-
-## 🔄 Maintenance
-
-### Vérification des certificats
-
-```bash
-# Liste les certificats installés
+# Certificats installés
 sudo certbot certificates
+
+# Simulation de renouvellement (ne modifie rien)
+sudo certbot renew --dry-run
+
+# Le renouvellement automatique est actif ?
+sudo systemctl status certbot.timer
 ```
 
-### Renouvellement manuel (si nécessaire)
+Le certificat Let's Encrypt est valide 90 jours ; `certbot.timer` tente un
+renouvellement deux fois par jour et ne renouvelle réellement que dans les 30
+derniers jours avant expiration.
 
+## Tests dans le navigateur
+
+- `https://housebrain.tondomaine.fr` → cadenas 🔒, émis par Let's Encrypt
+- `http://housebrain.tondomaine.fr` → doit rediriger automatiquement vers HTTPS
+- Optionnel, note de qualité SSL : https://www.ssllabs.com/ssltest/analyze.html?d=housebrain.tondomaine.fr
+
+## Dépannage
+
+### "Failed to obtain certificate"
+Le port 80 n'est probablement pas accessible depuis Internet (redirection box
+manquante, ou Nginx pas démarré). Vérifie :
 ```bash
-# Force le renouvellement
-sudo certbot renew
+sudo ss -tlnp | grep :80
+curl -I http://housebrain.tondomaine.fr
+```
 
-# Recharge Nginx après renouvellement
-sudo systemctl reload nginx
+### "Connection refused" sur le port 443
+Vérifie la redirection de port 443 sur la box, et que Nginx écoute bien dessus :
+```bash
+sudo ss -tlnp | grep :443
+```
+
+### Django : "Bad Request (400)"
+Le domaine n'est pas dans `DOMAINS`/`ALLOWED_HOSTS`. Vérifie `.env` :
+```bash
+DOMAINS=housebrain.tondomaine.fr
+```
+
+### Le certificat ne se renouvelle pas automatiquement
+```bash
+sudo systemctl status certbot.timer
+# Si inactif :
+sudo systemctl enable --now certbot.timer
 ```
 
 ### Logs Certbot
-
 ```bash
-# Consulter les logs
 sudo tail -f /var/log/letsencrypt/letsencrypt.log
 ```
 
-## 🛡️ Sécurité supplémentaire (optionnel)
+## Intervention manuelle (cas de debug seulement)
 
-### Headers de sécurité additionnels
+Si tu as besoin de relancer Certbot toi-même en dehors du script (debug) :
+```bash
+sudo certbot --nginx -d housebrain.tondomaine.fr --non-interactive --agree-tos -m ton@email.fr --redirect --keep-until-expiring
+```
+C'est exactement la commande utilisée par `17_configure_certbot.sh`.
 
-Ajoutez dans votre configuration Nginx (bloc `server` HTTPS) :
+## Sécurité supplémentaire (optionnel, pas géré par les scripts)
 
+Headers additionnels à ajouter à la main dans le bloc `server` HTTPS de Nginx si
+tu veux aller plus loin :
 ```nginx
-# Headers de sécurité
 add_header X-Frame-Options "SAMEORIGIN" always;
 add_header X-Content-Type-Options "nosniff" always;
 add_header X-XSS-Protection "1; mode=block" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 ```
+⚠️ Ces lignes seront perdues au prochain déploiement (`03_configure_nginx.sh`
+réécrit la config depuis le repo) — si tu veux les garder, ajoute-les plutôt dans
+`backend/deployment/nginx/housebrain` versionné dans le repo.
 
-### Content Security Policy (CSP)
-
-Pour une sécurité renforcée contre XSS :
-
-```nginx
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
-```
-
-⚠️ **Attention :** Testez bien la CSP, elle peut bloquer certaines ressources.
-
-## 🐛 Troubleshooting
-
-### Erreur : "Failed to obtain certificate"
-
-**Cause :** Le port 80 n'est pas accessible depuis Internet.
-
-**Solution :**
-```bash
-# Vérifiez que Nginx écoute sur le port 80
-sudo netstat -tlnp | grep :80
-
-# Testez l'accès externe
-curl -I http://housebrain.votredomaine.fr
-```
-
-### Erreur : "Connection refused" sur le port 443
-
-**Cause :** Le port 443 n'est pas redirigé correctement.
-
-**Solution :**
-- Vérifiez la redirection de port sur votre box Internet
-- Vérifiez que Nginx écoute bien sur 443 :
-  ```bash
-  sudo ss -tlnp | grep :443
-  ```
-
-### Django : "Bad Request (400)"
-
-**Cause :** Votre domaine n'est pas dans `ALLOWED_HOSTS`.
-
-**Solution :** Ajoutez-le dans votre `.env` :
-```bash
-DOMAINS=housebrain.votredomaine.fr
-```
-
-### Certificat non renouvelé automatiquement
-
-**Vérification :**
-```bash
-# Vérifiez le timer
-sudo systemctl status certbot.timer
-
-# Si inactif, activez-le
-sudo systemctl enable certbot.timer
-sudo systemctl start certbot.timer
-```
-
-## 📚 Ressources
+## Ressources
 
 - [Documentation Let's Encrypt](https://letsencrypt.org/docs/)
 - [Certbot Documentation](https://eff-certbot.readthedocs.io/)
 - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
-- [SSL Labs SSL Test](https://www.ssllabs.com/ssltest/)
-
-## 📝 Notes importantes
-
-- ⚠️ **Ne commitez JAMAIS vos clés privées** (`/etc/letsencrypt/` doit rester sur le serveur)
-- 🔄 Les certificats Let's Encrypt sont valides **90 jours** et se renouvellent automatiquement
-- 📧 Utilisez une **adresse email valide** pour recevoir les alertes d'expiration
-- 🔐 En production, **HTTPS doit TOUJOURS être activé** (pas en développement local)
 
 ---
 
-**Date de création :** Octobre 2025
-**Dernière mise à jour :** Octobre 2025
-**Testé sur :** Raspberry Pi 4 - Raspbian Bookworm - Nginx 1.22 - Django 5.2
+Dernière mise à jour : Juillet 2026

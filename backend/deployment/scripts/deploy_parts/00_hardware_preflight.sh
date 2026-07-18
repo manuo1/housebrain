@@ -75,6 +75,17 @@ else
     echo "Service bluetooth déjà actif."
 fi
 
+# Sur une image Raspberry Pi OS fraîche, l'adaptateur Bluetooth peut être
+# soft-blocked par rfkill (PowerState: off-blocked), empêchant bluetooth-listener
+# de démarrer ("No powered Bluetooth adapters found"). Vérifié à chaque exécution
+# car ce blocage peut potentiellement revenir après un reboot.
+if rfkill list bluetooth | grep -q "Soft blocked: yes"; then
+    echo "Bluetooth soft-blocked par rfkill, déblocage..."
+    sudo rfkill unblock bluetooth
+else
+    echo "Bluetooth non bloqué par rfkill."
+fi
+
 # --- Groupes utilisateur : accès non-root aux périphériques ---
 echo "--- Groupes ---"
 for grp in i2c dialout bluetooth; do

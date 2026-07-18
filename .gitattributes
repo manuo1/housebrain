@@ -1,0 +1,7 @@
+# Force LF pour tout ce qui s'exécute sur le Pi (Linux), quelle que soit la config
+# git de la machine qui commit — évite qu'un CRLF introduit sous Windows ne casse
+# un script ou une unit systemd au checkout sur le Pi.
+*.sh            text eol=lf
+*.service       text eol=lf
+*.timer         text eol=lf
+*.socket        text eol=lf

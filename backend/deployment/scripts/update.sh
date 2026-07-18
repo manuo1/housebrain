@@ -31,6 +31,11 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
+# Backup de la base avant toute migration éventuelle (écrase la précédente sauvegarde,
+# pas d'historique conservé - juste un filet de sécurité pour le dernier update en date).
+echo "Sauvegarde de db.sqlite3 avant mise à jour..."
+cp "$REPO_DIR/backend/db.sqlite3" "$REPO_DIR/backend/db.sqlite3.pre-update-bak"
+
 echo "Récupération du dernier code..."
 git pull
 

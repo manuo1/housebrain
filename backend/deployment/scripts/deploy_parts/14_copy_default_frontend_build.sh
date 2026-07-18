@@ -1,14 +1,22 @@
 #!/bin/bash
-# Copy fallback index.html with cleanup
+# Crée une page de fallback si aucun frontend n'a encore été déployé.
+# Sécurité : ne touche JAMAIS à un frontend déjà présent (plus de rm -rf inconditionnel).
+# Idempotent et rejouable sans risque : devient un no-op dès que 16_deploy_frontend.sh
+# a déployé un vrai build.
 
 set -e
 
-sudo rm -rf /var/www/housebrain-frontend
-sudo mkdir -p /var/www/housebrain-frontend
+FRONTEND_DIR="/var/www/housebrain-frontend"
 
-echo "[INFO] Creating fallback index.html in /var/www/housebrain-frontend"
+if [ -d "$FRONTEND_DIR" ] && [ -n "$(ls -A "$FRONTEND_DIR" 2>/dev/null)" ]; then
+    echo "[INFO] Un frontend est déjà présent dans $FRONTEND_DIR, fallback ignoré (rien écrasé)."
+    exit 0
+fi
 
-sudo tee /var/www/housebrain-frontend/index.html > /dev/null << EOF
+echo "[INFO] Aucun frontend déployé, création d'une page de fallback dans $FRONTEND_DIR"
+sudo mkdir -p "$FRONTEND_DIR"
+
+sudo tee "$FRONTEND_DIR/index.html" > /dev/null << EOF
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -21,4 +29,4 @@ sudo tee /var/www/housebrain-frontend/index.html > /dev/null << EOF
 </html>
 EOF
 
-echo "[INFO] Fallback deployed."
+echo "[INFO] Fallback déployé."

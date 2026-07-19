@@ -243,7 +243,7 @@ const data = await response.json();
 
 **Caractéristiques :**
 - Pas accessible via JavaScript (protection XSS)
-- Envoyé automatiquement à chaque requête
+- Envoyé automatiquement uniquement vers `/api/auth/refresh/` (cookie restreint à ce path)
 - Durée de vie : 7 jours
 - `credentials: 'include'` requis dans les appels fetch
 

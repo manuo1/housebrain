@@ -1,7 +1,7 @@
 import logging
-import os
 
 from core.constants import LoggerLabel
+from core.utils.env_utils import environment_is_development
 
 logger = logging.getLogger("django")
 
@@ -10,7 +10,7 @@ def notify_watchdog() -> None:
     """
     Notify the systemd watchdog only in production.
     """
-    if os.environ["ENVIRONMENT"] == "production":
+    if not environment_is_development():
         try:
             from systemd import daemon
 

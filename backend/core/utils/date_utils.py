@@ -14,7 +14,7 @@ def is_delta_within_two_minute(dt1: datetime, dt2: datetime) -> bool:
 
 
 def is_delta_within_five_seconds(dt1: datetime, dt2: datetime) -> bool:
-    """Check if the difference between two datetime objects is less than or equal to 2 minute."""
+    """Check if the difference between two datetime objects is less than or equal to 5 seconds."""
     return abs(dt1 - dt2) <= timedelta(seconds=5)
 
 
@@ -29,6 +29,10 @@ def parse_iso_datetime(dt_str: str) -> datetime | None:
 
 
 def weekdays_str_list_to_datetime_weekdays_list(labels: list[str]) -> list[int] | None:
+    """Convert a list of weekday labels (e.g. WeekDayLabel.MONDAY) to datetime weekday ints (Mon=0..Sun=6).
+
+    Returns None if labels isn't a list or contains a label that doesn't match WeekDayLabel.
+    """
     if not isinstance(labels, list):
         return
     mapping = {
@@ -54,6 +58,10 @@ def weekdays_str_list_to_datetime_weekdays_list(labels: list[str]) -> list[int] 
 
 
 def get_week_containing_date(day: date) -> list[date]:
+    """Return the 7 dates (Monday to Sunday) of the week containing `day`.
+
+    Returns an empty list if `day` isn't a date.
+    """
     if not isinstance(day, date):
         return []
     start = day - timedelta(days=day.weekday())
@@ -61,6 +69,10 @@ def get_week_containing_date(day: date) -> list[date]:
 
 
 def get_previous_monday(day: date) -> date | None:
+    """Return the Monday of the week containing `day` (same day if `day` is already a Monday).
+
+    Returns None if `day` isn't a date-like object.
+    """
     try:
         return day - timedelta(days=day.weekday())
     except AttributeError:
@@ -68,6 +80,13 @@ def get_previous_monday(day: date) -> date | None:
 
 
 def get_next_sunday(day: date) -> date | None:
+    """Return the Sunday of the week containing `day` (same day if `day` is already a Sunday).
+
+    Note: despite the name, this is not "the next Sunday after `day`" in the chronological
+    sense — it's the Sunday that closes out `day`'s own week, symmetric with get_previous_monday.
+
+    Returns None if `day` isn't a date-like object.
+    """
     try:
         return day - timedelta(days=day.weekday()) + timedelta(days=6)
     except AttributeError:

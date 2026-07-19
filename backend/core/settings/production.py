@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -21,6 +22,14 @@ if PUBLIC_IP:
 
 if DOMAINS:
     ALLOWED_HOSTS.extend(DOMAINS.split(","))
+
+if not (LOCAL_IP or PUBLIC_IP or DOMAINS):
+    print(
+        "WARNING: LOCAL_IP, PUBLIC_IP and DOMAINS are all unset in .env — "
+        "ALLOWED_HOSTS falls back to ['127.0.0.1', 'localhost'] only, so any "
+        "external request will get a 400 Bad Request until one of these is set.",
+        file=sys.stderr,
+    )
 
 CACHES = {
     "default": {

@@ -2,6 +2,11 @@ from enum import StrEnum
 
 
 def validate_temperature_value(temperature_value: object) -> float | None:
+    """Coerce a raw value to a float temperature, rejecting booleans and anything non-numeric.
+
+    Returns None if the value can't be converted (or is a bool, which isinstance(float)
+    checks would otherwise let through since bool is a subclass of int).
+    """
     if isinstance(temperature_value, bool):
         return
     try:

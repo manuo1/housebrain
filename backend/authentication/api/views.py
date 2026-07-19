@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -12,7 +13,11 @@ class CookieTokenObtainPairView(TokenObtainPairView):
     Custom login view that:
     - Returns the access token in JSON
     - Places the refresh token in an HttpOnly cookie
+    - Is rate-limited (5/min per IP) to slow down brute-force attempts
     """
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
 
     def post(self, request, *args, **kwargs):
         # Use TokenObtainPairView to generate tokens

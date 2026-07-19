@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
-from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
@@ -65,7 +65,7 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         try:
             serializer.is_valid(raise_exception=True)
-        except InvalidToken:
+        except (InvalidToken, TokenError):
             return Response(
                 {"detail": "Refresh token invalid or expired."},
                 status=status.HTTP_401_UNAUTHORIZED,

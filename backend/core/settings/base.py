@@ -10,6 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+# DEBUG is always overridden explicitly by development.py (True) and
+# production.py (False) — this is just a safe fallback if a settings
+# module ever forgets to set it.
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 

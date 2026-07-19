@@ -1,10 +1,10 @@
-import os
-
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from dotenv import load_dotenv
+
+from core.utils.env_utils import environment_is_development
 
 load_dotenv()
 
@@ -32,5 +32,5 @@ urlpatterns = [
     path("api/", include((api_patterns, "api"), namespace="api")),
 ]
 
-if os.environ["ENVIRONMENT"] == "development":
+if environment_is_development():
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

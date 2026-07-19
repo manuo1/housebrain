@@ -30,6 +30,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 httponly=True,  # No JS Access
                 secure=True,  # Only if HTTPS
                 samesite="Strict",  # CSRF Protection
+                path="/api/auth/refresh/",  # Only sent to the refresh endpoint
             )
             # Remove refresh token from response
             response.data.pop("refresh")
@@ -79,5 +80,5 @@ def user_info(request):
 @permission_classes([AllowAny])
 def logout_view(request):
     response = Response({"detail": "Logged out successfully."})
-    response.delete_cookie("refresh_token")
+    response.delete_cookie("refresh_token", path="/api/auth/refresh/")
     return response

@@ -110,6 +110,9 @@ def test_is_delta_within_five_seconds(delta, expected):
         (False, None),
         ([], []),
         ({}, None),
+        (["monday", "not_a_day"], None),  # valid label mixed with an invalid one
+        (["invalid"], None),  # single invalid label
+        (["Monday"], None),  # wrong case, must match WeekDayLabel exactly
     ],
 )
 def test_weekdays_str_list_to_datetime_weekdays_list(label_list, weekday):
@@ -149,7 +152,7 @@ SUNDAY = date(2025, 12, 21)
 
 
 @pytest.mark.parametrize(
-    "input_date, result",
+    "input_date, expected",
     [
         (MONDAY, MONDAY),
         (TUESDAY, MONDAY),
@@ -165,13 +168,13 @@ SUNDAY = date(2025, 12, 21)
         ([], None),
     ],
 )
-def test_get_previous_monday(input_date, result):
+def test_get_previous_monday(input_date, expected):
     result = get_previous_monday(input_date)
-    assert result == result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
-    "input_date, result",
+    "input_date, expected",
     [
         (MONDAY, SUNDAY),
         (TUESDAY, SUNDAY),
@@ -187,6 +190,6 @@ def test_get_previous_monday(input_date, result):
         ([], None),
     ],
 )
-def test_get_next_sunday(input_date, result):
+def test_get_next_sunday(input_date, expected):
     result = get_next_sunday(input_date)
-    assert result == result
+    assert result == expected

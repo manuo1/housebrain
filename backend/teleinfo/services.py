@@ -17,7 +17,7 @@ def clean_data(data: str) -> str | None:
         return None
 
 
-def split_data(cleaned_data: str) -> list[str | None, str | None, str | None]:
+def split_data(cleaned_data: str) -> list[str | None]:
     """Splits the cleaned data into key, value, and checksum."""
 
     error_return = [None, None, None]

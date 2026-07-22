@@ -1,19 +1,25 @@
-from enum import Enum, StrEnum
 import os
-import serial
+from dataclasses import dataclass
+from enum import StrEnum
 
+import serial
 
 SERIAL_PORT = os.getenv("SERIAL_PORT", "/dev/ttyS0")
 
 
-# Raspberry serial port config
-class SerialConfig(Enum):
-    PORT = SERIAL_PORT
-    BAUDRATE = 1200
-    PARITY = serial.PARITY_NONE
-    STOPBITS = serial.STOPBITS_ONE
-    BYTESIZE = serial.SEVENBITS
-    TIMEOUT = 1  # seconde
+@dataclass(frozen=True)
+class SerialConfig:
+    """Raspberry serial port config."""
+
+    PORT: str = SERIAL_PORT
+    BAUDRATE: int = 1200
+    PARITY: str = serial.PARITY_NONE
+    STOPBITS: float = serial.STOPBITS_ONE
+    BYTESIZE: int = serial.SEVENBITS
+    TIMEOUT: int = 1  # seconde
+
+
+SERIAL_CONFIG = SerialConfig()
 
 
 class TeleinfoLabel(StrEnum):

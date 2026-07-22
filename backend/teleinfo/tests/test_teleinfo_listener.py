@@ -21,10 +21,9 @@ INCOMPLETE_BUFFER = {key: "value" for key in REQUIRED_TELEINFO_KEYS if key != "I
         (None, {}),
     ],
 )
-@patch("teleinfo.listener.cache")
 @patch("teleinfo.listener.notify_watchdog")
 def test_process_data_when_buffer_is_empty(
-    mock_notify_watchdog, mock_cache, new_serial, excepted_buffer
+    mock_notify_watchdog, new_serial, excepted_buffer
 ):
     listener = TeleinfoListener()
     listener._process_data(new_serial)
@@ -40,10 +39,9 @@ def test_process_data_when_buffer_is_empty(
         (None, START_BUFFER),
     ],
 )
-@patch("teleinfo.listener.cache")
 @patch("teleinfo.listener.notify_watchdog")
 def test_process_data_when_buffer_is_not_empty(
-    mock_notify_watchdog, mock_cache, new_serial, excepted_buffer
+    mock_notify_watchdog, new_serial, excepted_buffer
 ):
     listener = TeleinfoListener()
     listener.buffer = START_BUFFER.copy()
@@ -83,10 +81,9 @@ def test_process_data_when_buffer_is_not_empty(
     ],
 )
 @freeze_time(NOW_DATETIME)
-@patch("teleinfo.listener.cache")
 @patch("teleinfo.listener.notify_watchdog")
 def test_process_data_when_buffer_is_only_missing_one_key_to_be_complete(
-    mock_notify_watchdog, mock_cache, new_serial, excepted_buffer, excepted_teleinfo
+    mock_notify_watchdog, new_serial, excepted_buffer, excepted_teleinfo
 ):
     listener = TeleinfoListener()
     listener.buffer = INCOMPLETE_BUFFER.copy()
@@ -98,22 +95,19 @@ def test_process_data_when_buffer_is_only_missing_one_key_to_be_complete(
 
 
 @pytest.mark.parametrize(
-    "in_waiting, readline, excepted_buffer",
+    "readline, excepted_buffer",
     [
-        (True, b"ISOUSC 45 ?\r\n", {**START_BUFFER, "ISOUSC": "45"}),
-        (False, "", START_BUFFER),
+        (b"ISOUSC 45 ?\r\n", {**START_BUFFER, "ISOUSC": "45"}),
+        (b"", START_BUFFER),
     ],
 )
 @patch("serial.Serial")
-@patch("teleinfo.listener.cache")
 @patch("teleinfo.listener.notify_watchdog")
 @patch("time.sleep", return_value=None)
 def test_fetch_data(
     mock_notify_watchdog,
-    mock_cache,
     mock_sleep,
     mock_serial,
-    in_waiting,
     readline,
     excepted_buffer,
 ):
@@ -121,7 +115,6 @@ def test_fetch_data(
     listener.buffer = START_BUFFER.copy()
 
     mock_connection = mock_serial.return_value
-    mock_connection.in_waiting = in_waiting
     mock_connection.readline.return_value = readline
 
     listener._fetch_data(mock_connection)
@@ -131,10 +124,9 @@ def test_fetch_data(
 
 @patch("serial.Serial")
 @patch("time.sleep", return_value=None)
-@patch("teleinfo.listener.cache")
 @patch("teleinfo.listener.notify_watchdog")
 def test_fetch_data_raise_serial_exception(
-    mock_notify_watchdog, mock_cache, mock_sleep, mock_serial
+    mock_notify_watchdog, mock_sleep, mock_serial
 ):
     listener = TeleinfoListener()
     listener.buffer = START_BUFFER.copy()
@@ -147,11 +139,8 @@ def test_fetch_data_raise_serial_exception(
 
 @patch("serial.Serial.open", side_effect=serial.SerialException())
 @patch("time.sleep", return_value=None)
-@patch("teleinfo.listener.cache")
 @patch("teleinfo.listener.notify_watchdog")
-def test_listen_if_serial_exception(
-    mock_notify_watchdog, mock_cache, mock_sleep, mock_serial
-):
+def test_listen_if_serial_exception(mock_notify_watchdog, mock_sleep, mock_serial):
     listener = TeleinfoListener()
     listener.buffer = START_BUFFER.copy()
     listener.start()

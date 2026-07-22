@@ -4,12 +4,11 @@ import time
 import serial
 from core.constants import LoggerLabel
 from core.utils.systemd_utils import notify_watchdog
-from django.core.cache import caches
 from django.utils import timezone
 from heating.services.heating_synchronization import (
     turn_on_radiators_according_to_the_available_power,
 )
-from teleinfo.constants import SerialConfig
+from teleinfo.constants import SERIAL_CONFIG
 from teleinfo.services import (
     buffer_can_accept_new_data,
     buffer_is_complete,
@@ -18,7 +17,6 @@ from teleinfo.services import (
 )
 from teleinfo.utils.cache_teleinfo_data import set_teleinfo_data_in_cache
 
-cache = caches["default"]
 logger = logging.getLogger("django")
 
 
@@ -54,12 +52,12 @@ class TeleinfoListener:
             notify_watchdog()
             try:
                 with serial.Serial(
-                    port=SerialConfig.PORT.value,
-                    baudrate=SerialConfig.BAUDRATE.value,
-                    parity=SerialConfig.PARITY.value,
-                    stopbits=SerialConfig.STOPBITS.value,
-                    bytesize=SerialConfig.BYTESIZE.value,
-                    timeout=SerialConfig.TIMEOUT.value,
+                    port=SERIAL_CONFIG.PORT,
+                    baudrate=SERIAL_CONFIG.BAUDRATE,
+                    parity=SERIAL_CONFIG.PARITY,
+                    stopbits=SERIAL_CONFIG.STOPBITS,
+                    bytesize=SERIAL_CONFIG.BYTESIZE,
+                    timeout=SERIAL_CONFIG.TIMEOUT,
                 ) as serial_connection:
                     # Port opened successfully: restart with a full 10s
                     # window for the next ping, regardless of how long the
@@ -83,8 +81,7 @@ class TeleinfoListener:
         """Fetch data from the serial connection."""
         self._notify_watchdog_if_needed()
         try:
-            if connection.in_waiting:
-                self._process_data(connection.readline())
+            self._process_data(connection.readline())
         except serial.SerialException as e:
             logger.error(f"{LoggerLabel.TELEINFOLISTENER} Serial error: {e}")
             time.sleep(2)

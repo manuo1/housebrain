@@ -138,11 +138,12 @@ def test_fetch_data_raise_serial_exception(
 
 
 @patch("serial.Serial.open", side_effect=serial.SerialException())
-@patch("time.sleep", return_value=None)
+@patch("time.sleep", side_effect=StopIteration)
 @patch("teleinfo.listener.notify_watchdog")
 def test_listen_if_serial_exception(mock_notify_watchdog, mock_sleep, mock_serial):
     listener = TeleinfoListener()
     listener.buffer = START_BUFFER.copy()
-    listener.start()
+    with pytest.raises(StopIteration):
+        listener.start()
     # assert nothing breaks in case of an exception and that the buffer doesn't change.
     assert listener.buffer == START_BUFFER

@@ -3,6 +3,7 @@ import sys
 from types import ModuleType
 from unittest.mock import MagicMock, patch
 import pytest
+import signal
 
 # ---------------------------
 # Inject fake hardware modules
@@ -45,7 +46,7 @@ def mock_mcp():
     The returned mock instance has a `get_pin()` that returns a pin mock with
     .value and .switch_to_output() attributes.
     """
-    with patch("actuators.drivers.mcp23017.MCP23017") as mock_cls:
+    with patch("adafruit_mcp230xx.mcp23017.MCP23017") as mock_cls:
         mock_instance = MagicMock(name="MCP23017_instance")
         mock_pin = MagicMock(name="MCP23017_pin")
         mock_pin.value = False
@@ -60,6 +61,16 @@ def reset_singleton():
     mcp_module._mcp_driver = None
     yield
     mcp_module._mcp_driver = None
+
+
+@pytest.fixture(autouse=True)
+def patch_signal_alarm(monkeypatch):
+    """SIGALRM is Unix-only; stub it so the driver's I2C timeout logic
+    doesn't crash on Windows dev machines. Harmless for real Pi/Linux
+    usage, which keeps using the real signal module in production."""
+    monkeypatch.setattr(signal, "SIGALRM", getattr(signal, "SIGALRM", 14), raising=False)
+    monkeypatch.setattr(signal, "signal", lambda *args, **kwargs: None)
+    monkeypatch.setattr(signal, "alarm", lambda *args, **kwargs: None, raising=False)
 
 
 # ---------------------------

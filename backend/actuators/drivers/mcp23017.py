@@ -6,10 +6,7 @@ import logging
 import signal
 from contextlib import contextmanager
 
-import board
-import busio
 from actuators.constants import MCP23017PinState
-from adafruit_mcp230xx.mcp23017 import MCP23017
 from core.constants import UNPLUGGED_MODE, LoggerLabel
 
 logger = logging.getLogger("django")
@@ -52,6 +49,14 @@ class MCP23017Driver:
         if UNPLUGGED_MODE:
             logger.info(f"{LoggerLabel.MCPDRIVER}UNPLUGGED mode: MCP23017 simulation")
             return
+        # Hardware-only imports: kept local to this method so that importing
+        # this module (e.g. via teleinfo -> actuators import chain) never
+        # requires board/busio/adafruit_mcp230xx to be installed when
+        # UNPLUGGED_MODE is True (dev machines, CI, non-Pi platforms).
+        import board
+        import busio
+        from adafruit_mcp230xx.mcp23017 import MCP23017
+
         try:
             with _i2c_timeout(I2C_TIMEOUT_SECONDS, "connect"):
                 self.i2c = busio.I2C(board.SCL, board.SDA)

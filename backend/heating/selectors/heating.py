@@ -3,10 +3,10 @@ from datetime import date
 from heating.models import RoomHeatingDayPlan
 
 
-def get_rooms_heating_plans_data(date: date) -> list[dict]:
+def get_rooms_heating_plans_data(day: date) -> list[dict]:
     return list(
         RoomHeatingDayPlan.objects.filter(
-            date=date,
+            date=day,
             room__radiator__isnull=False,
         ).values(
             "room_id",

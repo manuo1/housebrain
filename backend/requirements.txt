@@ -46,7 +46,8 @@ pytest==8.3.5                         # Testing framework
 pytest-django==4.11.1                 # Django plugin for pytest
 pytest-mock==3.14.0                   # Mocking helper for pytest
 freezegun==1.5.1                      # Freeze time in tests (simulate specific datetime)
-coverage==7.8.0                       # Code coverage measurement
+coverage==7.15.2                      # Code coverage measurement
+pytest-cov==7.1.0                     # pytest --cov integration (wraps coverage)
 iniconfig==2.1.0                      # Config parser used by pytest
 pluggy==1.5.0                         # Plugin management (pytest internals)
 colorama==0.4.6                       # Colored terminal output (mainly for Windows test/dev UX)

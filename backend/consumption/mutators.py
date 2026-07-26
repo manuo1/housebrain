@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 
 from consumption.models import DailyIndexes
 from consumption.utils import (
@@ -51,7 +52,7 @@ def save_teleinfo_data():
 
     # If it's midnight, update "24:00" of the previous day
     if now_minute_str == "00:00":
-        previous_day = now_date - timezone.timedelta(days=1)
+        previous_day = now_date - timedelta(days=1)
 
         bdd_previous_day_indexes, _ = DailyIndexes.objects.get_or_create(
             date=previous_day,

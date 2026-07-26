@@ -5,7 +5,7 @@ from heating.api.constants import DayStatus, DuplicationTypes
 from heating.api.selectors import get_slots_hashes
 
 
-def group_slots_hashes_by_date(slots_hashes: list) -> None:
+def group_slots_hashes_by_date(slots_hashes: list) -> dict:
     day_to_hashes = defaultdict(set)
     try:
         for d, h in slots_hashes:

@@ -1,12 +1,16 @@
 import logging
 from copy import deepcopy
-from datetime import date
+from datetime import date, timedelta
 
 from consumption.constants import (
     ALLOWED_CONSUMPTION_STEPS,
     STEP_1MIN_DICT,
     STEP_30MIN_DICT,
     STEP_60MIN_DICT,
+    TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS,
+    TARIF_PERIOD_TYPE_LABELS,
+    TEMPO_COLOR_LABELS,
+    TarifPeriodType,
 )
 from consumption.edf_pricing import get_kwh_price
 from consumption.models import DailyIndexes
@@ -19,6 +23,7 @@ from teleinfo.constants import (
     TARIF_PERIOD_LABEL_TO_INDEX_LABEL,
     TARIF_PERIODS_TRANSLATIONS,
     TELEINFO_INDEX_LABELS,
+    TarifPeriods,
     TeleinfoLabel,
 )
 
@@ -280,19 +285,163 @@ def compute_indexes_missing_values(
     return missing_values
 
 
-# TODO this function is incomplete and not tested yet
-def fill_missing_tarif_periods(tarif_periods):
-    tarif_periods_copy = deepcopy(tarif_periods)
-    missing_value_zones = find_all_missing_value_zones(tarif_periods_copy)
-    if not missing_value_zones:
-        return tarif_periods
-    # TODO make something better :)
-    for zone in missing_value_zones:
-        if zone[0][1] == zone[-1][1]:
-            for time_str, value in zone:
-                tarif_periods_copy[time_str] = value
+def get_tarif_period_type(
+    tarif_periods: dict[str, str | None],
+) -> TarifPeriodType | None:
+    """
+    Detects the tariff family of a day from the values already known
+    (non-None) in its tarif_periods : TH (Base), HC/HP, EJP (HN/PM) or Tempo.
 
-    return tarif_periods_copy
+    Args:
+        tarif_periods: A dict mapping time strings (HH:MM) to tarif period
+                       strings or None.
+
+    Returns:
+        The matching TarifPeriodType, or None if the day is entirely empty
+        (no known value) or no known value matches a known family.
+    """
+    for value in tarif_periods.values():
+        if value is None:
+            continue
+        for tarif_period_type, labels in TARIF_PERIOD_TYPE_LABELS.items():
+            if value in labels:
+                return tarif_period_type
+    return None
+
+
+def get_tempo_color(tarif_periods: dict[str, str | None]) -> str | None:
+    """
+    Detects the Tempo color (B/W/R) of a day from the values already known
+    (non-None) in its tarif_periods.
+
+    Args:
+        tarif_periods: A dict mapping time strings (HH:MM) to tarif period
+                       strings or None.
+
+    Returns:
+        The matching color code ('B', 'W' or 'R'), or None if no known
+        value matches a known Tempo color.
+    """
+    for value in tarif_periods.values():
+        if value is None:
+            continue
+        for color, labels in TEMPO_COLOR_LABELS.items():
+            if value in labels:
+                return color
+    return None
+
+
+def get_hc_hp_ref_day(current_day: date) -> dict[str, str | None] | None:
+    """
+    Searches, among the days preceding current_day (within
+    TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS days, most recent first), for the
+    first DailyIndexes whose tarif_periods is of type HC_HP and entirely
+    complete (no None left).
+
+    Args:
+        current_day: The day being reconstructed.
+
+    Returns:
+        The reference day's tarif_periods dict, or None if no suitable
+        candidate is found.
+    """
+    candidates = DailyIndexes.objects.filter(
+        date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
+        date__lt=current_day,
+    ).order_by("-date")
+
+    for candidate in candidates:
+        if None in candidate.tarif_periods.values():
+            continue
+        if get_tarif_period_type(candidate.tarif_periods) == TarifPeriodType.HC_HP:
+            return candidate.tarif_periods
+
+    return None
+
+
+def get_tempo_ref_day(
+    current_day: date,
+    color: str | None,
+) -> dict[str, str | None] | None:
+    """
+    Searches, among the days preceding current_day (within
+    TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS days, most recent first), for the
+    first DailyIndexes whose tarif_periods is of type TEMPO, entirely
+    complete (no None left), and of the same Tempo color as `color`.
+
+    Args:
+        current_day: The day being reconstructed.
+        color: The Tempo color code ('B', 'W' or 'R') of the day being
+               reconstructed, or None if it could not be determined.
+
+    Returns:
+        The reference day's tarif_periods dict, or None if `color` is None
+        or no suitable candidate is found.
+    """
+    if color is None:
+        return None
+
+    candidates = DailyIndexes.objects.filter(
+        date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
+        date__lt=current_day,
+    ).order_by("-date")
+
+    for candidate in candidates:
+        if None in candidate.tarif_periods.values():
+            continue
+        if (
+            get_tarif_period_type(candidate.tarif_periods) == TarifPeriodType.TEMPO
+            and get_tempo_color(candidate.tarif_periods) == color
+        ):
+            return candidate.tarif_periods
+
+    return None
+
+
+def fill_missing_tarif_periods(
+    tarif_periods: dict[str, str | None],
+    current_day: date,
+) -> dict[str, str | None]:
+    """
+    Fills the gaps (None values) of a day's tarif_periods, at read time only
+    (nothing is written back to the database).
+
+    Strategy per tariff family:
+      - TH: no ambiguity possible, fills every minute with TarifPeriods.TH.
+      - EJP (HN/PM): unpredictable (EJP day/preavis), gaps are left as is.
+      - HC/HP: looks up a complete HC/HP reference day (get_hc_hp_ref_day)
+               and reuses its tarif_periods entirely if one is found.
+      - Tempo: looks up a complete reference day of the same color
+               (get_tempo_ref_day) and reuses its tarif_periods entirely
+               if one is found.
+      - Undetermined type (empty day) or no reference day found: gaps are
+        left as is.
+
+    Args:
+        tarif_periods: A dict mapping time strings (HH:MM) to tarif period
+                       strings or None, for the day being reconstructed.
+        current_day: The date of the day being reconstructed.
+
+    Returns:
+        A dict with the same shape as `tarif_periods`, with gaps filled
+        whenever possible.
+    """
+    tarif_period_type = get_tarif_period_type(tarif_periods)
+
+    match tarif_period_type:
+        case TarifPeriodType.TH:
+            return {time_str: TarifPeriods.TH for time_str in tarif_periods}
+        case TarifPeriodType.EJP:
+            return tarif_periods
+        case TarifPeriodType.HC_HP:
+            ref_day_tarif_periods = get_hc_hp_ref_day(current_day)
+            return ref_day_tarif_periods or tarif_periods
+        case TarifPeriodType.TEMPO:
+            color = get_tempo_color(tarif_periods)
+            ref_day_tarif_periods = get_tempo_ref_day(current_day, color)
+            return ref_day_tarif_periods or tarif_periods
+        case _:
+            return tarif_periods
 
 
 def fill_missing_values(
@@ -482,7 +631,7 @@ def build_consumption_data(
     reconstructed_indexes = fill_missing_values(raw_indexes, missing_indexes)
 
     raw_tarif_periods = daily_indexes.tarif_periods
-    tarif_periods = fill_missing_tarif_periods(raw_tarif_periods)
+    tarif_periods = fill_missing_tarif_periods(raw_tarif_periods, day)
 
     if step != 1:
         indexes = downsample_indexes(reconstructed_indexes, step)

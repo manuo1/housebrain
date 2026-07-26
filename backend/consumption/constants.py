@@ -1,4 +1,38 @@
+from enum import StrEnum
+
+from teleinfo.constants import TarifPeriods
+
 ALLOWED_CONSUMPTION_STEPS = [1, 30, 60]
+
+TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS = 365
+
+
+class TarifPeriodType(StrEnum):
+    TH = "TH"
+    HC_HP = "HC_HP"
+    EJP = "EJP"
+    TEMPO = "TEMPO"
+
+
+TARIF_PERIOD_TYPE_LABELS: dict[TarifPeriodType, list[str]] = {
+    TarifPeriodType.TH: [TarifPeriods.TH],
+    TarifPeriodType.HC_HP: [TarifPeriods.HC, TarifPeriods.HP],
+    TarifPeriodType.EJP: [TarifPeriods.HN, TarifPeriods.PM],
+    TarifPeriodType.TEMPO: [
+        TarifPeriods.HCJB,
+        TarifPeriods.HPJB,
+        TarifPeriods.HCJW,
+        TarifPeriods.HPJW,
+        TarifPeriods.HCJR,
+        TarifPeriods.HPJR,
+    ],
+}
+
+TEMPO_COLOR_LABELS: dict[str, list[str]] = {
+    "B": [TarifPeriods.HCJB, TarifPeriods.HPJB],
+    "W": [TarifPeriods.HCJW, TarifPeriods.HPJW],
+    "R": [TarifPeriods.HCJR, TarifPeriods.HPJR],
+}
 
 
 STEP_30MIN_DICT = {

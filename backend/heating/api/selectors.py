@@ -1,8 +1,6 @@
 from datetime import date
 
 from django.db.models import F, JSONField, OuterRef, Subquery, Value
-
-# from django.db.models.fields.json import JSONField
 from django.db.models.functions import Coalesce
 from heating.models import HeatingPattern, RoomHeatingDayPlan
 from rooms.models import Room

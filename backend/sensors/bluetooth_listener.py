@@ -2,10 +2,11 @@ import asyncio
 import logging
 
 from bleak import BleakScanner
-from core.constants import LoggerLabel
-from core.utils.systemd_utils import notify_watchdog
 from django.core.cache import caches
 from django.utils import timezone
+
+from core.constants import LoggerLabel
+from core.utils.systemd_utils import notify_watchdog
 from sensors.services.bthome import decode_bthome_payload
 from sensors.utils.cache_sensors_data import get_sensors_data_in_cache
 

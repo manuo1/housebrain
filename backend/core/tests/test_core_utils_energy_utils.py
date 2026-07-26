@@ -1,4 +1,5 @@
 import pytest
+
 from core.utils.energy_utils import wh_to_watt
 
 

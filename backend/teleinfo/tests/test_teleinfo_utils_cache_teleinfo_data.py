@@ -1,10 +1,11 @@
 from datetime import timedelta
 
 import pytest
-from core.constants import DEFAULT_VOLTAGE
 from django.core.cache import cache
 from django.utils import timezone
 from freezegun import freeze_time
+
+from core.constants import DEFAULT_VOLTAGE
 from mock_data.teleinfo import MOCKED_TELEINFO_DATA
 from teleinfo.utils.cache_teleinfo_data import (
     get_instant_available_power,

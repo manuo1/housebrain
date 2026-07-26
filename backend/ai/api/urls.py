@@ -1,5 +1,6 @@
-from ai.api.views import AiHeatingPlanModifyView
 from django.urls import path
+
+from ai.api.views import AiHeatingPlanModifyView
 
 urlpatterns = [
     path(

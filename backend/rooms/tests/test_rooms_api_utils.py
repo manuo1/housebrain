@@ -1,4 +1,5 @@
 import pytest
+
 from actuators.models import Radiator
 from rooms.api.constants import ApiRadiatorState
 from rooms.api.utils import calculate_radiator_state, get_mac_short

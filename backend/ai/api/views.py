@@ -1,10 +1,11 @@
 import logging
 
-from ai.api.serializers import AiHeatingPlanModifyInputSerializer
-from ai.services.plan_modifier import modify_heating_plan
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from ai.api.serializers import AiHeatingPlanModifyInputSerializer
+from ai.services.plan_modifier import modify_heating_plan
 
 logger = logging.getLogger("django")
 

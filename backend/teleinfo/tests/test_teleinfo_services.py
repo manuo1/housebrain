@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from actuators.constants import POWER_SAFETY_MARGIN
 from teleinfo.constants import FIRST_TELEINFO_FRAME_KEY, REQUIRED_TELEINFO_KEYS
 from teleinfo.services import (

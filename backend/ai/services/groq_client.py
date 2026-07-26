@@ -1,10 +1,11 @@
 import logging
 import re
 
-from ai.services.llm_client import LLMClient
 from django.conf import settings
 from groq import APIError, Groq, RateLimitError
 from rest_framework.exceptions import ValidationError as DRFValidationError
+
+from ai.services.llm_client import LLMClient
 
 logger = logging.getLogger("django")
 

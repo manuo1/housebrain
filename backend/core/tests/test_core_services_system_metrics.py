@@ -2,6 +2,7 @@ import logging
 import subprocess
 
 import pytest
+
 from core.services import system_metrics
 from core.services.system_metrics import (
     USB_DMESG_WINDOW,
@@ -10,7 +11,6 @@ from core.services.system_metrics import (
     _run,
     log_system_metrics,
 )
-
 
 # ---------------------------------------------------------------------------
 # _run

@@ -1,4 +1,5 @@
 import pytest
+
 from actuators.models import Radiator
 from heating.mappers import (
     heating_pattern_slot_value_to_room_requested_heating_state,

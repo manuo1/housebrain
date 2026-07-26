@@ -1,6 +1,8 @@
-from django.core.management.base import BaseCommand
-from teleinfo.listener import TeleinfoListener
 import logging
+
+from django.core.management.base import BaseCommand
+
+from teleinfo.listener import TeleinfoListener
 
 logger = logging.getLogger("django")
 

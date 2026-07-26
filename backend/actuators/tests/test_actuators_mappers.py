@@ -1,7 +1,8 @@
 import pytest
+
+from actuators.constants import MCP23017PinState
 from actuators.mappers import RadiatorStateMapper
 from actuators.models import Radiator
-from actuators.constants import MCP23017PinState
 
 
 @pytest.mark.parametrize(

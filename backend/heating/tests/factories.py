@@ -1,5 +1,6 @@
 import factory
 from factory.django import DjangoModelFactory
+
 from heating.models import HeatingPattern, RoomHeatingDayPlan
 from rooms.tests.factories import RoomFactory  # Assuming you have this
 

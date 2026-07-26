@@ -1,11 +1,12 @@
 from datetime import datetime
 
 import pytest
+from django.utils import timezone
+from freezegun import freeze_time
+
 from actuators.models import Radiator
 from actuators.mutators.radiators import apply_load_shedding_to_radiators
 from actuators.tests.factories import RadiatorFactory
-from django.utils import timezone
-from freezegun import freeze_time
 
 DT1 = timezone.make_aware(datetime(2025, 10, 18, 8))
 DT2 = timezone.make_aware(datetime(2025, 10, 18, 12))

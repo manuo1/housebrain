@@ -1,7 +1,8 @@
 import json
 
-from ai.services.prompts.heating_rules import get_rules
 from django.utils import timezone
+
+from ai.services.prompts.heating_rules import get_rules
 
 
 def get_system_prompt() -> str:

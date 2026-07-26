@@ -1,6 +1,8 @@
 import logging
 from datetime import time
 
+from django.utils import timezone
+
 from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.mutators.radiators import (
     apply_load_shedding_to_radiators,
@@ -8,7 +10,6 @@ from actuators.mutators.radiators import (
     set_radiators_requested_state_to_on,
 )
 from core.utils.temperatures import validate_temperature_value
-from django.utils import timezone
 from heating.mappers import (
     heating_pattern_slot_value_to_room_requested_heating_state,
     radiator_state_matches_room_state,

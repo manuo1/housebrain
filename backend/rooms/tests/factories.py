@@ -1,4 +1,5 @@
 import factory
+
 from rooms.models import Room
 
 

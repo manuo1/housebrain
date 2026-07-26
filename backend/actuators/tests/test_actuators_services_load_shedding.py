@@ -1,4 +1,5 @@
 import pytest
+
 from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
 from actuators.services.load_shedding import (

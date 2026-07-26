@@ -2,6 +2,7 @@ from copy import deepcopy
 from datetime import date
 
 import pytest
+
 from consumption.constants import STEP_1MIN_DICT, STEP_30MIN_DICT, STEP_60MIN_DICT
 from consumption.utils import (
     add_new_tarif_period,

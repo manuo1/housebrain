@@ -1,5 +1,5 @@
-from actuators.models import Radiator
 from actuators.constants import MCP23017PinState
+from actuators.models import Radiator
 
 
 class RadiatorStateMapper:

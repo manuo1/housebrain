@@ -1,4 +1,5 @@
 import pytest
+
 from actuators.models import Radiator
 from actuators.selectors.radiators import (
     get_radiators_data_for_hardware_synchronization,

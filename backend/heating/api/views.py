@@ -1,13 +1,18 @@
 import calendar
 
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.exceptions import ValidationError as DRFValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from core.utils.date_utils import (
     get_next_sunday,
     get_previous_monday,
     get_week_containing_date,
     weekdays_str_list_to_datetime_weekdays_list,
 )
-from django.core.exceptions import ValidationError as DjangoValidationError
-from django.utils import timezone
 from heating.api.constants import DayStatus, DuplicationTypes
 from heating.api.mutators import duplicate_heating_plan_with_override
 from heating.api.selectors import (
@@ -30,10 +35,6 @@ from heating.api.services import (
     generate_duplication_dates,
 )
 from heating.models import HeatingPattern, RoomHeatingDayPlan
-from rest_framework import status
-from rest_framework.exceptions import ValidationError as DRFValidationError
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 
 class HeatingCalendarView(APIView):

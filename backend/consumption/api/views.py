@@ -1,15 +1,16 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from consumption.models import DailyIndexes
 from consumption.utils import (
     build_consumption_data,
     compute_totals_for_a_day,
 )
-from consumption.models import DailyIndexes
 
 from .serializers import (
-    DailyConsumptionQueryParamsSerializer,
     DailyConsumptionOutputSerializer,
+    DailyConsumptionQueryParamsSerializer,
 )
 
 

@@ -1,5 +1,6 @@
-from actuators.models import Radiator
 from django.db import models
+
+from actuators.models import Radiator
 from sensors.models import TemperatureSensor
 
 

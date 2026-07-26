@@ -1,5 +1,7 @@
-import pytest
 from datetime import date
+
+import pytest
+
 from consumption.edf_pricing import get_kwh_price
 from teleinfo.constants import TarifPeriods
 

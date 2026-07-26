@@ -1,6 +1,8 @@
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
+from freezegun import freeze_time
+
 from core.utils.date_utils import (
     get_next_sunday,
     get_previous_monday,
@@ -11,7 +13,6 @@ from core.utils.date_utils import (
     parse_iso_datetime,
     weekdays_str_list_to_datetime_weekdays_list,
 )
-from freezegun import freeze_time
 
 
 @pytest.mark.parametrize(

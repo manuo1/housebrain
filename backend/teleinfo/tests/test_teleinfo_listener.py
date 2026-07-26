@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 import serial
 from freezegun import freeze_time
+
 from teleinfo.constants import REQUIRED_TELEINFO_KEYS
 from teleinfo.listener import TeleinfoListener
 

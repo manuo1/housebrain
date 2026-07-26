@@ -1,7 +1,8 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
   { ignores: ['dist'] },
@@ -30,4 +31,7 @@ export default [
       ],
     },
   },
-]
+  // Doit rester le dernier élément du tableau : désactive les règles de style
+  // ESLint susceptibles d'entrer en conflit avec le formatage de Prettier.
+  eslintConfigPrettier,
+];

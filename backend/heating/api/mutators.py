@@ -13,12 +13,12 @@ def duplicate_heating_plan_with_override(
     plans_to_create = [
         RoomHeatingDayPlan(
             room_id=room_id,
-            date=date,
+            date=single_date,
             heating_pattern_id=heating_pattern_id,
             created_at=now,
             updated_at=now,
         )
-        for date in duplication_dates
+        for single_date in duplication_dates
     ]
 
     results = RoomHeatingDayPlan.objects.bulk_create(

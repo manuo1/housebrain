@@ -1,0 +1,189 @@
+{
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "GÉNÉRAL - Configuration globale du projet",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "Active le formatage automatique à l'enregistrement pour tous les fichiers",
+  "editor.formatOnSave": true,
+
+  "//": "Augmente l'historique du terminal pour garder plus de logs visibles",
+  "terminal.integrated.scrollback": 5000,
+
+  "//": "Désactive l'avertissement lors du collage multiligne dans le terminal (ce réglage attend une valeur parmi auto/always/never, plus un booléen)",
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "FICHIERS - Gestion et affichage des fichiers",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "Ne surveille pas ces dossiers (améliore les performances)",
+  "files.watcherExclude": {
+    "**/__pycache__/**": true,
+    "**/node_modules/**": true,
+    "**/.venv/**": true,
+    "**/dist/**": true,
+    "**/build/**": true
+  },
+
+  "//": "Supprime automatiquement les espaces en fin de ligne à l'enregistrement",
+  "files.trimTrailingWhitespace": true,
+
+  "//": "Ajoute automatiquement une ligne vide à la fin des fichiers",
+  "files.insertFinalNewline": true,
+
+  "//": "Encodage par défaut des fichiers",
+  "files.encoding": "utf8",
+
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "ÉDITEUR - Amélioration de l'expérience de code",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "Affiche les guides d'indentation pour mieux voir la structure",
+  "editor.guides.indentation": true,
+
+  "//": "Affiche une règle verticale à 80 et 120 caractères",
+  "editor.rulers": [80, 120],
+
+  "//": "Ajout automatique des parenthèses/guillemets fermants",
+  "editor.autoClosingBrackets": "always",
+  "editor.autoClosingQuotes": "always",
+
+  "//": "Suggestions de code plus rapides",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+
+  "//": "Formate le code collé automatiquement",
+  "editor.formatOnPaste": true,
+
+  "//": "Indentation avec 2 espaces par défaut",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "JAVASCRIPT / FRONT - Configuration React et JavaScript",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "ESLint corrigera automatiquement les erreurs lors de l'enregistrement",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  "//": "Active la validation ESLint pour JavaScript et React",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  "//": "Met à jour automatiquement les imports quand on déplace/renomme un fichier (clé unifiée JS/TS, remplace javascript.updateImportsOnFileMove.enabled qui est dépréciée)",
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+
+  "//": "Détection automatique du dossier de travail ESLint (mode générique, marche pour n'importe quelle arborescence mono-repo, plus besoin de lister frontend/backend à la main)",
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+
+  "//": "Définit Prettier comme formateur par défaut pour JavaScript",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "//": "Définit Prettier comme formateur par défaut pour React (JSX)",
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "//": "Définit Prettier comme formateur par défaut pour HTML",
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "//": "Définit Prettier comme formateur par défaut pour CSS",
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "//": "Définit Prettier comme formateur par défaut pour SCSS",
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "//": "Définit Prettier comme formateur par défaut pour JSON",
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "//": "Définit Prettier comme formateur par défaut pour JSON avec commentaires",
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "PYTHON / BACK - Configuration FastAPI et Python",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "Configuration spécifique pour les fichiers Python",
+  "[python]": {
+    "//": "Utilise Ruff comme formateur par défaut pour Python",
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+
+    "//": "Indentation 4 espaces pour Python (convention PEP 8)",
+    "editor.tabSize": 4,
+
+    "//": "Actions automatiques lors de l'enregistrement des fichiers Python",
+    "editor.codeActionsOnSave": {
+      "//": "Ruff corrigera automatiquement les erreurs Python (nécessite que les règles voulues soient sélectionnées dans pyproject.toml)",
+      "source.fixAll": "explicit",
+
+      "//": "Organisation automatique des imports Python par Ruff (règle I, équivalent isort)",
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  "//": "Active l'organisation des imports par Ruff (nécessaire pour que source.organizeImports ci-dessus fonctionne réellement — avant, cette valeur était à false et rendait l'action ci-dessus silencieusement inopérante)",
+  "ruff.organizeImports": true,
+
+  "//": "Ajoute le dossier back/src au path d'analyse Python pour l'autocomplétion",
+  "python.analysis.extraPaths": ["./backend"],
+
+  "//": "Sélection automatique de l'interpréteur Python",
+  "python.terminal.activateEnvironment": true,
+
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "RECHERCHE - Optimisation de la recherche",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "Exclut ces dossiers de la recherche globale",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "**/.venv": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.git": true
+  },
+
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "EXTENSIONS - Paramètres des outils installés",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "Configuration de Prettier pour le projet",
+  "prettier.singleQuote": true,
+  "prettier.semi": true,
+  "prettier.trailingComma": "es5",
+  "prettier.printWidth": 80,
+
+  "//": "═══════════════════════════════════════════════════════════",
+  "//": "CORRECTEUR ORTHOGRAPHIQUE - Dictionnaire du projet",
+  "//": "═══════════════════════════════════════════════════════════",
+
+  "//": "Active le correcteur pour l'anglais et le français",
+  "cSpell.language": "en,fr,fr-FR",
+
+  "//": "Mots personnalisés du projet à ne pas marquer comme fautes",
+  "cSpell.userWords": ["checkmark", "dotenv", "housebrain", "teleinfo"],
+  "cSpell.words": []
+}

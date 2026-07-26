@@ -41,7 +41,8 @@ dist-ssr/
 *.local
 
 ## ----------Config éditeur---------- ##
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 .DS_Store
 *.suo

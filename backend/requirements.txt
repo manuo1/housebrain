@@ -54,6 +54,11 @@ colorama==0.4.6                       # Colored terminal output (mainly for Wind
 factory_boy==3.3.3                    # Factories for Django/ORM objects in tests
 
 #---------------------------------------------------------
+# Linting / formatting
+#---------------------------------------------------------
+ruff==0.16.0                    # Linter + formatter (config : backend/pyproject.toml)
+
+#---------------------------------------------------------
 # Misc utilities
 #---------------------------------------------------------
 python-dateutil==2.9.0.post0   # Extended datetime parsing/handling

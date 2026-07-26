@@ -1,0 +1,33 @@
+[tool.ruff]
+# Version de Python ciblée par le projet (cf. backend/.venv -> Python 3.13)
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+# Sélection volontairement restreinte et explicite : Ruff n'active QUE ce qui
+# est listé ici, quelle que soit sa politique de règles "par défaut" (qui a
+# justement changé de façon importante en v0.16.0). Élargir cette liste plus
+# tard doit être une décision consciente, pas un effet de bord d'un upgrade.
+#
+# I = isort (tri/organisation des imports) -> ce pour quoi Ruff est installé aujourd'hui
+# E, F = pycodestyle (erreurs) + Pyflakes -> équivalent du Flake8 "de base"
+select = ["I", "E", "F"]
+
+[tool.ruff.lint.isort]
+# Les apps Django du projet sont à la racine de backend/ (pas de package parent
+# commun) : sans cette liste, isort les classerait comme des libs tierces au
+# même rang que Django ou DRF, au lieu de les mettre dans leur propre groupe
+# "first-party" en dernier.
+known-first-party = [
+    "actuators",
+    "ai",
+    "authentication",
+    "consumption",
+    "core",
+    "deployment",
+    "heating",
+    "rooms",
+    "scheduler",
+    "sensors",
+    "teleinfo",
+]

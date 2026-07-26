@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from datetime import timezone as dt_timezone
 
 import pytest
+from actuators.tests.factories import RadiatorFactory
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from freezegun import freeze_time
@@ -745,3 +746,105 @@ def test_duplication_day_empty_weekdays(authenticated_client):
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["created/updated"] == 0
+
+
+@pytest.mark.django_db
+def test_duplication_with_invalid_dates_returns_400(authenticated_client):
+    """repeat_since must be strictly after source_date"""
+    room = RoomFactory(id=ROOM_ID_1)
+
+    data = {
+        "type": DuplicationTypes.DAY,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_since": SOURCE_DATE_STR,  # not strictly after source_date
+        "repeat_until": END_DATE_STR,
+        "room_ids": [room.id],
+        "weekdays": ["tuesday"],
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Invalid dates" in str(response.data)
+
+
+@pytest.mark.django_db
+def test_duplication_with_invalid_room_ids_returns_400(authenticated_client):
+    data = {
+        "type": DuplicationTypes.DAY,
+        "source_date": SOURCE_DATE_STR,
+        "repeat_since": START_DATE_STR,
+        "repeat_until": END_DATE_STR,
+        "room_ids": [999],  # no room with this id
+        "weekdays": ["tuesday"],
+    }
+
+    response = authenticated_client.post(
+        "/api/heating/plans/duplicate/", data, format="json"
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Invalid room_ids" in str(response.data)
+
+
+# ------------------------------------------------------------------------------
+# test for HeatingCalendarView
+# ------------------------------------------------------------------------------
+
+
+@freeze_time("2025-12-15 12:00:00+01:00")
+@pytest.mark.django_db
+def test_heating_calendar_defaults_to_current_year_and_month(api_client):
+    response = api_client.get("/api/heating/calendar/")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["year"] == 2025
+    assert response.data["month"] == 12
+    assert response.data["today"] == "2025-12-15"
+    assert len(response.data["days"]) > 0
+
+
+@pytest.mark.django_db
+def test_heating_calendar_with_explicit_year_and_month(api_client):
+    response = api_client.get("/api/heating/calendar/?year=2026&month=1")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["year"] == 2026
+    assert response.data["month"] == 1
+
+
+# ------------------------------------------------------------------------------
+# test for DailyHeatingPlan.get
+# ------------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_daily_heating_plan_get_defaults_to_today(api_client):
+    with freeze_time("2025-12-15 12:00:00+01:00"):
+        response = api_client.get("/api/heating/plans/daily/")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["date"] == "2025-12-15"
+    assert response.data["rooms"] == []
+
+
+@pytest.mark.django_db
+def test_daily_heating_plan_get_with_explicit_date_returns_room_slots(api_client):
+    room = RoomFactory(id=ROOM_ID, radiator=RadiatorFactory())
+    RoomHeatingDayPlanFactory(
+        room=room,
+        date=DEFAULT_DATE,
+        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+    )
+
+    response = api_client.get(f"/api/heating/plans/daily/?date={DEFAULT_DATE_STR}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["date"] == DEFAULT_DATE_STR
+    assert len(response.data["rooms"]) == 1
+    assert response.data["rooms"][0]["room_id"] == ROOM_ID
+    assert response.data["rooms"][0]["slots"] == [
+        {"start": "07:00", "end": "09:00", "value": "20.0"}
+    ]

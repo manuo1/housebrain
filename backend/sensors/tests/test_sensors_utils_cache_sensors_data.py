@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from sensors.utils.cache_sensors_data import get_sensor_data_in_cache
 
 DATA_IN_CACHE = {

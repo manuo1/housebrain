@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from heating.constants import HYSTERESIS
 from heating.services.thermostat import get_requested_heating_state_based_on_temperature
 from rooms.models import Room

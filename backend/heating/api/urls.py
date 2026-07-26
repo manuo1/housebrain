@@ -1,4 +1,5 @@
 from django.urls import path
+
 from heating.api.views import (
     DailyHeatingPlan,
     HeatingCalendarView,

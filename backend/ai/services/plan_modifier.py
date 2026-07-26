@@ -1,12 +1,13 @@
 import json
 import logging
 
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
+
 from ai.services.groq_client import GroqClient
 from ai.services.prompt_builder import build_prompt
 from ai.services.prompts.heating import get_system_prompt, get_user_prompt
-from django.core.exceptions import ValidationError as DjangoValidationError
 from heating.models import HeatingPattern
-from rest_framework.exceptions import ValidationError as DRFValidationError
 
 logger = logging.getLogger("django")
 

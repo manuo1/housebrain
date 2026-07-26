@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.core.cache import caches
+
 from sensors.utils.cache_sensors_data import get_sensors_data_in_cache
 
 from .models import TemperatureSensor

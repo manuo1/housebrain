@@ -1,4 +1,5 @@
 import pytest
+
 from core.utils.temperatures import (
     calculate_temperature_trend,
     validate_temperature_value,

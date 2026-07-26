@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from rooms.api.selectors import get_rooms_data_for_api
 from rooms.api.serializers import RoomOutputSerializer
 from rooms.api.services import (

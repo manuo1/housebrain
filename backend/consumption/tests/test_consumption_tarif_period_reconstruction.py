@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 import pytest
+
 from consumption.constants import TarifPeriodType
 from consumption.models import DailyIndexes
 from consumption.utils import (

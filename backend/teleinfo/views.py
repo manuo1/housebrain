@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
+
 from teleinfo.utils.cache_teleinfo_data import get_teleinfo_data_in_cache
 
 

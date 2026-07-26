@@ -1,9 +1,10 @@
 # backend/actuators/tests/test_mcp23017.py
+import signal
 import sys
 from types import ModuleType
 from unittest.mock import MagicMock, patch
+
 import pytest
-import signal
 
 # ---------------------------
 # Inject fake hardware modules
@@ -32,8 +33,8 @@ sys.modules["adafruit_mcp230xx.mcp23017"] = fake_mcp_sub
 # Now import the module under test
 # ---------------------------
 import actuators.drivers.mcp23017 as mcp_module
-from actuators.drivers.mcp23017 import MCP23017Driver, MCP23017Error, get_mcp_driver
 from actuators.constants import MCP23017PinState
+from actuators.drivers.mcp23017 import MCP23017Driver, MCP23017Error, get_mcp_driver
 
 
 # ---------------------------

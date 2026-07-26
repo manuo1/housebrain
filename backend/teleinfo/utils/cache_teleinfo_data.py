@@ -1,8 +1,9 @@
+from django.core.cache import cache
+from django.utils import timezone
+
 from core.constants import DEFAULT_VOLTAGE
 from core.utils.date_utils import is_delta_within_five_seconds, parse_iso_datetime
 from core.utils.env_utils import environment_is_development
-from django.core.cache import cache
-from django.utils import timezone
 from mock_data.teleinfo import MOCKED_TELEINFO_DATA
 
 

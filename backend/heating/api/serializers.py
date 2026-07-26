@@ -1,7 +1,8 @@
+from rest_framework import serializers
+
 from core.constants import WeekDayLabel
 from heating.api.constants import DuplicationTypes
 from heating.models import HeatingPattern
-from rest_framework import serializers
 
 
 class HeatingCalendarInputSerializer(serializers.Serializer):

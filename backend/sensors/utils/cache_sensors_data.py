@@ -1,5 +1,6 @@
-from core.utils.env_utils import environment_is_development
 from django.core.cache import cache
+
+from core.utils.env_utils import environment_is_development
 from mock_data.sensors import MOCKED_SENSORS_DATA
 
 

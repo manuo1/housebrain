@@ -2,9 +2,10 @@ import logging
 import time
 
 import serial
+from django.utils import timezone
+
 from core.constants import LoggerLabel
 from core.utils.systemd_utils import notify_watchdog
-from django.utils import timezone
 from heating.services.heating_synchronization import (
     turn_on_radiators_according_to_the_available_power,
 )

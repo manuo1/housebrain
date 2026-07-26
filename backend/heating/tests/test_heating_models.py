@@ -1,5 +1,6 @@
 import pytest
 from django.core.exceptions import ValidationError
+
 from heating.models import HeatingPattern
 from heating.tests.factories import HeatingPatternFactory, HeatingPatternOnOffFactory
 from rooms.tests.factories import RoomFactory
@@ -132,6 +133,7 @@ class TestHeatingPattern:
     def test_cannot_delete_pattern_in_use(self):
         """Test that deleting a pattern used by day plans is prevented"""
         from django.db.models import ProtectedError
+
         from heating.tests.factories import RoomHeatingDayPlanFactory
 
         pattern = HeatingPatternFactory()
@@ -197,6 +199,7 @@ class TestRoomHeatingDayPlan:
         from datetime import date
 
         from django.db import IntegrityError
+
         from heating.tests.factories import RoomHeatingDayPlanFactory
 
         room = RoomFactory()

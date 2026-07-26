@@ -1,6 +1,7 @@
-from actuators.models import Radiator
 from django.db import transaction
 from django.utils import timezone
+
+from actuators.models import Radiator
 
 
 def update_radiators_state(radiators_to_update: list[dict]) -> int:

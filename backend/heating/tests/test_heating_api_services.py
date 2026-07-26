@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from unittest.mock import patch
 
 import pytest
+
 from heating.api.constants import DayStatus
 from heating.api.services import (
     add_day_status,

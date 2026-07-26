@@ -1,6 +1,8 @@
 import logging
 from datetime import timedelta
 
+from django.utils import timezone
+
 from consumption.models import DailyIndexes
 from consumption.utils import (
     add_new_tarif_period,
@@ -9,7 +11,6 @@ from consumption.utils import (
     get_subscribed_power,
     get_tarif_period,
 )
-from django.utils import timezone
 from teleinfo.utils.cache_teleinfo_data import get_teleinfo_data_in_cache_if_up_to_date
 
 logger = logging.getLogger("django")

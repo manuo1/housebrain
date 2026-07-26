@@ -1,5 +1,7 @@
 import logging
+
 from django.core.management.base import BaseCommand
+
 from sensors.bluetooth_listener import BluetoothListener
 
 logger = logging.getLogger("django")

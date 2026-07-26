@@ -1,10 +1,11 @@
+from django.utils import timezone
+
 from core.utils.date_utils import (
     is_delta_within_one_minute,
     is_delta_within_two_minute,
     parse_iso_datetime,
 )
 from core.utils.temperatures import validate_temperature_value
-from django.utils import timezone
 from sensors.utils.cache_sensors_data import get_sensor_data_in_cache
 
 

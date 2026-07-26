@@ -1,5 +1,6 @@
-from consumption.models import DailyIndexes
 from datetime import date
+
+from consumption.models import DailyIndexes
 
 
 def get_daily_indexes(start: date, end: date) -> list[DailyIndexes]:

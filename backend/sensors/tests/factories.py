@@ -1,4 +1,5 @@
 import factory
+
 from sensors.models import TemperatureSensor
 
 

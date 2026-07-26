@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
+
 from sensors.services.temperatures import get_sensor_temperatures
 
 

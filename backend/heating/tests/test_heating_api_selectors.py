@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 import pytest
+
 from actuators.tests.factories import RadiatorFactory
 from heating.api.selectors import (
     get_daily_heating_plan,

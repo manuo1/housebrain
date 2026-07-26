@@ -1,11 +1,12 @@
 from datetime import date, time
 
 import pytest
+from django.core.cache import cache
+from freezegun import freeze_time
+
 from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
 from actuators.tests.factories import RadiatorFactory
-from django.core.cache import cache
-from freezegun import freeze_time
 from heating.services.heating_synchronization import (
     get_radiators_to_update,
     get_slot_data,

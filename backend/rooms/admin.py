@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from heating.services.heating_synchronization import (
     synchronize_room_heating_states_with_radiators,
 )

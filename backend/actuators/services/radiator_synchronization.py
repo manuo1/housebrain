@@ -1,7 +1,7 @@
 import logging
 
 from actuators.constants import MCP23017PinState
-from actuators.drivers.mcp23017 import MCP23017Driver, get_mcp_driver
+from actuators.drivers.mcp23017 import MCP23017Driver, MCP23017Error, get_mcp_driver
 from actuators.mappers import RadiatorStateMapper
 from actuators.mutators.radiators import update_radiators_state
 from actuators.selectors.radiators import (
@@ -40,12 +40,22 @@ class RadiatorSyncService:
         mcp23017_driver: MCP23017Driver,
     ) -> None:
         for radiator in db_radiators_state:
-            mcp23017_driver.set_pin(
-                radiator["control_pin"],
-                RadiatorStateMapper.radiator_requested_state_to_pin_state(
-                    radiator["requested_state"]
-                ),
-            )
+            try:
+                mcp23017_driver.set_pin(
+                    radiator["control_pin"],
+                    RadiatorStateMapper.radiator_requested_state_to_pin_state(
+                        radiator["requested_state"]
+                    ),
+                )
+            except MCP23017Error as e:
+                # One radiator's hardware error must not prevent the others
+                # from being synchronized this cycle. The mismatch (or the
+                # error itself) will surface right after via
+                # get_all_pins_state()/identify_radiators_to_update_from_hardware.
+                logger.error(
+                    f"{LoggerLabel.RADIATORSYNC} Unable to set pin "
+                    f"{radiator['control_pin']} for radiator {radiator['id']} - {e}"
+                )
 
     @staticmethod
     def identify_radiators_to_update_from_hardware(

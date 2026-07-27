@@ -26,6 +26,29 @@ def test_apply_db_request_to_hardware_sets_pins_with_correct_mapped_state():
     assert mock_driver.set_pin.call_count == 3
 
 
+def test_apply_db_request_to_hardware_one_radiator_failing_does_not_block_others(caplog):
+    """A hardware error on one radiator must not prevent the others in the
+    list from being synchronized this cycle."""
+    db_radiators_state = [
+        {"id": 1, "control_pin": 1, "requested_state": Radiator.RequestedState.ON},
+        {"id": 2, "control_pin": 2, "requested_state": Radiator.RequestedState.OFF},
+        {"id": 3, "control_pin": 3, "requested_state": Radiator.RequestedState.ON},
+    ]
+    mock_driver = MagicMock()
+    mock_driver.set_pin.side_effect = [
+        None,
+        sync_module.MCP23017Error("I2C timeout on pin 2"),
+        None,
+    ]
+
+    with caplog.at_level(logging.ERROR, logger="django"):
+        RadiatorSyncService.apply_db_request_to_hardware(db_radiators_state, mock_driver)
+
+    mock_driver.set_pin.assert_has_calls([call(1, False), call(2, True), call(3, False)])
+    assert mock_driver.set_pin.call_count == 3
+    assert "Unable to set pin 2 for radiator 2" in caplog.text
+
+
 # ---------------------------
 # identify_radiators_to_update_from_hardware
 # ---------------------------

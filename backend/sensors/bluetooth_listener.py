@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from bleak import BleakScanner
+from bleak.exc import BleakError
 from django.core.cache import caches
 from django.utils import timezone
 
@@ -24,26 +25,36 @@ class BluetoothListener:
         self.buffered_sensors = {}
 
     async def start_scanner(self):
-        """Starts the Bluetooth listener process."""
-        try:
-            logger.info(
-                f"{LoggerLabel.BLUETOOTHLISTENER} Listening for BTHome sensors..."
-            )
+        """Starts the Bluetooth listener process.
 
-            while True:
-                self.buffered_sensors.clear()
-                scanner = BleakScanner(detection_callback=self.detection_callback)
+        Only known, recoverable Bluetooth adapter errors (BleakError) are
+        caught here and retried in place. Any other (unexpected) exception
+        is intentionally left to propagate: it kills the process and lets
+        systemd's Restart=always take over, instead of silently looping on
+        a possibly broken state (same choice as TeleinfoListener).
+        """
+        logger.info(
+            f"{LoggerLabel.BLUETOOTHLISTENER} Listening for BTHome sensors..."
+        )
 
+        while True:
+            self.buffered_sensors.clear()
+            scanner = BleakScanner(detection_callback=self.detection_callback)
+
+            try:
                 await scanner.start()
                 await asyncio.sleep(SCAN_DURATION)
                 await scanner.stop()
-
-                self.update_cache_with_buffered_data()
-
+            except BleakError as e:
+                logger.error(
+                    f"{LoggerLabel.BLUETOOTHLISTENER} Bluetooth adapter error - {e}"
+                )
+                notify_watchdog()
                 await asyncio.sleep(PAUSE_DURATION)
+                continue
 
-        except Exception as e:
-            logger.error(f"{LoggerLabel.BLUETOOTHLISTENER} Error in listener - {e}")
+            self.update_cache_with_buffered_data()
+            await asyncio.sleep(PAUSE_DURATION)
 
     def detection_callback(self, device, advertisement_data):
         """Called every time a BLE packet is received."""

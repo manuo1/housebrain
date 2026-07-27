@@ -45,9 +45,6 @@ def decode_bthome_payload(payload: bytes) -> dict | None:
             value = int.from_bytes(payload[i : i + 2], byteorder="little", signed=False)
         elif data_type == "uint8":
             value = payload[i]
-        else:
-            i += byte_size
-            continue
 
         i += byte_size
         measurements[name] = value * factor

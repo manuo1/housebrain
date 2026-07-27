@@ -2,7 +2,48 @@ from unittest.mock import patch
 
 import pytest
 
-from sensors.utils.cache_sensors_data import get_sensor_data_in_cache
+from mock_data.sensors import MOCKED_SENSORS_DATA
+from sensors.utils.cache_sensors_data import (
+    get_sensor_data_in_cache,
+    get_sensors_data_in_cache,
+)
+
+
+class TestGetSensorsDataInCache:
+    def test_returns_mocked_data_in_development(self):
+        with (
+            patch(
+                "sensors.utils.cache_sensors_data.environment_is_development",
+                return_value=True,
+            ),
+        ):
+            assert get_sensors_data_in_cache() == MOCKED_SENSORS_DATA
+
+    def test_returns_cache_content_outside_development(self):
+        cache_content = {"38:1F:8D:65:E9:1C": {"name": "TH05-65E91C"}}
+
+        with (
+            patch(
+                "sensors.utils.cache_sensors_data.environment_is_development",
+                return_value=False,
+            ),
+            patch(
+                "sensors.utils.cache_sensors_data.cache.get",
+                return_value=cache_content,
+            ),
+        ):
+            assert get_sensors_data_in_cache() == cache_content
+
+    def test_returns_empty_dict_when_cache_is_empty_outside_development(self):
+        with (
+            patch(
+                "sensors.utils.cache_sensors_data.environment_is_development",
+                return_value=False,
+            ),
+            patch("sensors.utils.cache_sensors_data.cache.get", return_value={}),
+        ):
+            assert get_sensors_data_in_cache() == {}
+
 
 DATA_IN_CACHE = {
     "38:1F:8D:65:E9:1C": {

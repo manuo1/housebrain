@@ -9,9 +9,11 @@ from ai.services.llm_client import LLMClient
 
 logger = logging.getLogger("django")
 
-# Model used: llama-3.3-70b is Groq's best free model for structured JSON generation.
-# Alternatives: "mixtral-8x7b-32768", "llama-3.1-8b-instant" (faster, less accurate)
-GROQ_MODEL = "llama-3.3-70b-versatile"
+# Model used: openai/gpt-oss-120b, Groq's recommended replacement for the
+# deprecated llama-3.3-70b-versatile (decommissioned August 16, 2026 per Groq's
+# notice). Also cheaper and faster on Groq's own pricing/speed comparison.
+# Alternatives: "openai/gpt-oss-20b" (faster, less accurate), "qwen/qwen3-32b"
+GROQ_MODEL = "openai/gpt-oss-120b"
 
 
 def _parse_retry_delay(error_message: str) -> str | None:

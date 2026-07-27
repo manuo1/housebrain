@@ -42,6 +42,7 @@ Result: [08:00-11:59 at 21°, 12:00-14:00 at 19°, 14:01-20:00 at 21°]
 
 ### Scope rules
 - Only modify rooms explicitly mentioned in the instruction, or all rooms if the instruction says "all rooms", "toutes les pièces" or equivalent
+- Rooms can also be selected by a partial match / substring in their name, e.g. "toutes les pièces qui contiennent 'chambre' dans leur nom" must match every room whose name contains that substring (case-insensitive), not just an exact name
 - Do not invent room_ids or room names — only use those present in the input plan
 - Do not change the type (temp/onoff) of existing slots unless explicitly asked
 
@@ -56,6 +57,11 @@ Result: [08:00-11:59 at 21°, 12:00-14:00 at 19°, 14:01-20:00 at 21°]
 - "afternoon" / "après-midi" → 13:00 to 18:00
 - "evening" / "soir" → 18:00 to 22:00
 - "night" / "nuit" → 22:00 to 23:59
+
+### Duration-based instructions
+- If the instruction gives a duration instead of an explicit end time (e.g. "pendant 3 heures", "for 2 hours"), use the current time given at the top of the user prompt as the start, and compute the end by adding the duration
+- If adding the duration would cross midnight (end time numerically before start time), cap the end at 23:59 instead — never return an end time that is numerically before the start time
+- Round the resulting start/end to the nearest 5 minutes if needed to keep a clean HH:MM value
 
 ### Success and failure reporting
 - If the modification was applied successfully: set "success" to true and "reason" to ""

@@ -12,7 +12,11 @@ logger = logging.getLogger("django")
 # Model used: openai/gpt-oss-120b, Groq's recommended replacement for the
 # deprecated llama-3.3-70b-versatile (decommissioned August 16, 2026 per Groq's
 # notice). Also cheaper and faster on Groq's own pricing/speed comparison.
-# Alternatives: "openai/gpt-oss-20b" (faster, less accurate), "qwen/qwen3-32b"
+# Tested qwen/qwen3.6-27b as an alternative closer to Llama 3.3's behavior:
+# rejected — it reasons by default (<think> block mixed into the response
+# content, not a separate channel like gpt-oss's Harmony format), which is
+# slow, burns far more tokens, and broke JSON parsing outright.
+# Alternatives: "openai/gpt-oss-20b" (faster, less accurate)
 GROQ_MODEL = "openai/gpt-oss-120b"
 
 

@@ -77,8 +77,12 @@ SIMPLE_JWT = {
 **Cookie défini :**
 ```
 Set-Cookie: refresh_token=eyJ0eXAiOiJKV1QiLCJhbGc...;
-            HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+            HttpOnly; Secure; SameSite=Strict; Max-Age=604800; Path=/api/auth/refresh/
 ```
+
+> Le `Path` restreint le cookie à la seule route de refresh : le navigateur ne l'envoie sur aucune autre requête, même vers d'autres routes de `/api/`.
+
+**Protection brute-force :** `CookieTokenObtainPairView` (login) est limitée à **5 requêtes/minute par IP** via `ScopedRateThrottle` (scope `"login"`).
 
 ### CookieTokenRefreshView
 
@@ -110,6 +114,9 @@ Set-Cookie: refresh_token=eyJ0eXAiOiJKV1QiLCJhbGc...;
 
 **403 Forbidden :**
 - Permissions insuffisantes pour l'action demandée
+
+**429 Too Many Requests :**
+- Plus de 5 tentatives de connexion par minute depuis la même IP (throttling sur `/api/auth/login/`)
 
 ---
 
@@ -189,4 +196,4 @@ CSRF_COOKIE_SECURE = True
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Juillet 2026

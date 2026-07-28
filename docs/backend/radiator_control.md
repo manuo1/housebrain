@@ -139,6 +139,7 @@ error            # Message d'erreur (nullable)
 1. Lecture de tous les radiateurs (id, control_pin, requested_state)
 2. Pour chaque radiateur : appliquer `requested_state` sur le pin MCP23017
 3. Le mapper convertit automatiquement (ON → LOW, OFF/LOAD_SHED → HIGH)
+4. Erreur matérielle isolée par radiateur : si un pin échoue (I2C), c'est loggué et les radiateurs suivants de la liste sont quand même traités ce cycle-là (l'écart remonte au cycle suivant via la Phase 2)
 
 **Phase 2 : Hardware → DB**
 1. Lecture de l'état de tous les pins MCP23017
@@ -247,6 +248,9 @@ La synchronisation hardware sera effectuée au prochain cycle du scheduler (max 
 **Reconnexion automatique :**
 Le driver tente de se reconnecter à chaque appel si la connexion I2C est perdue.
 
+**Isolation par radiateur (Phase 1) :**
+Une erreur matérielle sur un radiateur (pin en échec I2C) n'empêche pas les radiateurs suivants de la liste d'être synchronisés ce cycle-là — symétrique à la Phase 2 (`get_all_pins_state`) qui isolait déjà chaque pin en lecture.
+
 ### Logs
 
 ```bash
@@ -269,4 +273,4 @@ Documentation du branchement fil pilote avec MCP23017 : [À venir - docs/hardwar
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Juillet 2026

@@ -32,7 +32,6 @@ export default async function applyAiPlanModification(
   );
 
   if (!response.ok) {
-    console.log(response)
     const error = await response.json().catch(() => ({}));
     const message = Array.isArray(error)
       ? error.join(" ")

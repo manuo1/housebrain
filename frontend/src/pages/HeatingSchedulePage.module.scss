@@ -77,6 +77,12 @@
   margin: 0;
 }
 
+.pageError {
+  font-size: $font-size-sm;
+  color: $color-danger;
+  margin: 0;
+}
+
 .loading {
   @include flex-center;
   height: 100%;

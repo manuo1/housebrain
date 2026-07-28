@@ -1,4 +1,4 @@
-const API_URL = "/api/auth";
+import { AUTH_API_URL } from "../../constants/authConstants";
 
 interface GetUserResponse {
   username: string;
@@ -13,7 +13,7 @@ export default async function getUser(token: string | null = null): Promise<GetU
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}/me/`, {
+  const res = await fetch(`${AUTH_API_URL}/me/`, {
     method: "GET",
     credentials: "include",
     headers,

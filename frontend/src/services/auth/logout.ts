@@ -1,7 +1,7 @@
-const API_URL = "/api/auth";
+import { AUTH_API_URL } from "../../constants/authConstants";
 
 export default async function logout(): Promise<void> {
-  const res = await fetch(`${API_URL}/logout/`, {
+  const res = await fetch(`${AUTH_API_URL}/logout/`, {
     method: "POST",
     credentials: "include",
   });

@@ -1,11 +1,11 @@
-const API_URL = "/api/auth";
+import { AUTH_API_URL } from "../../constants/authConstants";
 
 interface LoginResponse {
   access: string;
 }
 
 export default async function login(username: string, password: string): Promise<LoginResponse> {
-  const res = await fetch(`${API_URL}/login/`, {
+  const res = await fetch(`${AUTH_API_URL}/login/`, {
     method: "POST",
     credentials: "include",
     headers: {

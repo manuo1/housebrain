@@ -1,4 +1,4 @@
-type RefreshCallback = () => Promise<string>;
+export type RefreshCallback = () => Promise<string>;
 
 export default async function fetchWithAuth(
   url: string,

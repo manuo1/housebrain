@@ -51,6 +51,19 @@ Result: [08:00-11:59 at 21°, 12:00-14:00 at 19°, 14:01-20:00 at 21°]
 - If the instruction asks to add degrees and the result exceeds 30, cap at 30
 - If the instruction asks to remove degrees and the result goes below 0, cap at 0
 
+### "Off" instructions always mean an empty zone, regardless of type
+Regardless of whether the room type is "temp" or "onoff", "éteindre"/"turn off" for a given time
+range means REMOVING heating for that range, i.e. making that range empty (no slot covering it) —
+apply the overlap resolution rules above as a pure deletion, never insert a new slot for that range.
+Never write "value": "off" — an empty (uncovered) range IS the off state, for both types.
+Example: Room type "temp", existing slot 06:00-22:00 at 19°. Instruction: "éteins entre 12:00 et 14:00".
+→ Result: [06:00-11:59 at 19°, 14:01-22:00 at 19°] (the 12:00-14:00 gap is simply empty, no slot there)
+Same logic applies identically if the room type were "onoff" instead of "temp".
+
+"Allumer"/"turn on" for a range with no existing slot means adding a new slot covering that range:
+for "onoff" rooms, "value": "on"; for "temp" rooms, a reasonable default temperature (e.g. 19-20°,
+or the room's existing temperature if one is nearby).
+
 ### Ambiguous time references (interpret as follows if not specified)
 - "morning" / "matin" → 06:00 to 09:00
 - "midday" / "midi" / "lunch" / "déjeuner" → 11:30 to 13:30

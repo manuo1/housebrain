@@ -8,7 +8,7 @@ interface TotalsCardsProps {
 }
 
 export default function TotalsCards({ totals }: TotalsCardsProps) {
-  if (!totals || typeof totals !== "object" || Object.keys(totals).length === 0) {
+  if (!totals || Object.keys(totals).length === 0) {
     return (
       <div className={styles.totalsCards}>
         <div className={styles.emptyState}>Aucun total disponible</div>

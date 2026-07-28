@@ -1,7 +1,5 @@
-import fetchWithAuth from "./fetchWithAuth";
+import fetchWithAuth, { RefreshCallback } from "./fetchWithAuth";
 import { DuplicationPayload } from "../components/HeatingSchedulePage/Duplication/DuplicationPanel";
-
-type RefreshCallback = () => Promise<string>;
 
 export default async function duplicateHeatingPlan(
   duplicationData: DuplicationPayload,

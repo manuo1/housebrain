@@ -1,10 +1,8 @@
-import fetchWithAuth from "./fetchWithAuth";
+import fetchWithAuth, { RefreshCallback } from "./fetchWithAuth";
 import DailyHeatingPlan from "../models/DailyHeatingPlan";
 import mockDailyHeatingPlan from "../mocks/mockDailyHeatingPlan";
 
 const USE_MOCK = false;
-
-type RefreshCallback = () => Promise<string>;
 
 interface AiModifyPayload {
   instruction: string;

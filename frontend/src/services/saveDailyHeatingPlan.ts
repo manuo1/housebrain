@@ -1,7 +1,5 @@
-import fetchWithAuth from "./fetchWithAuth";
+import fetchWithAuth, { RefreshCallback } from "./fetchWithAuth";
 import DailyHeatingPlan, { Slot } from "../models/DailyHeatingPlan";
-
-type RefreshCallback = () => Promise<string>;
 
 interface BackendSlot {
   start: string;

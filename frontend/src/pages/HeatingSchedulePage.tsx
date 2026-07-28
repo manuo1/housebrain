@@ -120,8 +120,7 @@ export default function HeatingSchedulePage() {
     }
     setPageError(null);
     try {
-      const result = await duplicateHeatingPlan(payload, accessToken, refresh);
-      console.log("Duplication réussie:", result);
+      await duplicateHeatingPlan(payload, accessToken, refresh);
       if (currentMonth) {
         const data = await fetchHeatingCalendar(currentMonth.year, currentMonth.month);
         setCalendar(data);

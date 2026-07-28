@@ -8,6 +8,8 @@ interface TeleinfoTableProps {
 }
 
 export default function TeleinfoTable({ data }: TeleinfoTableProps) {
+  // Les clés ci-dessous doivent rester alignées avec TELEINFO_SPECIAL_KEYS
+  // (constants/teleinfoConstants.ts), qui les exclut de otherData côté TeleinfoData.
   const toDisplay: Record<string, string> = {
     [TELEINFO_LABELS.OPTARIF]: data.OPTARIFLabel,
     [TELEINFO_LABELS.ISOUSC]: formatValue("ISOUSC", data.ISOUSC),

@@ -83,3 +83,16 @@ export const OPTARIF_LABELS: Record<string, string> = {
   BBRx: "Tempo",
   DEFAULT: "Option inconnue",
 };
+
+// Clés déjà affichées explicitement ailleurs (TeleinfoData + TeleinfoTable) :
+// à garder synchronisée avec le mapping explicite de TeleinfoTable.tsx si l'un des deux change.
+export const TELEINFO_SPECIAL_KEYS = [
+  "OPTARIF",
+  "ISOUSC",
+  "PTEC",
+  "IINST",
+  "IMAX",
+  "PAPP",
+  "last_read",
+  "ADCO",
+] as const;

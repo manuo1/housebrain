@@ -1,8 +1,6 @@
 import { formatLocalDate } from "../utils/dateUtils";
 import { ampereToWatt } from "../utils/consumptionUtils";
-import { PTEC_LABELS, OPTARIF_LABELS } from "../constants/teleinfoConstants";
-
-const IMPORTANT_KEYS = ["OPTARIF", "ISOUSC", "PTEC", "IINST", "IMAX", "PAPP", "last_read"];
+import { PTEC_LABELS, OPTARIF_LABELS, TELEINFO_SPECIAL_KEYS } from "../constants/teleinfoConstants";
 
 interface RawTeleinfoData {
   OPTARIF?: string | null;
@@ -53,7 +51,7 @@ export default class TeleinfoData {
 
     this.otherData = {};
     for (const [key, value] of Object.entries(raw)) {
-      if (!IMPORTANT_KEYS.includes(key) && key !== "ADCO") {
+      if (!(TELEINFO_SPECIAL_KEYS as readonly string[]).includes(key)) {
         this.otherData[key] = value;
       }
     }

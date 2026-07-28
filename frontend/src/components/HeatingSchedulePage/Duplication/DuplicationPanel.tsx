@@ -49,6 +49,7 @@ export default function DuplicationPanel({ sourceDate, selectedRooms, onApply, u
   useEffect(() => {
     if (sourceDate) {
       setStartDate(getStartDateMin(mode, sourceDate));
+      setEndDate("");
     }
   }, [sourceDate, mode]);
 

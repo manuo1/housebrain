@@ -43,8 +43,8 @@ export default function AuthDropdown() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsOpen(false);
   };
 

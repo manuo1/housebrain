@@ -1,5 +1,6 @@
 import { findNiceStep, roundToNiceNumber } from "../../utils/niceNumbers";
 import { DailyConsumptionElement } from "../../models/DailyConsumption";
+import { DEFAULT_AXIS_Y_STEPS } from "./constants";
 
 export type DisplayType = "average_watt" | "wh" | "euros";
 
@@ -29,7 +30,7 @@ function computeAxisY(data: DailyConsumptionElement[], displayType: DisplayType)
 
   const rawMax = findMaxValue(data, displayType);
   const roundedMax = roundToNiceNumber(rawMax);
-  const step = findNiceStep(roundedMax);
+  const step = findNiceStep(roundedMax, DEFAULT_AXIS_Y_STEPS);
   const max = Math.ceil(roundedMax / step) * step;
   const numSteps = max / step;
   const labels: string[] = [];

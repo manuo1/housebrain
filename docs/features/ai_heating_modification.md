@@ -52,14 +52,14 @@ L'utilisateur peut donc :
 
 ## LLM Provider
 
-**Provider actuel :** Groq (`llama-3.3-70b-versatile`)
+**Provider actuel :** Groq (`openai/gpt-oss-120b`)
 
 **Architecture extensible :** L'interface abstraite `LLMClient` permet de changer de provider sans modifier la logique métier.
 
-**Limitations du plan gratuit Groq :**
-- 100 000 tokens/jour par modèle
-- ~5 000 tokens par requête → ~20 appels/jour
-- Quota par minute également limité
+**Limitations du plan gratuit Groq (par modèle, tier gratuit sans carte bancaire) :**
+- 30 requêtes/minute, 1 000 requêtes/jour
+- 8 000 tokens/minute, 200 000 tokens/jour
+- Largement suffisant pour un usage personnel ponctuel (quelques modifications de planning par jour) ; à surveiller uniquement si une requête unique (prompt système + plan JSON complet + réponse) approchait les 8 000 tokens
 
 ---
 
@@ -71,4 +71,4 @@ L'utilisateur peut donc :
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Avril 2026
+Dernière mise à jour : Juillet 2026

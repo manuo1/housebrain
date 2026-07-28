@@ -92,7 +92,9 @@ Permet de changer de provider LLM sans modifier la logique métier.
 
 ### groq_client.py — Implémentation Groq
 
-**Modèle :** `llama-3.3-70b-versatile`
+**Modèle :** `openai/gpt-oss-120b`
+
+> Remplace l'ancien modèle `llama-3.3-70b-versatile`, décommissionné par Groq le 16 août 2026. `qwen/qwen3.6-27b` a été testé comme alternative mais écarté : il raisonne par défaut (bloc `<think>` mélangé au contenu de la réponse, contrairement au format Harmony de gpt-oss qui sépare raisonnement et réponse), ce qui le rend plus lent et casse le parsing JSON strict fait ici.
 
 **Configuration :**
 - `temperature: 0.2` — quasi-déterministe pour du JSON structuré
@@ -134,6 +136,8 @@ Fichier dédié aux règles injectées dans le system prompt. À modifier en pri
 - Valeurs valides (temp: 0-30, onoff: "on"/"off")
 - Résolution des chevauchements (4 cas avec exemples concrets)
 - Références temporelles ambiguës ("soir" → 18:00-22:00, etc.)
+- Sélection de pièces par sous-chaîne dans le nom (ex : "toutes les pièces contenant 'chambre'")
+- Instructions avec durée relative plutôt qu'heure de fin explicite (ex : "pendant 3 heures") — calculée à partir de l'heure courante, plafonnée à 23:59 si le calcul dépasse minuit
 - Reporting succès/échec via champs `success` et `reason`
 
 ---
@@ -205,4 +209,4 @@ sudo journalctl -u housebrain -f | grep "Groq"
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Avril 2026
+Dernière mise à jour : Juillet 2026

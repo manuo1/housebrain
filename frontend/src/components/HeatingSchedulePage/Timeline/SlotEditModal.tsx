@@ -1,5 +1,4 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import ConfirmModal from "../../common/ConfirmModal";
 import { validateSlot } from "./utils/slotValidation";
 import styles from "./SlotEditModal.module.scss";
 import { Slot } from "../../../models/DailyHeatingPlan";
@@ -24,7 +23,6 @@ export default function SlotEditModal({ slot, roomSlots, slotIndex, isCreating, 
   const [end, setEnd] = useState<string>(slot?.end || "00:00");
   const [value, setValue] = useState<string>(slot?.value != null ? String(slot.value) : "");
   const [errors, setErrors] = useState<SlotErrors>({});
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   useEffect(() => {
     if (slot) {
@@ -64,10 +62,6 @@ export default function SlotEditModal({ slot, roomSlots, slotIndex, isCreating, 
     if (validate(start, end, value)) {
       onSave({ start, end, value });
     }
-  };
-
-  const handleConfirmDelete = () => {
-    if (onDelete) onDelete();
   };
 
   const isValid = Object.keys(errors).length === 0 && start && end && value;
@@ -121,7 +115,7 @@ export default function SlotEditModal({ slot, roomSlots, slotIndex, isCreating, 
 
           <div className={styles.actions}>
             {!isCreating && (
-              <button type="button" className={styles.btnDanger} onClick={() => setShowDeleteConfirm(true)}>
+              <button type="button" className={styles.btnDanger} onClick={onDelete}>
                 Supprimer
               </button>
             )}
@@ -135,17 +129,6 @@ export default function SlotEditModal({ slot, roomSlots, slotIndex, isCreating, 
             </div>
           </div>
         </form>
-
-        <ConfirmModal
-          isOpen={showDeleteConfirm}
-          onClose={() => setShowDeleteConfirm(false)}
-          onConfirm={handleConfirmDelete}
-          title="Supprimer le créneau"
-          message="Êtes-vous sûr de vouloir supprimer ce créneau ?"
-          confirmText="Supprimer"
-          cancelText="Annuler"
-          confirmVariant="danger"
-        />
       </div>
     </div>
   );

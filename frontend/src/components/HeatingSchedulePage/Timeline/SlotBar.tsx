@@ -17,7 +17,7 @@ export default function SlotBar({ slots, onSlotClick, onEmptyClick }: SlotBarPro
 
   const handleBarClick = (e: MouseEvent<HTMLDivElement>) => {
     // Check if click was on the bar itself, not on a slot
-    if (e.target instanceof HTMLElement && e.target.className.includes("slotBar") && onEmptyClick) {
+    if (e.target === e.currentTarget && onEmptyClick) {
       const rect = e.currentTarget.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const percentClick = (clickX / rect.width) * 100;

@@ -1,15 +1,5 @@
-import { getDayShort } from "../../../utils/dateUtils";
+import { getDayShort, WEEKDAYS } from "../../../utils/dateUtils";
 import styles from "./WeekdaySelector.module.scss";
-
-const WEEKDAYS: { key: string; isoWeekday: number }[] = [
-  { key: "monday",    isoWeekday: 1 },
-  { key: "tuesday",   isoWeekday: 2 },
-  { key: "wednesday", isoWeekday: 3 },
-  { key: "thursday",  isoWeekday: 4 },
-  { key: "friday",    isoWeekday: 5 },
-  { key: "saturday",  isoWeekday: 6 },
-  { key: "sunday",    isoWeekday: 7 },
-];
 
 interface WeekdaySelectorProps {
   selectedDays: string[];

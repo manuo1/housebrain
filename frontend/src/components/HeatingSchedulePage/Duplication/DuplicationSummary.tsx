@@ -1,13 +1,12 @@
-import { formatDateDD_MM_YYYY, getWeekRange, getDayLabel } from "../../../utils/dateUtils";
+import { formatDateDD_MM_YYYY, getWeekRange, getDayLabel, WEEKDAYS } from "../../../utils/dateUtils";
 import styles from "./DuplicationSummary.module.scss";
 import { PlanRoom } from "../../../models/DailyHeatingPlan";
 
 type DuplicationMode = "day" | "week";
 
-const WEEKDAY_ISO: Record<string, number> = {
-  monday: 1, tuesday: 2, wednesday: 3,
-  thursday: 4, friday: 5, saturday: 6, sunday: 7,
-};
+const WEEKDAY_ISO: Record<string, number> = Object.fromEntries(
+  WEEKDAYS.map(({ key, isoWeekday }) => [key, isoWeekday])
+);
 
 interface DuplicationSummaryProps {
   mode: DuplicationMode;

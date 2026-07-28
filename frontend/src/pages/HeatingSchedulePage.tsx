@@ -29,6 +29,7 @@ export default function HeatingSchedulePage() {
   const [selectedDateObj, setSelectedDateObj] = useState<SimpleDate | null>(null);
   const [currentMonth, setCurrentMonth] = useState<CurrentMonth | null>(null);
   const [selectedRoomIds, setSelectedRoomIds] = useState<(number | null)[]>([]);
+  const [pageError, setPageError] = useState<string | null>(null);
 
   const { dailyPlan, loading, canUndo, hasChanges, undo, save, applyChange } =
     useHeatingPlanHistory(selectedDate);
@@ -117,6 +118,7 @@ export default function HeatingSchedulePage() {
       console.error("User not authenticated");
       return;
     }
+    setPageError(null);
     try {
       const result = await duplicateHeatingPlan(payload, accessToken, refresh);
       console.log("Duplication réussie:", result);
@@ -126,7 +128,7 @@ export default function HeatingSchedulePage() {
       }
     } catch (error) {
       console.error("Erreur lors de la duplication:", error);
-      alert(`Erreur: ${(error as Error).message}`);
+      setPageError((error as Error).message || "Erreur lors de la duplication.");
     }
   };
 
@@ -174,6 +176,7 @@ export default function HeatingSchedulePage() {
                 onSave={save}
                 canUndo={canUndo}
                 hasChanges={hasChanges}
+                onError={setPageError}
               />
             ) : (
               <p className={styles.loginMessage}>
@@ -181,6 +184,7 @@ export default function HeatingSchedulePage() {
               </p>
             )}
           </div>
+          {pageError && <p className={styles.pageError}>{pageError}</p>}
           {user && (
             <AiPlanInput onSubmit={handleAiRequest} />
           )}

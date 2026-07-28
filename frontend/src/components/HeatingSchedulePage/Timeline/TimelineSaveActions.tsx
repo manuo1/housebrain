@@ -5,20 +5,22 @@ interface TimelineSaveActionsProps {
   onSave: () => Promise<void>;
   canUndo: boolean;
   hasChanges: boolean;
+  onError?: (message: string | null) => void;
 }
 
-export default function TimelineSaveActions({ onCancel, onSave, canUndo, hasChanges }: TimelineSaveActionsProps) {
+export default function TimelineSaveActions({ onCancel, onSave, canUndo, hasChanges, onError }: TimelineSaveActionsProps) {
   const handleCancel = () => {
     if (canUndo) onCancel();
   };
 
   const handleSave = async () => {
     if (hasChanges) {
+      onError?.(null);
       try {
         await onSave();
       } catch (error) {
         console.error("Error saving:", error);
-        // TODO: afficher une erreur à l'utilisateur
+        onError?.((error as Error).message || "Erreur lors de l'enregistrement.");
       }
     }
   };

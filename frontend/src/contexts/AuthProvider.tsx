@@ -17,18 +17,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     async function init() {
       try {
-        const userData = await getUserApi();
+        const { access } = await refreshApi();
+        setAccessToken(access);
+        const userData = await getUserApi(access);
         setUser(userData);
       } catch {
-        try {
-          const { access } = await refreshApi();
-          setAccessToken(access);
-          const userData = await getUserApi(access);
-          setUser(userData);
-        } catch {
-          setUser(null);
-          setAccessToken(null);
-        }
+        setUser(null);
+        setAccessToken(null);
       } finally {
         setLoading(false);
       }

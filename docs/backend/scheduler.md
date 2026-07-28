@@ -45,7 +45,9 @@ backend/scheduler/management/commands/periodic_tasks.py
 ## Fonctionnement
 
 ### Exécution des tâches
-Les tâches sont exécutées séquentiellement dans l'ordre défini. Chaque tâche est indépendante : si une tâche échoue, les suivantes continuent de s'exécuter.
+Les tâches sont exécutées séquentiellement dans l'ordre défini, sans isolation entre elles : il n'y a volontairement aucun `try/except` autour de chaque étape. Si une tâche lève une exception, l'exécution s'arrête immédiatement et les tâches suivantes ne sont **pas** exécutées ce cycle-là (le cycle suivant, une minute plus tard, repart normalement).
+
+Ce choix est assumé : une tâche qui plante silencieusement sur un état incohérent est considérée plus dangereuse qu'un cycle sauté. Cela signifie aussi qu'un échec dans une tâche (ex : synchronisation matérielle des radiateurs) empêche les tâches suivantes de s'exécuter ce cycle-là (ex : `log_system_metrics`), même si elles n'ont aucun rapport entre elles.
 
 Les détails des tâches orchestrées sont documentés dans leur section respective.
 

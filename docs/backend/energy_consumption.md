@@ -221,6 +221,20 @@ Les changements de période tarifaire se produisent toujours à l'heure pile (07
 
 En cas de délai de lecture Téléinfo, si le changement est détecté à 07:01 alors que 07:00 contient encore l'ancienne période, le système corrige automatiquement 07:00.
 
+### Reconstruction des trous (`fill_missing_tarif_periods`)
+
+Au-delà de la correction ci-dessus, `tarif_periods` peut contenir des trous (`None`) plus larges — coupure Téléinfo, redémarrage du listener, etc. Ces trous sont comblés **à la lecture uniquement** (dans `build_consumption_data`, jamais écrit en base) selon le type tarifaire détecté sur la journée :
+
+| Type détecté | Stratégie |
+|---|---|
+| **TH (Base)** | Aucune ambiguïté possible — chaque minute est comblée avec `TH` |
+| **EJP (HN/PM)** | Imprevisible (jour EJP/préavis décidé par EDF au cas par cas) — les trous restent tels quels, jamais reconstruits |
+| **HC/HP** | Recherche d'un jour de référence HC/HP **complet** (sans aucun trou) parmi les jours précédents, le plus récent en premier, et réutilise intégralement son `tarif_periods` |
+| **Tempo** | Même principe que HC/HP, mais le jour de référence doit en plus être de la **même couleur Tempo** (B/W/R) que le jour à reconstruire |
+| Type indéterminé (journée entièrement vide) ou aucun jour de référence trouvé | Les trous restent tels quels |
+
+La fenêtre de recherche des jours de référence est bornée (`TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS`, dans `consumption/constants.py`) — au-delà, on renonce plutôt que de remonter arbitrairement loin dans l'historique.
+
 ---
 
 ## Consultation
@@ -252,4 +266,4 @@ Les données sont conservées indéfiniment. Aucune purge automatique n'est conf
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Juillet 2026

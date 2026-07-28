@@ -16,8 +16,8 @@ const StepChart = ({ data }: StepChartProps) => {
       <div className={styles.stepChart}>
         <AxisY labels={["-", "-"]} />
         <div className={styles.chartArea}>
-          <VerticalGridLines count={5} />
-          <HorizontalGridLines count={24} />
+          <VerticalGridLines count={24} />
+          <HorizontalGridLines count={5} />
         </div>
         <AxisX labels={["-", "-"]} />
       </div>
@@ -30,8 +30,8 @@ const StepChart = ({ data }: StepChartProps) => {
     <div className={styles.stepChart}>
       <AxisY labels={axisY.labels} />
       <div className={styles.chartArea}>
-        <VerticalGridLines count={axisY.labels.length} />
-        <HorizontalGridLines count={axisX.labels.length} />
+        <VerticalGridLines count={axisX.labels.length} />
+        <HorizontalGridLines count={axisY.labels.length} />
         <DrawArea values={data.values} />
       </div>
       <AxisX labels={axisX.labels} />

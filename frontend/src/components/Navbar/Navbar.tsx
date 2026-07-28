@@ -41,7 +41,7 @@ export default function Navbar() {
   ];
 
   const heatingLinks = [
-    { to: "/heating/schedule/", icon: "⚙️", text: "Planning" },
+    { to: "/heating/schedule", icon: "⚙️", text: "Planning" },
   ];
 
   return (

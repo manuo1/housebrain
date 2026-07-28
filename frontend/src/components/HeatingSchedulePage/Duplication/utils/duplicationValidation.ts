@@ -87,19 +87,15 @@ export const getValidationErrors = ({
     }
   }
 
-  if (mode === "week" && startDate && endDate) {
-    const diffDays = Math.floor(
-      (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    if (diffDays < 6) {
-      errors.push("La date de fin doit être au moins 6 jours après le début");
-    }
-  }
-
   if (startDate && endDate) {
     const diffDays = Math.floor(
       (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
     );
+
+    if (mode === "week" && diffDays < 6) {
+      errors.push("La date de fin doit être au moins 6 jours après le début");
+    }
+
     if (diffDays > MAX_DUPLICATION_DAYS) {
       errors.push(`La période ne peut pas dépasser ${MAX_DUPLICATION_DAYS} jours`);
     }

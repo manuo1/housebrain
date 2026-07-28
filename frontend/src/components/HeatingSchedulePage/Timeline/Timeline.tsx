@@ -52,14 +52,14 @@ export default function Timeline({ rooms, selectedRoomIds, onSlotUpdate, user }:
   const handleSlotSave = (updatedSlot: Slot) => {
     if (onSlotUpdate && selectedRoom) {
       // Resolve overlaps with existing slots
-      const result = resolveSlotOverlaps(
+      const resolvedSlots = resolveSlotOverlaps(
         updatedSlot,
         selectedRoom.slots,
         isCreating ? null : selectedSlotIndex
       );
 
       // Pass the resolved slots to parent
-      onSlotUpdate(selectedRoom.id, selectedSlotIndex, updatedSlot, result.resolvedSlots);
+      onSlotUpdate(selectedRoom.id, selectedSlotIndex, updatedSlot, resolvedSlots);
     }
     handleCloseModal();
   };

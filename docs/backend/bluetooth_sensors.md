@@ -16,7 +16,7 @@ Les mesures de température servent à :
 - Afficher la température actuelle par pièce dans l'interface utilisateur
 - Piloter intelligemment le chauffage en fonction de la température réelle de chaque pièce
 
-Le contrôle du chauffage basé sur ces mesures est détaillé dans [Contrôle chauffage] - Documentation à venir.
+Le contrôle du chauffage basé sur ces mesures est détaillé dans [Contrôle chauffage](./heating_control.md).
 
 ---
 
@@ -203,14 +203,7 @@ Sélectionnez un capteur dans la liste déroulante et associez-le à une pièce.
 /backend/sensors/data/
 ```
 
-Affiche tous les capteurs détectés avec leurs mesures en temps-réel (JSON).
-
-### API REST
-```
-/api/sensors/
-```
-
-Endpoints REST pour accès programmatique aux données capteurs.
+Affiche tous les capteurs détectés avec leurs mesures en temps-réel (JSON). Il s'agit d'une simple vue Django (pas d'API REST DRF) : sensors n'expose pas de endpoints sous `/api/`, contrairement à teleinfo/heating/rooms/ai.
 
 ### Logs
 ```bash
@@ -256,4 +249,4 @@ Si RSSI < -80 dBm :
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Juillet 2026

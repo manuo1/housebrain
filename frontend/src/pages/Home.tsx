@@ -1,34 +1,11 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import RoomsList from "../components/Rooms/RoomsList";
 import RealtimePowerMonitor from "../components/RealtimePowerMonitor/RealtimePowerMonitor";
-import fetchTeleinfoData from "../services/fetchTeleinfoData";
+import useTeleinfoData from "../hooks/useTeleinfoData";
 import styles from "./Home.module.scss";
-import TeleinfoData from "../models/TeleinfoData";
 
 export default function Home() {
-  const [teleinfoData, setTeleinfoData] = useState<TeleinfoData | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchData() {
-      try {
-        const data = await fetchTeleinfoData();
-        if (isMounted) setTeleinfoData(data);
-      } catch (err) {
-        console.error("Failed to fetch teleinfo data:", err);
-      }
-    }
-
-    fetchData();
-    const interval = setInterval(fetchData, 1000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, []);
+  const { data: teleinfoData } = useTeleinfoData();
 
   return (
     <div className={styles.home}>

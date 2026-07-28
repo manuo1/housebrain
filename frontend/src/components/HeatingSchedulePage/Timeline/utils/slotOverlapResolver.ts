@@ -13,13 +13,6 @@ interface SplitResult {
   afterSlot: Slot | null;
 }
 
-interface OverlapResult {
-  resolvedSlots: Slot[];
-  removedCount: number;
-  adjustedCount: number;
-  splitCount: number;
-}
-
 export const findFullyCoveredSlots = (
   newSlot: Slot,
   existingSlots: Slot[],
@@ -139,13 +132,12 @@ export const resolveSlotOverlaps = (
   newSlot: Slot,
   existingSlots: Slot[],
   slotIndex: number | null = null
-): OverlapResult => {
+): Slot[] => {
   // Step 1: Check if new slot splits an existing slot
   const splitResult = findSlotToSplit(newSlot, existingSlots, slotIndex);
 
   if (splitResult) {
     const resolvedSlots: Slot[] = [];
-    const removedIndices = new Set<number>();
 
     existingSlots.forEach((slot, index) => {
       if (index === slotIndex) return; // Skip the slot being modified
@@ -154,9 +146,6 @@ export const resolveSlotOverlaps = (
         // Replace with split slots (only valid ones)
         if (splitResult.beforeSlot) resolvedSlots.push(splitResult.beforeSlot);
         if (splitResult.afterSlot) resolvedSlots.push(splitResult.afterSlot);
-
-        // Track if original was removed (both parts invalid)
-        if (!splitResult.beforeSlot && !splitResult.afterSlot) removedIndices.add(index);
       } else {
         // Keep other slots as is
         resolvedSlots.push(slot);
@@ -166,12 +155,7 @@ export const resolveSlotOverlaps = (
     resolvedSlots.push(newSlot);
     resolvedSlots.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
-    return {
-      resolvedSlots,
-      removedCount: removedIndices.size,
-      adjustedCount: (splitResult.beforeSlot ? 1 : 0) + (splitResult.afterSlot ? 1 : 0),
-      splitCount: splitResult.beforeSlot && splitResult.afterSlot ? 1 : 0,
-    };
+    return resolvedSlots;
   }
 
   // Step 2: Find fully covered slots (to remove)
@@ -208,10 +192,5 @@ export const resolveSlotOverlaps = (
   resolvedSlots.push(newSlot);
   resolvedSlots.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
-  return {
-    resolvedSlots,
-    removedCount: removedIndices.size,
-    adjustedCount: (coveredAtStart?.adjustedSlot ? 1 : 0) + (coveredAtEnd?.adjustedSlot ? 1 : 0),
-    splitCount: 0,
-  };
+  return resolvedSlots;
 };

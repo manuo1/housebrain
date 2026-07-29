@@ -10,7 +10,6 @@ interface RawTeleinfoData {
   IMAX?: string | number;
   PAPP?: string | number;
   last_read?: string;
-  ADCO?: string;
   [key: string]: string | number | null | undefined;
 }
 

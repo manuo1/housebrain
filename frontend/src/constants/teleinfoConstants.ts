@@ -16,7 +16,6 @@ export const PTEC_LABELS: Record<string, string> = {
 };
 
 export const TELEINFO_LABELS: Record<string, string> = {
-  ADCO: "Identifiant du compteur",
   OPTARIF: "Option tarifaire",
   ISOUSC: "Intensité souscrite",
   BASE: "Index option Base",
@@ -40,21 +39,6 @@ export const TELEINFO_LABELS: Record<string, string> = {
   HHPHC: "Horaire HP/HC",
   PAPP: "Puissance apparente instantanée",
   PMAX: "Puissance maximale triphasée",
-};
-
-export const INDEX_LABELS: Record<string, string> = {
-  BASE: "Consommation",
-  HCHC: "Heures Creuses",
-  HCHP: "Heures Pleines",
-  EJPHN: "Heures Normales",
-  EJPHPM: "Heures de Pointe Mobile",
-  BBRHCJB: "Heures Creuses Jours Bleus",
-  BBRHPJB: "Heures Pleines Jours Bleus",
-  BBRHCJW: "Heures Creuses Jours Blancs",
-  BBRHPJW: "Heures Pleines Jours Blancs",
-  BBRHCJR: "Heures Creuses Jours Rouges",
-  BBRHPJR: "Heures Pleines Jours Rouges",
-  missing_indexes: "Extrapolées",
 };
 
 export const TELEINFO_UNITS: Record<string, string> = {
@@ -114,5 +98,4 @@ export const TELEINFO_SPECIAL_KEYS = [
   "IMAX",
   "PAPP",
   "last_read",
-  "ADCO",
 ] as const;

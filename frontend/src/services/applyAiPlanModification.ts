@@ -1,8 +1,5 @@
 import fetchWithAuth, { RefreshCallback } from "./fetchWithAuth";
 import DailyHeatingPlan from "../models/DailyHeatingPlan";
-import mockDailyHeatingPlan from "../mocks/mockDailyHeatingPlan";
-
-const USE_MOCK = false;
 
 interface AiModifyPayload {
   instruction: string;
@@ -14,10 +11,6 @@ export default async function applyAiPlanModification(
   accessToken: string,
   refreshCallback: RefreshCallback
 ): Promise<DailyHeatingPlan> {
-  if (USE_MOCK) {
-    return mockDailyHeatingPlan;
-  }
-
   const response = await fetchWithAuth(
     "/api/ai/heating/modify/",
     {

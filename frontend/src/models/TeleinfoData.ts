@@ -1,5 +1,5 @@
 import { formatLocalDate } from "../utils/dateUtils";
-import { ampereToWatt } from "../utils/consumptionUtils";
+import { ampereToWatt } from "../utils/teleinfoUtils";
 import { PTEC_LABELS, OPTARIF_LABELS, TELEINFO_SPECIAL_KEYS } from "../constants/teleinfoConstants";
 
 interface RawTeleinfoData {

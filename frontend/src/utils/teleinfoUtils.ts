@@ -1,7 +1,13 @@
 import {
   TELEINFO_LABELS,
   TELEINFO_UNITS,
+  DEFAULT_VOLTAGE,
 } from "../constants/teleinfoConstants";
+
+export function ampereToWatt(intensity: number): number | null {
+  if (typeof intensity !== "number") return null;
+  return intensity * DEFAULT_VOLTAGE;
+}
 
 function formatValue(key: string, value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "N/A";

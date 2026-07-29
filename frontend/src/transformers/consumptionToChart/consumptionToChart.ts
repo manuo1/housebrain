@@ -1,7 +1,7 @@
 import computeAxisX from "./computeAxisX";
 import computeAxisY, { DisplayType } from "./computeAxisY";
 import computeChartValues, { ChartPoint } from "./computeChartValues";
-import DailyIndexes from "../../models/DailyConsumption";
+import DailyConsumption from "../../models/DailyConsumption";
 
 interface ChartData {
   axisY: { labels: string[] };
@@ -10,7 +10,7 @@ interface ChartData {
 }
 
 function transformDailyConsumptionToChart(
-  dailyConsumption: DailyIndexes,
+  dailyConsumption: DailyConsumption,
   displayType: DisplayType = "wh"
 ): ChartData {
   if (!dailyConsumption || !dailyConsumption.data) {

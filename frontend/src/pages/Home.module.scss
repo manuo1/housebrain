@@ -40,6 +40,21 @@
           background: $bg-medium;
           border: 1px solid $border-medium;
           border-radius: $radius-base;
+          transition: $transition-bg, $transition-border;
+
+          &.favorable {
+            background: rgba($color-success, 0.12);
+            border-color: rgba($color-success, 0.4);
+          }
+
+          &.defavorable {
+            background: rgba($color-danger, 0.12);
+            border-color: rgba($color-danger, 0.4);
+          }
+
+          &.neutre {
+            // même apparence que la base (pas de distinction favorable/défavorable pour l'option Base)
+          }
 
           .tariffLabel {
             color: $text-muted;

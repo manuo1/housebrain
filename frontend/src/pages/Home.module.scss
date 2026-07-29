@@ -55,57 +55,6 @@
           }
         }
       }
-
-      .constructionCard {
-        @include card-base;
-        padding: $spacing-xl;
-        @include flex-column;
-        gap: $spacing-md;
-        align-items: center;
-
-        .infoText {
-          color: $text-muted;
-          font-size: $font-size-base;
-          text-align: center;
-          margin: 0;
-        }
-
-        .link {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: $spacing-sm;
-          padding: $spacing-md $spacing-lg;
-          background: $gradient-card;
-          border: 1px solid $border-light;
-          border-radius: $radius-base;
-          color: $color-primary;
-          text-decoration: none;
-          font-weight: $font-weight-medium;
-          transition: $transition-all;
-          box-shadow: $shadow-base;
-
-          .linkIcon {
-            font-size: $font-size-xl;
-            @include icon-glow($color-primary);
-          }
-
-          &:hover {
-            background: linear-gradient(145deg, #3a3a3a 0%, #333 100%);
-            border-color: $color-primary;
-            transform: translateY(-2px);
-            box-shadow: $shadow-primary-hover;
-
-            .linkIcon {
-              @include icon-glow($color-primary, 0.5);
-            }
-          }
-
-          &:active {
-            transform: translateY(0);
-          }
-        }
-      }
     }
   }
 }

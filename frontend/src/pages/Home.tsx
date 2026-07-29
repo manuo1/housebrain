@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
 import RoomsList from "../components/Rooms/RoomsList";
 import RealtimePowerMonitor from "../components/RealtimePowerMonitor/RealtimePowerMonitor";
+import ConsumptionSummary from "../components/ConsumptionSummary/ConsumptionSummary";
 import useTeleinfoData from "../hooks/useTeleinfoData";
 import styles from "./Home.module.scss";
 
@@ -28,15 +28,7 @@ export default function Home() {
               />
             </div>
           )}
-          <div className={styles.constructionCard}>
-            <p className={styles.infoText}>
-              Récapitulatif de consommation en cours de construction.
-            </p>
-            <Link to="/consumption" className={styles.link}>
-              <span className={styles.linkIcon}>📈</span>
-              Consulter l'historique de consommation
-            </Link>
-          </div>
+          <ConsumptionSummary />
         </div>
       </div>
     </div>

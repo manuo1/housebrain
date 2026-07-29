@@ -7,7 +7,7 @@ import fetchDailyConsumption from "../../services/fetchDailyConsumption";
 import transformDailyConsumptionToChart from "../../transformers/consumptionToChart/consumptionToChart";
 import { DisplayType } from "../../transformers/consumptionToChart/computeAxisY";
 import { ChartPoint } from "../../transformers/consumptionToChart/computeChartValues";
-import DailyIndexes from "../../models/DailyConsumption";
+import DailyConsumption from "../../models/DailyConsumption";
 
 export interface ChartData {
   axisY: { labels: string[] };
@@ -19,7 +19,7 @@ export default function ConsumptionBlock() {
   const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [step, setStep] = useState<number>(1);
   const [displayType, setDisplayType] = useState<DisplayType>("average_watt");
-  const [dailyConsumption, setDailyConsumption] = useState<DailyIndexes | null>(null);
+  const [dailyConsumption, setDailyConsumption] = useState<DailyConsumption | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

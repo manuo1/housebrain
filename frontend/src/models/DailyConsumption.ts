@@ -46,7 +46,7 @@ class TotalByLabel {
   }
 }
 
-class DailyIndexes {
+class DailyConsumption {
   static ALLOWED_STEPS = [1, 30, 60];
 
   date: Date;
@@ -78,10 +78,10 @@ class DailyIndexes {
   }
 
   isValidStep(): boolean {
-    return DailyIndexes.ALLOWED_STEPS.includes(this.step);
+    return DailyConsumption.ALLOWED_STEPS.includes(this.step);
   }
 }
 
-export default DailyIndexes;
+export default DailyConsumption;
 export { DailyConsumptionElement, TotalByLabel };
 export type { DailyConsumptionElementRaw, TotalByLabelRaw };

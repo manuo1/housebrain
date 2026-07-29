@@ -6,7 +6,7 @@
 sudo cp /home/admin/housebrain/backend/deployment/bluetooth-listener/bluetooth-listener.service /etc/systemd/system
 sudo systemctl daemon-reload
 sudo systemctl enable bluetooth-listener.service
-sudo systemctl start bluetooth-listener.service
+sudo systemctl restart bluetooth-listener.service
 
 # Vérification du service
 if systemctl is-active --quiet bluetooth-listener.service; then

@@ -7,7 +7,7 @@ sudo cp /home/admin/housebrain/backend/deployment/gunicorn/gunicorn.socket /etc/
 sudo cp /home/admin/housebrain/backend/deployment/gunicorn/gunicorn.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable gunicorn
-sudo systemctl start gunicorn
+sudo systemctl restart gunicorn
 
 # Vérification de l'état du service
 if systemctl is-active --quiet gunicorn; then

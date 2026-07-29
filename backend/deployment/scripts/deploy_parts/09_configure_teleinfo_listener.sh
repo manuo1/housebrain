@@ -3,7 +3,7 @@
 sudo cp /home/admin/housebrain/backend/deployment/teleinfo-listener/teleinfo-listener.service /etc/systemd/system
 sudo systemctl daemon-reload
 sudo systemctl enable teleinfo-listener.service
-sudo systemctl start teleinfo-listener.service
+sudo systemctl restart teleinfo-listener.service
 
 # Vérification du service
 if systemctl is-active --quiet teleinfo-listener.service; then

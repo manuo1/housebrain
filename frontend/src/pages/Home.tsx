@@ -16,7 +16,7 @@ export default function Home() {
         <div className={styles.statsSection}>
           {teleinfoData && (
             <div className={styles.powerCard}>
-              <div className={styles.tariffBadge}>
+              <div className={`${styles.tariffBadge} ${styles[teleinfoData.PTECSeverity]}`}>
                 <span className={styles.tariffLabel}>Période tarifaire :</span>
                 <span className={styles.tariffValue}>
                   {teleinfoData.PTECLabel || "N/A"}

@@ -84,6 +84,26 @@ export const OPTARIF_LABELS: Record<string, string> = {
   DEFAULT: "Option inconnue",
 };
 
+export type TarifSeverity = "favorable" | "defavorable" | "neutre";
+
+// Classement HC-like / HP-like d'après le code PTEC lui-même (convention EDF stable,
+// indépendante du prix réel du contrat) : Heures Creuses/Normales = favorable,
+// Heures Pleines/Pointe Mobile = défavorable, Base = prix unique donc neutre.
+export const PTEC_SEVERITY: Record<string, TarifSeverity> = {
+  "TH..": "neutre",
+  "HC..": "favorable",
+  "HP..": "defavorable",
+  "HN..": "favorable",
+  "PM..": "defavorable",
+  HCJB: "favorable",
+  HCJW: "favorable",
+  HCJR: "favorable",
+  HPJB: "defavorable",
+  HPJW: "defavorable",
+  HPJR: "defavorable",
+  DEFAULT: "neutre",
+};
+
 // Clés déjà affichées explicitement ailleurs (TeleinfoData + TeleinfoTable) :
 // à garder synchronisée avec le mapping explicite de TeleinfoTable.tsx si l'un des deux change.
 export const TELEINFO_SPECIAL_KEYS = [

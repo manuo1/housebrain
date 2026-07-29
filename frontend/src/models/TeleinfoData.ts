@@ -1,6 +1,6 @@
 import { formatLocalDate } from "../utils/dateUtils";
 import { ampereToWatt } from "../utils/teleinfoUtils";
-import { PTEC_LABELS, OPTARIF_LABELS, TELEINFO_SPECIAL_KEYS } from "../constants/teleinfoConstants";
+import { PTEC_LABELS, OPTARIF_LABELS, PTEC_SEVERITY, TarifSeverity, TELEINFO_SPECIAL_KEYS } from "../constants/teleinfoConstants";
 
 interface RawTeleinfoData {
   OPTARIF?: string | null;
@@ -27,6 +27,7 @@ export default class TeleinfoData {
   currentPower: number | null;
   OPTARIFLabel: string;
   PTECLabel: string;
+  PTECSeverity: TarifSeverity;
   otherData: Record<string, string | number | null | undefined>;
 
   constructor(raw: RawTeleinfoData = {}) {
@@ -48,6 +49,9 @@ export default class TeleinfoData {
     this.PTECLabel = this.PTEC && PTEC_LABELS[this.PTEC]
       ? PTEC_LABELS[this.PTEC]
       : PTEC_LABELS["DEFAULT"];
+    this.PTECSeverity = this.PTEC && PTEC_SEVERITY[this.PTEC]
+      ? PTEC_SEVERITY[this.PTEC]
+      : PTEC_SEVERITY["DEFAULT"];
 
     this.otherData = {};
     for (const [key, value] of Object.entries(raw)) {

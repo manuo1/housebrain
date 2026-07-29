@@ -15,6 +15,7 @@ export default function ConsumptionSummary() {
   const [yesterday, setYesterday] = useState<DailyConsumption | null>(null);
   const [today, setToday] = useState<DailyConsumption | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [fetchedAt, setFetchedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,6 +33,7 @@ export default function ConsumptionSummary() {
 
       setYesterday(yesterdayResult.status === "fulfilled" ? yesterdayResult.value : null);
       setToday(todayResult.status === "fulfilled" ? todayResult.value : null);
+      setFetchedAt(new Date());
       setIsLoading(false);
     }
 
@@ -54,7 +56,7 @@ export default function ConsumptionSummary() {
       </div>
       <div className={styles.day}>
         <div className={styles.dayLabel}>
-          Aujourd'hui <span className={styles.badge}>en cours</span>
+          Aujourd'hui{fetchedAt && ` à ${fetchedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
         </div>
         {isLoading ? (
           <p className={styles.loading}>Chargement...</p>

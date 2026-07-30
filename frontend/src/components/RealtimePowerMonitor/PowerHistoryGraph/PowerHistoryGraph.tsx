@@ -28,7 +28,8 @@ export default function PowerHistoryGraph({ currentPower, maxPower }: PowerHisto
     return history
       .map((power, i) => {
         const x = i * step;
-        const y = height - (power / maxPower) * height;
+        const ratio = Math.min(1, Math.max(0, power / maxPower));
+        const y = height - ratio * height;
         return i === 0 ? `M${x},${y}` : ` L${x},${y}`;
       })
       .join("");

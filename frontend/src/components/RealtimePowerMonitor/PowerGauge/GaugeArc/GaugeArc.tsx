@@ -1,10 +1,12 @@
+import { percentToArcOffset } from "../../utils/gaugeUtils";
+
 interface GaugeArcProps {
   percent: number;
 }
 
 export default function GaugeArc({ percent }: GaugeArcProps) {
   const arcLength = 126;
-  const offset = arcLength - (arcLength * percent) / 100;
+  const offset = percentToArcOffset(percent, arcLength);
 
   return (
     <g>

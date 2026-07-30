@@ -1,9 +1,11 @@
+import { percentToDegrees } from "../../utils/gaugeUtils";
+
 interface GaugeNeedleProps {
   percent: number;
 }
 
 export default function GaugeNeedle({ percent }: GaugeNeedleProps) {
-  const degrees = (percent / 100) * 180 - 90;
+  const degrees = percentToDegrees(percent);
 
   return (
     <g

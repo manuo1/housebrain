@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import fetchDailyConsumption from "../../services/fetchDailyConsumption";
 import DailyConsumption from "../../models/DailyConsumption";
 import TotalsCards from "../ConsumptionBlock/TotalsCards/TotalsCards";
-import { getTodayDate, addDays } from "../../utils/dateUtils";
+import { getTodayDate, addDays, formatTime } from "../../utils/dateUtils";
 import styles from "./ConsumptionSummary.module.scss";
 
 // Les totaux (data.totals) sont calculés côté backend à partir des index bruts,
@@ -84,7 +84,7 @@ export default function ConsumptionSummary() {
       </div>
       <div className={styles.day}>
         <div className={styles.dayLabel}>
-          Aujourd'hui{fetchedAt && ` à ${fetchedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+          Aujourd'hui{fetchedAt && ` à ${formatTime(fetchedAt)}`}
         </div>
         {isLoading ? (
           <p className={styles.loading}>Chargement...</p>

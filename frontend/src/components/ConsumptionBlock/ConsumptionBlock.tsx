@@ -8,6 +8,7 @@ import transformDailyConsumptionToChart from "../../transformers/consumptionToCh
 import { DisplayType } from "../../transformers/consumptionToChart/computeAxisY";
 import { ChartPoint } from "../../transformers/consumptionToChart/computeChartValues";
 import DailyConsumption from "../../models/DailyConsumption";
+import { getTodayDate } from "../../utils/dateUtils";
 
 export interface ChartData {
   axisY: { labels: string[] };
@@ -16,7 +17,7 @@ export interface ChartData {
 }
 
 export default function ConsumptionBlock() {
-  const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState<string>(getTodayDate());
   const [step, setStep] = useState<number>(1);
   const [displayType, setDisplayType] = useState<DisplayType>("average_watt");
   const [dailyConsumption, setDailyConsumption] = useState<DailyConsumption | null>(null);

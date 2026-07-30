@@ -1,5 +1,5 @@
 import styles from "./DateSelector.module.scss";
-import { addDays } from "../../../utils/dateUtils";
+import { addDays, getTodayDate } from "../../../utils/dateUtils";
 
 interface DateSelectorProps {
   value: string;
@@ -7,7 +7,7 @@ interface DateSelectorProps {
 }
 
 export default function DateSelector({ value, onChange }: DateSelectorProps) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayDate();
 
   const handlePrevious = () => onChange(addDays(value, -1));
 

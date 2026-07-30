@@ -14,14 +14,14 @@ interface TemperatureMeasurementsRaw {
 
 interface TemperatureRaw {
   id: number;
-  mac_short: string;
-  signal_strength: number;
+  mac_short: string | null;
+  signal_strength: number | null;
   measurements: TemperatureMeasurementsRaw;
 }
 
 interface RadiatorRaw {
   id: number;
-  state: RadiatorState;
+  state: RadiatorState | null;
 }
 
 interface RoomRaw {
@@ -54,8 +54,8 @@ class TemperatureMeasurements {
 
 class Temperature {
   id: number;
-  mac_short: string;
-  signal_strength: number;
+  mac_short: string | null;
+  signal_strength: number | null;
   measurements: TemperatureMeasurements;
 
   constructor({ id, mac_short, signal_strength, measurements }: TemperatureRaw) {
@@ -68,7 +68,7 @@ class Temperature {
 
 class Radiator {
   id: number;
-  state: RadiatorState;
+  state: RadiatorState | null;
 
   constructor({ id, state }: RadiatorRaw) {
     this.id = id;

@@ -11,6 +11,19 @@ import styles from "./ConsumptionSummary.module.scss";
 // prend donc le step le plus rapide (60 min) puisqu'on n'utilise ici que les totaux.
 const STEP = 60;
 
+// Les index sont enregistrés côté back toutes les minutes : on rafraîchit donc
+// toutes les minutes, calé sur la seconde :05 de chaque minute (9:01:05, 9:02:05...)
+// pour laisser un peu de marge après l'enregistrement plutôt que de taper pile dessus.
+const REFRESH_INTERVAL_MS = 60_000;
+const ALIGN_SECOND = 5;
+
+function msUntilNextAlignedTick(): number {
+  const now = new Date();
+  let secondsUntil = (ALIGN_SECOND - now.getSeconds() + 60) % 60;
+  if (secondsUntil === 0) secondsUntil = 60;
+  return secondsUntil * 1000 - now.getMilliseconds();
+}
+
 export default function ConsumptionSummary() {
   const [yesterday, setYesterday] = useState<DailyConsumption | null>(null);
   const [today, setToday] = useState<DailyConsumption | null>(null);
@@ -19,6 +32,7 @@ export default function ConsumptionSummary() {
 
   useEffect(() => {
     let isMounted = true;
+    let intervalId: number | undefined;
 
     async function load() {
       const todayDate = getTodayDate();
@@ -31,6 +45,13 @@ export default function ConsumptionSummary() {
 
       if (!isMounted) return;
 
+      if (yesterdayResult.status === "rejected") {
+        console.error("Erreur lors du chargement de la conso d'hier:", yesterdayResult.reason);
+      }
+      if (todayResult.status === "rejected") {
+        console.error("Erreur lors du chargement de la conso d'aujourd'hui:", todayResult.reason);
+      }
+
       setYesterday(yesterdayResult.status === "fulfilled" ? yesterdayResult.value : null);
       setToday(todayResult.status === "fulfilled" ? todayResult.value : null);
       setFetchedAt(new Date());
@@ -39,8 +60,15 @@ export default function ConsumptionSummary() {
 
     load();
 
+    const timeoutId = window.setTimeout(() => {
+      load();
+      intervalId = window.setInterval(load, REFRESH_INTERVAL_MS);
+    }, msUntilNextAlignedTick());
+
     return () => {
       isMounted = false;
+      window.clearTimeout(timeoutId);
+      if (intervalId) window.clearInterval(intervalId);
     };
   }, []);
 

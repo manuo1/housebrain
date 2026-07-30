@@ -1,4 +1,4 @@
-import { SimpleDate } from "./simpleDate";
+import SimpleDate from "./simpleDate";
 
 export function formatLocalDate(isoString: string | null | undefined): string {
   if (!isoString) return "N/A";
@@ -81,6 +81,10 @@ export function getTodayDate(): string {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function formatTime(date: Date): string {
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 export function addDays(dateStr: string, days: number): string {

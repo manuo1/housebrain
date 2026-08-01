@@ -4,7 +4,10 @@ from teleinfo.constants import TarifPeriods
 
 ALLOWED_CONSUMPTION_STEPS = [1, 30, 60]
 
-TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS = 365
+# Deliberately narrow: only recent, common days are used as a reference.
+# Rare/unusual days (e.g. a Tempo red day) may simply go unfilled if none
+# occurred in this window — accepted trade-off to keep the lookup cheap.
+TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS = 3
 
 
 class TarifPeriodType(StrEnum):

@@ -338,6 +338,10 @@ def get_hc_hp_ref_day(current_day: date) -> dict[str, str | None] | None:
     first DailyIndexes whose tarif_periods is of type HC_HP and entirely
     complete (no None left).
 
+    Only the tarif_periods column is fetched (via values_list) since it's
+    the only field this lookup needs — the values column can hold a large
+    JSON blob per row and loading it here would be wasted I/O.
+
     Args:
         current_day: The day being reconstructed.
 
@@ -345,16 +349,20 @@ def get_hc_hp_ref_day(current_day: date) -> dict[str, str | None] | None:
         The reference day's tarif_periods dict, or None if no suitable
         candidate is found.
     """
-    candidates = DailyIndexes.objects.filter(
-        date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
-        date__lt=current_day,
-    ).order_by("-date")
+    candidates = (
+        DailyIndexes.objects.filter(
+            date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
+            date__lt=current_day,
+        )
+        .order_by("-date")
+        .values_list("tarif_periods", flat=True)
+    )
 
-    for candidate in candidates:
-        if None in candidate.tarif_periods.values():
+    for candidate_tarif_periods in candidates:
+        if None in candidate_tarif_periods.values():
             continue
-        if get_tarif_period_type(candidate.tarif_periods) == TarifPeriodType.HC_HP:
-            return candidate.tarif_periods
+        if get_tarif_period_type(candidate_tarif_periods) == TarifPeriodType.HC_HP:
+            return candidate_tarif_periods
 
     return None
 
@@ -369,6 +377,9 @@ def get_tempo_ref_day(
     first DailyIndexes whose tarif_periods is of type TEMPO, entirely
     complete (no None left), and of the same Tempo color as `color`.
 
+    Only the tarif_periods column is fetched (via values_list), for the same
+    reason as get_hc_hp_ref_day.
+
     Args:
         current_day: The day being reconstructed.
         color: The Tempo color code ('B', 'W' or 'R') of the day being
@@ -381,19 +392,23 @@ def get_tempo_ref_day(
     if color is None:
         return None
 
-    candidates = DailyIndexes.objects.filter(
-        date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
-        date__lt=current_day,
-    ).order_by("-date")
+    candidates = (
+        DailyIndexes.objects.filter(
+            date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
+            date__lt=current_day,
+        )
+        .order_by("-date")
+        .values_list("tarif_periods", flat=True)
+    )
 
-    for candidate in candidates:
-        if None in candidate.tarif_periods.values():
+    for candidate_tarif_periods in candidates:
+        if None in candidate_tarif_periods.values():
             continue
         if (
-            get_tarif_period_type(candidate.tarif_periods) == TarifPeriodType.TEMPO
-            and get_tempo_color(candidate.tarif_periods) == color
+            get_tarif_period_type(candidate_tarif_periods) == TarifPeriodType.TEMPO
+            and get_tempo_color(candidate_tarif_periods) == color
         ):
-            return candidate.tarif_periods
+            return candidate_tarif_periods
 
     return None
 
@@ -407,6 +422,9 @@ def fill_missing_tarif_periods(
     (nothing is written back to the database).
 
     Strategy per tariff family:
+      - Current day (today): left as is, gaps included — the None values for
+        not-yet-elapsed minutes are expected, not a real gap to reconstruct,
+        and there's no wh to associate with them anyway.
       - TH: no ambiguity possible, fills every minute with TarifPeriods.TH.
       - EJP (HN/PM): unpredictable (EJP day/preavis), gaps are left as is.
       - HC/HP: looks up a complete HC/HP reference day (get_hc_hp_ref_day)
@@ -426,7 +444,17 @@ def fill_missing_tarif_periods(
         A dict with the same shape as `tarif_periods`, with gaps filled
         whenever possible.
     """
+    if current_day == date.today():
+        return tarif_periods
+
     tarif_period_type = get_tarif_period_type(tarif_periods)
+
+    if None not in tarif_periods.values():
+        # Nothing to fill: skip the reference-day lookup, which is expensive
+        # (scans up to TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS days in DB).
+        # Safe to skip: HC/HP hours and Tempo colors are fixed by contract,
+        # so a reference day would yield the same boundaries anyway.
+        return tarif_periods
 
     match tarif_period_type:
         case TarifPeriodType.TH:

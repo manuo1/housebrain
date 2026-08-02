@@ -48,24 +48,26 @@ def get_daily_index_structure(step: int) -> dict[str, None]:
 
 def compute_watt_hours(
     indexes: dict[str, dict[str, int | None] | None],
-    step: int,
+    ordered_minutes: list[str],
 ) -> dict[str, dict[tuple[str, str], int | None]]:
     """
     Computes energy consumption in watt-hours by calculating the difference
     between consecutive index values for each time interval.
 
-    Pairs of consecutive minutes are built from the canonical, step-ordered
-    minute sequence (get_daily_index_structure(step)) rather than from
-    time_series' own key order — dict insertion order is expected to already
-    match it in practice, but deriving it from the canonical structure makes
-    that guarantee explicit instead of implicit, and avoids an O(n log n)
-    sort per label.
+    Pairs of consecutive minutes are built from `ordered_minutes` (the
+    canonical, step-ordered minute sequence) rather than from time_series'
+    own key order — dict insertion order is expected to already match it in
+    practice, but deriving it from the canonical structure makes that
+    guarantee explicit instead of implicit, and avoids an O(n log n) sort
+    per label. Callers typically already have this list on hand (it's the
+    same one used to build the final per-interval output), so it's passed
+    in rather than recomputed here.
 
     Args:
         indexes: A dictionary where each key is a label (e.g., 'HCHC', 'HCHP') and the value is
                  another dictionary mapping time strings ('HH:MM') to index values (int or None).
-        step: The step size in minutes (one of ALLOWED_CONSUMPTION_STEPS), used to derive the
-              canonical minute sequence.
+        ordered_minutes: The canonical, chronologically-ordered list of time strings ('HH:MM')
+                          for the day at the relevant step (e.g. from get_daily_index_structure).
 
     Returns:
         A dictionary where each key is a label, and the value is another dictionary that maps
@@ -73,7 +75,6 @@ def compute_watt_hours(
         could not be computed due to missing data).
     """
     watt_hours: dict[str, dict[tuple[str, str], int | None]] = {}
-    ordered_minutes = list(get_daily_index_structure(step).keys())
 
     for label, time_series in indexes.items():
         # Skip if the inner dict is None or empty
@@ -675,9 +676,9 @@ def build_consumption_data(
     else:
         indexes = reconstructed_indexes
 
-    watt_hours_data = compute_watt_hours(indexes, step)
-
     minute_keys = list(get_daily_index_structure(step).keys())
+    watt_hours_data = compute_watt_hours(indexes, minute_keys)
+
     for curent_time_str, next_time_str in zip(minute_keys, minute_keys[1:]):
         tarif_period = tarif_periods[curent_time_str]
         curent_index_label = get_index_label(tarif_period)

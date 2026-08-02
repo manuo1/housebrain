@@ -53,16 +53,7 @@ def test_get_daily_index_structure_invalid_steps(invalid_step):
         get_daily_index_structure(invalid_step)
 
 
-@pytest.fixture
-def small_daily_structure(monkeypatch):
-    """Replaces get_daily_index_structure with a tiny 4-key ordered structure,
-    so compute_watt_hours tests stay compact instead of using the real
-    (25- or 1441-key) constants."""
-    small_structure = {"00:00": None, "00:01": None, "00:02": None, "24:00": None}
-    monkeypatch.setattr(
-        "consumption.utils.get_daily_index_structure",
-        lambda step: small_structure.copy(),
-    )
+SMALL_ORDERED_MINUTES = ["00:00", "00:01", "00:02", "24:00"]
 
 
 @pytest.mark.parametrize(
@@ -136,8 +127,8 @@ def small_daily_structure(monkeypatch):
         ({}, {}),
     ],
 )
-def test_compute_watt_hours(small_daily_structure, indexes, expected):
-    result = compute_watt_hours(indexes, step=1)
+def test_compute_watt_hours(indexes, expected):
+    result = compute_watt_hours(indexes, SMALL_ORDERED_MINUTES)
     assert result == expected
 
 

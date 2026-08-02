@@ -48,15 +48,24 @@ def get_daily_index_structure(step: int) -> dict[str, None]:
 
 def compute_watt_hours(
     indexes: dict[str, dict[str, int | None] | None],
+    step: int,
 ) -> dict[str, dict[tuple[str, str], int | None]]:
     """
     Computes energy consumption in watt-hours by calculating the difference
     between consecutive index values for each time interval.
 
+    Pairs of consecutive minutes are built from the canonical, step-ordered
+    minute sequence (get_daily_index_structure(step)) rather than from
+    time_series' own key order — dict insertion order is expected to already
+    match it in practice, but deriving it from the canonical structure makes
+    that guarantee explicit instead of implicit, and avoids an O(n log n)
+    sort per label.
+
     Args:
         indexes: A dictionary where each key is a label (e.g., 'HCHC', 'HCHP') and the value is
                  another dictionary mapping time strings ('HH:MM') to index values (int or None).
-                 The inner dictionary must contain ordered timestamps covering the day.
+        step: The step size in minutes (one of ALLOWED_CONSUMPTION_STEPS), used to derive the
+              canonical minute sequence.
 
     Returns:
         A dictionary where each key is a label, and the value is another dictionary that maps
@@ -64,16 +73,16 @@ def compute_watt_hours(
         could not be computed due to missing data).
     """
     watt_hours: dict[str, dict[tuple[str, str], int | None]] = {}
+    ordered_minutes = list(get_daily_index_structure(step).keys())
 
     for label, time_series in indexes.items():
         # Skip if the inner dict is None or empty
         if not isinstance(time_series, dict) or not time_series:
             continue
 
-        sorted_minutes = sorted(time_series.keys())
         watt_hours[label] = {}
 
-        for current_minute, next_minute in zip(sorted_minutes[:-1], sorted_minutes[1:]):
+        for current_minute, next_minute in zip(ordered_minutes, ordered_minutes[1:]):
             current_index = time_series.get(current_minute)
             next_index = time_series.get(next_minute)
 
@@ -666,7 +675,7 @@ def build_consumption_data(
     else:
         indexes = reconstructed_indexes
 
-    watt_hours_data = compute_watt_hours(indexes)
+    watt_hours_data = compute_watt_hours(indexes, step)
 
     minute_keys = list(get_daily_index_structure(step).keys())
     for curent_time_str, next_time_str in zip(minute_keys, minute_keys[1:]):

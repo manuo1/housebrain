@@ -53,6 +53,18 @@ def test_get_daily_index_structure_invalid_steps(invalid_step):
         get_daily_index_structure(invalid_step)
 
 
+@pytest.fixture
+def small_daily_structure(monkeypatch):
+    """Replaces get_daily_index_structure with a tiny 4-key ordered structure,
+    so compute_watt_hours tests stay compact instead of using the real
+    (25- or 1441-key) constants."""
+    small_structure = {"00:00": None, "00:01": None, "00:02": None, "24:00": None}
+    monkeypatch.setattr(
+        "consumption.utils.get_daily_index_structure",
+        lambda step: small_structure.copy(),
+    )
+
+
 @pytest.mark.parametrize(
     "indexes, expected",
     [
@@ -102,12 +114,30 @@ def test_get_daily_index_structure_invalid_steps(invalid_step):
                 },
             },
         ),
+        # Case with a minute missing from the input dict entirely (not just None) —
+        # covers the .get() fallback now that pairing comes from the canonical structure
+        (
+            {
+                "label1": {
+                    "00:00": 1000,
+                    "00:02": 1010,
+                    "24:00": 1020,
+                },
+            },
+            {
+                "label1": {
+                    ("00:00", "00:01"): None,  # 00:01 absent from input
+                    ("00:01", "00:02"): None,  # 00:01 absent from input
+                    ("00:02", "24:00"): 10,  # 1020 - 1010
+                },
+            },
+        ),
         # Case empty input
         ({}, {}),
     ],
 )
-def test_compute_watt_hours(indexes, expected):
-    result = compute_watt_hours(indexes)
+def test_compute_watt_hours(small_daily_structure, indexes, expected):
+    result = compute_watt_hours(indexes, step=1)
     assert result == expected
 
 

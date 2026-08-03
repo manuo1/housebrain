@@ -532,7 +532,7 @@ def test_fill_missing_values(original, to_fill, expected):
 
 
 @pytest.mark.parametrize(
-    "indexes, step, expected",
+    "indexes, minute_keys, expected",
     [
         # Step 60: ne garde que les heures pleines
         (
@@ -551,7 +551,7 @@ def test_fill_missing_values(original, to_fill, expected):
                     "02:00": 150,
                 },
             },
-            60,
+            ["00:00", "01:00", "02:00"],
             {
                 "label1": {
                     "00:00": 100,
@@ -576,7 +576,7 @@ def test_fill_missing_values(original, to_fill, expected):
                     "01:00": 50,
                 }
             },
-            30,
+            ["00:00", "00:30", "01:00"],
             {
                 "label1": {
                     "00:00": 10,
@@ -594,7 +594,7 @@ def test_fill_missing_values(original, to_fill, expected):
                     "00:02": 3,
                 }
             },
-            1,
+            ["00:00", "00:01", "00:02"],
             {
                 "label1": {
                     "00:00": 1,
@@ -603,16 +603,21 @@ def test_fill_missing_values(original, to_fill, expected):
                 }
             },
         ),
+        # minute_keys ne matchant aucune entrée d'un label -> label conservé, vide
+        (
+            {
+                "label1": {"00:15": 10, "00:45": 20},
+            },
+            ["00:00", "00:30"],
+            {
+                "label1": {},
+            },
+        ),
     ],
 )
-def test_downsample_indexes(indexes, step, expected):
-    result = downsample_indexes(indexes, step)
+def test_downsample_indexes(indexes, minute_keys, expected):
+    result = downsample_indexes(indexes, minute_keys)
     assert result == expected
-
-
-def test_downsample_indexes_invalid_step():
-    with pytest.raises(ValueError):
-        downsample_indexes({"label": {"00:00": 100}}, step=15)
 
 
 @pytest.mark.parametrize(

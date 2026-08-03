@@ -77,7 +77,6 @@ def compute_watt_hours(
     watt_hours: dict[str, dict[tuple[str, str], int | None]] = {}
 
     for label, time_series in indexes.items():
-        # Skip if the inner dict is None or empty
         if not isinstance(time_series, dict) or not time_series:
             continue
 
@@ -361,7 +360,8 @@ def get_hc_hp_ref_day(current_day: date) -> dict[str, str | None] | None:
     """
     candidates = (
         DailyIndexes.objects.filter(
-            date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
+            date__gte=current_day
+            - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
             date__lt=current_day,
         )
         .order_by("-date")
@@ -404,7 +404,8 @@ def get_tempo_ref_day(
 
     candidates = (
         DailyIndexes.objects.filter(
-            date__gte=current_day - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
+            date__gte=current_day
+            - timedelta(days=TARIF_PERIOD_REF_DAY_SEARCH_WINDOW_DAYS),
             date__lt=current_day,
         )
         .order_by("-date")
@@ -517,44 +518,33 @@ def fill_missing_values(
 
 def downsample_indexes(
     indexes: dict[str, dict[str, int]],
-    step: int,
+    minute_keys: list[str],
 ) -> dict[str, dict[str, int]]:
     """
-    Downsamples the given indexes dictionary by keeping only time keys that
-    align with the specified step interval in minutes.
+    Downsamples the given indexes dictionary by keeping only time keys
+    present in minute_keys.
+
+    minute_keys is expected to be the canonical, step-aligned set of time
+    strings for the day (e.g. from get_daily_index_structure(step).keys()),
+    already computed once by the caller — this avoids re-parsing each
+    "HH:MM" key by hand for every label.
 
     Args:
         indexes: Nested dict mapping label strings to dicts of time strings (HH:MM) to int values.
-        step: Step size in minutes. Must be one of ALLOWED_CONSUMPTION_STEPS.
+        minute_keys: The time strings (HH:MM) to keep, for the relevant step.
 
     Returns:
-        A nested dict with the same labels, containing only entries where the time key
-        corresponds to multiples of the step.
-
-    Raises:
-        ValueError: If the step is not in ALLOWED_CONSUMPTION_STEPS.
+        A nested dict with the same labels, containing only entries whose time key
+        is present in minute_keys.
     """
-    if step not in ALLOWED_CONSUMPTION_STEPS:
-        raise ValueError(
-            f"Step {step} is not allowed. Allowed steps: {ALLOWED_CONSUMPTION_STEPS}"
-        )
-
-    def is_key_valid(time_str: str) -> bool:
-        hh, mm = map(int, time_str.split(":"))
-        total_minutes = hh * 60 + mm
-        return total_minutes % step == 0
-
-    downsampled: dict[str, dict[str, int]] = {}
-
-    for label, time_values in indexes.items():
-        filtered = {
+    return {
+        label: {
             time_str: value
-            for time_str, value in time_values.items()
-            if is_key_valid(time_str)
+            for time_str, value in time_series.items()
+            if time_str in minute_keys
         }
-        downsampled[label] = filtered
-
-    return downsampled
+        for label, time_series in indexes.items()
+    }
 
 
 def get_index_label(tarif_period: str) -> str | None:
@@ -671,12 +661,13 @@ def build_consumption_data(
     raw_tarif_periods = daily_indexes.tarif_periods
     tarif_periods = fill_missing_tarif_periods(raw_tarif_periods, day)
 
+    minute_keys = list(get_daily_index_structure(step).keys())
+
     if step != 1:
-        indexes = downsample_indexes(reconstructed_indexes, step)
+        indexes = downsample_indexes(reconstructed_indexes, minute_keys)
     else:
         indexes = reconstructed_indexes
 
-    minute_keys = list(get_daily_index_structure(step).keys())
     watt_hours_data = compute_watt_hours(indexes, minute_keys)
 
     for curent_time_str, next_time_str in zip(minute_keys, minute_keys[1:]):

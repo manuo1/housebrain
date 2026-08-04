@@ -11,6 +11,11 @@
   gap: 0;
   flex: 1;
   min-height: 280px;
+  transition: $transition-base;
+}
+
+.loading {
+  opacity: $opacity-muted;
 }
 
 .chartArea {

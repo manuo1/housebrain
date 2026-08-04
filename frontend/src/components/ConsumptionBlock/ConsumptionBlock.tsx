@@ -28,7 +28,6 @@ export default function ConsumptionBlock() {
     const loadData = async () => {
       setIsLoading(true);
       setError(null);
-      setDailyConsumption(null);
 
       try {
         const data = await fetchDailyConsumption(date, step);
@@ -60,7 +59,7 @@ export default function ConsumptionBlock() {
         onDateChange={setDate}
       />
 
-      <StepChart data={chartData} />
+      <StepChart data={chartData} isLoading={isLoading} />
 
       <TotalsCards totals={dailyConsumption?.totals} />
 

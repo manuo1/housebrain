@@ -8,9 +8,10 @@ import { ChartData } from "../ConsumptionBlock";
 
 interface StepChartProps {
   data: ChartData | null;
+  isLoading?: boolean;
 }
 
-const StepChart = ({ data }: StepChartProps) => {
+const StepChart = ({ data, isLoading = false }: StepChartProps) => {
   if (!data) {
     return (
       <div className={styles.stepChart}>
@@ -25,9 +26,12 @@ const StepChart = ({ data }: StepChartProps) => {
   }
 
   const { axisY, axisX } = data;
+  const stepChartClassName = isLoading
+    ? `${styles.stepChart} ${styles.loading}`
+    : styles.stepChart;
 
   return (
-    <div className={styles.stepChart}>
+    <div className={stepChartClassName}>
       <AxisY labels={axisY.labels} />
       <div className={styles.chartArea}>
         <VerticalGridLines count={axisX.labels.length} />

@@ -10,7 +10,7 @@ import requests
 from django.conf import settings
 
 from actuators.models import Shelly
-from core.constants import UNPLUGGED_MODE, LoggerLabel
+from core.constants import LoggerLabel
 
 logger = logging.getLogger("django")
 
@@ -31,19 +31,21 @@ SWITCH_ID = 0
 # it usable with this driver until that's done.
 SUPPORTED_REFERENCES = {Shelly.Reference.SHELLY_1_MINI_GEN3}
 
+# Shelly.SetAuth / digest auth only ever accept this username — fixed by
+# the firmware, not configurable (confirmed by device error -103 "Only
+# user 'admin' is supported!" when anything else was tried).
+SHELLY_AUTH_USER = "admin"
+
 
 class ShellyError(Exception):
     """Exception for Shelly driver errors"""
 
 
 def _auth() -> requests.auth.HTTPDigestAuth:
-    user = settings.SHELLY_AUTH_USER
     password = settings.SHELLY_AUTH_PASSWORD
-    if not user or not password:
-        raise ShellyError(
-            "SHELLY_AUTH_USER/SHELLY_AUTH_PASSWORD is not set in settings"
-        )
-    return requests.auth.HTTPDigestAuth(user, password)
+    if not password:
+        raise ShellyError("SHELLY_AUTH_PASSWORD is not set in settings")
+    return requests.auth.HTTPDigestAuth(SHELLY_AUTH_USER, password)
 
 
 class ShellyDriver:
@@ -68,12 +70,6 @@ class ShellyDriver:
         Raises:
             ShellyError: on communication or device error
         """
-        if UNPLUGGED_MODE:
-            logger.debug(
-                f"{LoggerLabel.SHELLYDRIVER} UNPLUGGED mode: "
-                f"set_switch({self.ip}, on={on}, toggle_after={toggle_after})"
-            )
-            return
         params = {"id": SWITCH_ID, "on": on}
         if toggle_after is not None:
             params["toggle_after"] = toggle_after
@@ -87,12 +83,6 @@ class ShellyDriver:
         Raises:
             ShellyError: on communication or device error
         """
-        if UNPLUGGED_MODE:
-            logger.debug(
-                f"{LoggerLabel.SHELLYDRIVER} UNPLUGGED mode: "
-                f"get_switch_status({self.ip}) -> False"
-            )
-            return False
         result = self._rpc_call("Switch.GetStatus", {"id": SWITCH_ID})
         return result["output"]
 
@@ -107,14 +97,9 @@ class ShellyDriver:
         Raises:
             ShellyError: on communication or device error
         """
-        if UNPLUGGED_MODE:
-            logger.debug(
-                f"{LoggerLabel.SHELLYDRIVER} UNPLUGGED mode: get_device_info({self.ip})"
-            )
-            return {"id": f"unplugged-{self.ip}", "auth_en": False}
         return self._rpc_call("Shelly.GetDeviceInfo", {})
 
-    def set_auth(self, user: str, password: str):
+    def set_auth(self, password: str):
         """
         Enable digest authentication on the device (Shelly.SetAuth), then
         verify it was actually applied by re-reading the device info.
@@ -122,14 +107,9 @@ class ShellyDriver:
             ShellyError: on communication/device error, or if the device
                 still reports auth as disabled after the call
         """
-        if UNPLUGGED_MODE:
-            logger.debug(
-                f"{LoggerLabel.SHELLYDRIVER} UNPLUGGED mode: set_auth({self.ip})"
-            )
-            return
         realm = self.get_device_info()["id"]
-        ha1 = hashlib.sha256(f"{user}:{realm}:{password}".encode()).hexdigest()
-        self._rpc_call("Shelly.SetAuth", {"user": user, "realm": realm, "ha1": ha1})
+        ha1 = hashlib.sha256(f"{SHELLY_AUTH_USER}:{realm}:{password}".encode()).hexdigest()
+        self._rpc_call("Shelly.SetAuth", {"user": SHELLY_AUTH_USER, "realm": realm, "ha1": ha1})
 
         if not self.get_device_info()["auth_en"]:
             raise ShellyError(

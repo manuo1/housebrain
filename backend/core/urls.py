@@ -12,6 +12,7 @@ load_dotenv()
 api_patterns = [
     path("auth/", include("authentication.api.urls")),
     path("consumption/", include("consumption.api.urls")),
+    path("equipment/", include("equipment.api.urls")),
     path("rooms/", include("rooms.api.urls")),
     path("teleinfo/", include("teleinfo.api.urls")),
     path("heating/", include("heating.api.urls")),

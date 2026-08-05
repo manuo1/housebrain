@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "ai",
     "authentication",
     "consumption",
+    "equipment",
     "heating",
     "rest_framework",
     "rest_framework_simplejwt",

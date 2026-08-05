@@ -173,3 +173,15 @@ SIMPLE_JWT = {
 # AI
 # ============================================
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+
+# ============================================
+# SHELLY
+# ============================================
+# Shared digest auth credentials for all Shelly devices. Used both to call
+# Shelly.SetAuth (HouseBrain provisions auth on a device itself, computing
+# the ha1 from these credentials + the device's realm) and to authenticate
+# HouseBrain's own subsequent RPC calls (Switch.Set, etc) once auth is
+# enabled on that device.
+SHELLY_AUTH_USER = os.getenv("SHELLY_AUTH_USER")
+SHELLY_AUTH_PASSWORD = os.getenv("SHELLY_AUTH_PASSWORD")

@@ -1,11 +1,41 @@
+from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
+from django.core.exceptions import ValidationError
 from django.utils import timezone
+
+from actuators.drivers.shelly import ShellyDriver, ShellyError
 
 from .models import Radiator, Shelly
 
 
+class ShellyAdminForm(forms.ModelForm):
+    class Meta:
+        model = Shelly
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        ip = cleaned_data.get("ip")
+        # Provisioning (Shelly.SetAuth) only happens once, at creation — a
+        # later edit (e.g. renaming) must not require the device to be online.
+        if ip and self.instance.pk is None:
+            if Shelly.objects.filter(ip=ip).exists():
+                # Let the model's own unique constraint report this error
+                # normally — no need to hit the device for a doomed save.
+                return cleaned_data
+            try:
+                ShellyDriver(ip).set_auth(
+                    settings.SHELLY_AUTH_USER, settings.SHELLY_AUTH_PASSWORD
+                )
+            except ShellyError as e:
+                raise ValidationError(f"Impossible de sécuriser le Shelly : {e}")
+        return cleaned_data
+
+
 @admin.register(Shelly)
 class ShellyAdmin(admin.ModelAdmin):
+    form = ShellyAdminForm
     list_display = ("name", "reference", "ip")
     list_filter = ("reference",)
     search_fields = ("name", "ip")

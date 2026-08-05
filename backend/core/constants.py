@@ -22,6 +22,7 @@ class LoggerLabel(StrEnum):
     CONSUMPTION = "[Consumption]"
     MCPDRIVER = "[MCP23017 Driver]"
     SHELLYDRIVER = "[Shelly Driver]"
+    PULSESWITCH = "[Pulse Switch]"
     MONITORING = "[Monitoring]"
     RADIATORSYNC = "[Radiator Synchronisation]"
     BLUETOOTHLISTENER = "[BluetoothListener]"

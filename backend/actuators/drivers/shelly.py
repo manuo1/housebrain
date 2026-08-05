@@ -138,6 +138,18 @@ class ShellyDriver:
                 f"{LoggerLabel.SHELLYDRIVER} timeout calling {method} on {self.ip}: {e}"
             )
             raise ShellyError(f"Shelly {self.ip} timeout on {method}: {e}")
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code == 401:
+                message = (
+                    f"Shelly {self.ip} rejected authentication (401) on {method}: "
+                    "a different password is already configured on this device. "
+                    "Check SHELLY_AUTH_PASSWORD, or factory-reset the Shelly "
+                    "(hold its physical button 10s) to start over."
+                )
+            else:
+                message = f"Shelly {self.ip} HTTP error on {method}: {e}"
+            logger.error(f"{LoggerLabel.SHELLYDRIVER} {message}")
+            raise ShellyError(message)
         except requests.exceptions.RequestException as e:
             logger.error(
                 f"{LoggerLabel.SHELLYDRIVER} error calling {method} on {self.ip}: {e}"

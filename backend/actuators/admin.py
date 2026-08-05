@@ -17,6 +17,7 @@ class ShellyAdminForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         ip = cleaned_data.get("ip")
+        reference = cleaned_data.get("reference")
         # Provisioning (Shelly.SetAuth) only happens once, at creation — a
         # later edit (e.g. renaming) must not require the device to be online.
         if ip and self.instance.pk is None:
@@ -24,8 +25,11 @@ class ShellyAdminForm(forms.ModelForm):
                 # Let the model's own unique constraint report this error
                 # normally — no need to hit the device for a doomed save.
                 return cleaned_data
+            # Not saved: just carries the two fields ShellyDriver needs
+            # (ip, reference) before the real instance exists.
+            shelly_preview = Shelly(ip=ip, reference=reference)
             try:
-                ShellyDriver(ip).set_auth(
+                ShellyDriver(shelly_preview).set_auth(
                     settings.SHELLY_AUTH_USER, settings.SHELLY_AUTH_PASSWORD
                 )
             except ShellyError as e:

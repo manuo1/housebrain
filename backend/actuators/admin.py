@@ -1,7 +1,15 @@
 from django.contrib import admin, messages
 from django.utils import timezone
 
-from .models import Radiator
+from .models import Radiator, Shelly
+
+
+@admin.register(Shelly)
+class ShellyAdmin(admin.ModelAdmin):
+    list_display = ("name", "reference", "ip")
+    list_filter = ("reference",)
+    search_fields = ("name", "ip")
+    fields = ("name", "reference", "ip")
 
 
 @admin.register(Radiator)

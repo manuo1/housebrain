@@ -17,6 +17,7 @@ pyftdi==0.57.1 ; sys_platform == 'linux'   # USB-to-serial/I2C/SPI via FTDI adap
 pyusb==1.2.1 ; sys_platform == 'linux'     # Direct USB device access (dépendance optionnelle de Blinka, non utilisée directement)
 pyserial==3.5                              # Serial port communication (multiplateforme, utilisé aussi hors Pi)
 bleak==0.22.3                               # Bluetooth Low Energy (BLE) client, used for BTHome sensor scanning (multiplateforme, gère Windows/Linux/macOS nativement)
+requests==2.32.3                            # HTTP client (multiplateforme), used for Shelly local RPC API calls
 
 #---------------------------------------------------------
 # Web backend (Django + DRF)

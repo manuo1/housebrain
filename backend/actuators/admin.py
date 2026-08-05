@@ -29,9 +29,7 @@ class ShellyAdminForm(forms.ModelForm):
             # (ip, reference) before the real instance exists.
             shelly_preview = Shelly(ip=ip, reference=reference)
             try:
-                ShellyDriver(shelly_preview).set_auth(
-                    settings.SHELLY_AUTH_USER, settings.SHELLY_AUTH_PASSWORD
-                )
+                ShellyDriver(shelly_preview).set_auth(settings.SHELLY_AUTH_PASSWORD)
             except ShellyError as e:
                 raise ValidationError(f"Impossible de sécuriser le Shelly : {e}")
         return cleaned_data

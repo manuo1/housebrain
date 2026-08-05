@@ -9,6 +9,7 @@ import logging
 import requests
 from django.conf import settings
 
+from actuators.models import Shelly
 from core.constants import UNPLUGGED_MODE, LoggerLabel
 
 logger = logging.getLogger("django")
@@ -17,8 +18,18 @@ SHELLY_HTTP_TIMEOUT_SECONDS = 5
 
 # The relay id on single-channel devices (e.g. Shelly 1 Mini Gen3) is
 # always 0 — multi-channel devices are not supported by this codebase yet
-# (see Shelly.Reference on the Shelly model).
+# (see SUPPORTED_REFERENCES below).
 SWITCH_ID = 0
+
+# This driver speaks the generic Shelly Gen2+ RPC protocol, but its switch
+# methods hardcode SWITCH_ID = 0, i.e. a single relay. SUPPORTED_REFERENCES
+# is an explicit allow-list of references validated as single-relay,
+# id=0 devices — NOT a claim that other references use a different
+# protocol. A multi-channel device (e.g. a 2-relay Shelly) would need real
+# code changes here (switch_id as a parameter) before being added to this
+# set; adding a new Shelly.Reference to the model's choices does NOT make
+# it usable with this driver until that's done.
+SUPPORTED_REFERENCES = {Shelly.Reference.SHELLY_1_MINI_GEN3}
 
 
 class ShellyError(Exception):
@@ -38,8 +49,13 @@ def _auth() -> requests.auth.HTTPDigestAuth:
 class ShellyDriver:
     """Driver to control a single Shelly device's relay over its local RPC API"""
 
-    def __init__(self, ip: str):
-        self.ip = ip
+    def __init__(self, shelly: Shelly):
+        if shelly.reference not in SUPPORTED_REFERENCES:
+            raise ShellyError(
+                f"Unsupported Shelly reference {shelly.reference!r}: "
+                f"ShellyDriver only supports {sorted(SUPPORTED_REFERENCES)}"
+            )
+        self.ip = shelly.ip
 
     def set_switch(self, on: bool, toggle_after: float | None = None):
         """

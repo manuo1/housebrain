@@ -2,6 +2,42 @@ from django.db import models
 from django.utils import timezone
 
 
+class Shelly(models.Model):
+    class Reference(models.TextChoices):
+        """Shelly device reference, restricted to models this codebase knows how to drive"""
+
+        SHELLY_1_MINI_GEN3 = "SHELLY_1_MINI_GEN3", "Shelly 1 Mini Gen3"
+
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Nom",
+        help_text="Nom du Shelly",
+    )
+
+    reference = models.CharField(
+        max_length=30,
+        choices=Reference.choices,
+        default=Reference.SHELLY_1_MINI_GEN3,
+        verbose_name="Référence",
+        help_text="Référence exacte du Shelly (détermine le comportement du driver)",
+    )
+
+    ip = models.GenericIPAddressField(
+        protocol="IPv4",
+        unique=True,
+        verbose_name="Adresse IP",
+        help_text="Adresse IP locale du Shelly (réservée sur la box)",
+    )
+
+    class Meta:
+        verbose_name = "Shelly"
+        verbose_name_plural = "Shelly"
+
+    def __str__(self):
+        return f"{self.name} ({self.ip})"
+
+
 class Radiator(models.Model):
     class Importance(models.IntegerChoices):
         """Heating importance level (higher importance = use last for load shedding)"""

@@ -41,7 +41,21 @@ class ShellyAdmin(admin.ModelAdmin):
     list_display = ("name", "reference", "ip")
     list_filter = ("reference",)
     search_fields = ("name", "ip")
-    fields = ("name", "reference", "ip")
+    readonly_fields = ("live_status",)
+    fields = ("name", "reference", "ip", "live_status")
+
+    @admin.display(description="État en direct")
+    def live_status(self, obj):
+        # obj is None on the "add" form (nothing to query yet).
+        if obj is None or obj.pk is None:
+            return "—"
+        try:
+            driver = ShellyDriver(obj)
+            switch_state = "ON" if driver.get_switch_status() else "OFF"
+            input_state = "fermé" if driver.get_input_status() else "ouvert"
+        except ShellyError as e:
+            return f"Injoignable : {e}"
+        return f"Relais : {switch_state} — Entrée SW : {input_state}"
 
 
 @admin.register(Radiator)

@@ -21,6 +21,9 @@ SHELLY_HTTP_TIMEOUT_SECONDS = 5
 # (see SUPPORTED_REFERENCES below).
 SWITCH_ID = 0
 
+# Same single-channel assumption as SWITCH_ID, for the SW input terminal.
+INPUT_ID = 0
+
 # This driver speaks the generic Shelly Gen2+ RPC protocol, but its switch
 # methods hardcode SWITCH_ID = 0, i.e. a single relay. SUPPORTED_REFERENCES
 # is an explicit allow-list of references validated as single-relay,
@@ -86,6 +89,20 @@ class ShellyDriver:
         result = self._rpc_call("Switch.GetStatus", {"id": SWITCH_ID})
         return result["output"]
 
+    def get_input_status(self) -> bool:
+        """
+        Read the current state of the SW input terminal. Meaningful only if
+        something is actually wired to SW (e.g. a reed switch) — works
+        regardless of in_mode (attached/detached), since Input.GetStatus and
+        Switch.GetStatus are independent components with their own state.
+        Returns:
+            bool: True if the input contact is closed, False if open
+        Raises:
+            ShellyError: on communication or device error
+        """
+        result = self._rpc_call("Input.GetStatus", {"id": INPUT_ID})
+        return result["state"]
+
     def get_device_info(self) -> dict:
         """
         Read the device's own identity/auth status. Does not require auth
@@ -115,6 +132,31 @@ class ShellyDriver:
             raise ShellyError(
                 f"Shelly {self.ip} still reports auth disabled after Shelly.SetAuth"
             )
+
+    def configure_detached_input(self):
+        """
+        One-time provisioning: detach the SW input terminal from the relay
+        (in_mode="detached", so wiring something to SW no longer triggers
+        the output) and set its type to "switch" (a maintained contact,
+        e.g. a reed switch or a classic toggle switch — as opposed to
+        "button", a momentary contact).
+
+        IMPORTANT: run this BEFORE wiring anything to SW. Wiring a contact
+        to SW while still in the default (attached) mode can trigger the
+        relay on connection — an unintended door pulse.
+        Raises:
+            ShellyError: on communication or device error
+        """
+        # initial_state must be changed together with in_mode: the default
+        # "match_input" is only valid while in_mode="follow" (device error
+        # -103 "invalid combination" otherwise). "off" is the right resting
+        # state here: after a reboot/power loss, the relay should stay off,
+        # not attempt to restore whatever transient state it was in.
+        self._rpc_call(
+            "Switch.SetConfig",
+            {"id": SWITCH_ID, "config": {"in_mode": "detached", "initial_state": "off"}},
+        )
+        self._rpc_call("Input.SetConfig", {"id": INPUT_ID, "config": {"type": "switch"}})
 
     def _rpc_call(self, method: str, params: dict) -> dict:
         """

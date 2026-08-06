@@ -133,17 +133,17 @@ class ShellyDriver:
                 f"Shelly {self.ip} still reports auth disabled after Shelly.SetAuth"
             )
 
-    def configure_detached_input(self):
+    def set_sw_terminal_as_sensor(self):
         """
-        One-time provisioning: detach the SW input terminal from the relay
-        (in_mode="detached", so wiring something to SW no longer triggers
-        the output) and set its type to "switch" (a maintained contact,
-        e.g. a reed switch or a classic toggle switch — as opposed to
-        "button", a momentary contact).
+        Configure the SW terminal as a readable input, detached from the
+        relay (in_mode="detached", so wiring something to SW no longer
+        triggers the output) and set its type to "switch" (a maintained
+        contact, e.g. a reed switch or a classic toggle switch — as
+        opposed to "button", a momentary contact).
 
         IMPORTANT: run this BEFORE wiring anything to SW. Wiring a contact
-        to SW while still in the default (attached) mode can trigger the
-        relay on connection — an unintended door pulse.
+        to SW while still in the default (relay switch) mode can trigger
+        the relay on connection — an unintended door pulse.
         Raises:
             ShellyError: on communication or device error
         """
@@ -155,6 +155,23 @@ class ShellyDriver:
         self._rpc_call(
             "Switch.SetConfig",
             {"id": SWITCH_ID, "config": {"in_mode": "detached", "initial_state": "off"}},
+        )
+        self._rpc_call("Input.SetConfig", {"id": INPUT_ID, "config": {"type": "switch"}})
+
+    def set_sw_terminal_as_switch(self):
+        """
+        Configure the SW terminal as the relay's physical switch (factory
+        behavior, in_mode="follow"): wiring/toggling SW directly drives
+        the relay output, either locally or remotely. Reverts
+        set_sw_terminal_as_sensor().
+        Raises:
+            ShellyError: on communication or device error
+        """
+        # See set_sw_terminal_as_sensor(): in_mode="follow" requires
+        # initial_state="match_input" (the factory default combination).
+        self._rpc_call(
+            "Switch.SetConfig",
+            {"id": SWITCH_ID, "config": {"in_mode": "follow", "initial_state": "match_input"}},
         )
         self._rpc_call("Input.SetConfig", {"id": INPUT_ID, "config": {"type": "switch"}})
 

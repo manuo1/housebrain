@@ -43,6 +43,7 @@ class ShellyAdmin(admin.ModelAdmin):
     search_fields = ("name", "ip")
     readonly_fields = ("live_status",)
     fields = ("name", "reference", "ip", "live_status")
+    actions = ["set_sw_terminal_as_sensor", "set_sw_terminal_as_switch"]
 
     @admin.display(description="État en direct")
     def live_status(self, obj):
@@ -56,6 +57,26 @@ class ShellyAdmin(admin.ModelAdmin):
         except ShellyError as e:
             return f"Injoignable : {e}"
         return f"Relais : {switch_state} — Entrée SW : {input_state}"
+
+    @admin.action(description="Configurer la borne SW comme capteur (détachée du relais)")
+    def set_sw_terminal_as_sensor(self, request, queryset):
+        for shelly in queryset:
+            try:
+                ShellyDriver(shelly).set_sw_terminal_as_sensor()
+            except ShellyError as e:
+                self.message_user(request, f"{shelly} : {e}", messages.ERROR)
+            else:
+                self.message_user(request, f"{shelly} : borne SW configurée comme capteur.", messages.SUCCESS)
+
+    @admin.action(description="Configurer la borne SW comme interrupteur du relais")
+    def set_sw_terminal_as_switch(self, request, queryset):
+        for shelly in queryset:
+            try:
+                ShellyDriver(shelly).set_sw_terminal_as_switch()
+            except ShellyError as e:
+                self.message_user(request, f"{shelly} : {e}", messages.ERROR)
+            else:
+                self.message_user(request, f"{shelly} : borne SW configurée comme interrupteur.", messages.SUCCESS)
 
 
 @admin.register(Radiator)

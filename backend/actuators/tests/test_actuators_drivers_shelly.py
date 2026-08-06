@@ -139,15 +139,15 @@ def test_set_auth_raises_if_still_disabled_afterwards(mocker, shelly):
 
 
 # ---------------------------
-# configure_detached_input
+# set_sw_terminal_as_sensor / set_sw_terminal_as_switch
 # ---------------------------
-def test_configure_detached_input(mocker, shelly):
+def test_set_sw_terminal_as_sensor(mocker, shelly):
     mock_post = mocker.patch(
         "actuators.drivers.shelly.requests.post",
         return_value=_mock_response(mocker, {"id": 1, "result": {}}),
     )
 
-    ShellyDriver(shelly).configure_detached_input()
+    ShellyDriver(shelly).set_sw_terminal_as_sensor()
 
     switch_call, input_call = mock_post.call_args_list
 
@@ -156,6 +156,28 @@ def test_configure_detached_input(mocker, shelly):
     assert switch_payload["params"] == {
         "id": 0,
         "config": {"in_mode": "detached", "initial_state": "off"},
+    }
+
+    input_payload = input_call.kwargs["json"]
+    assert input_payload["method"] == "Input.SetConfig"
+    assert input_payload["params"] == {"id": 0, "config": {"type": "switch"}}
+
+
+def test_set_sw_terminal_as_switch(mocker, shelly):
+    mock_post = mocker.patch(
+        "actuators.drivers.shelly.requests.post",
+        return_value=_mock_response(mocker, {"id": 1, "result": {}}),
+    )
+
+    ShellyDriver(shelly).set_sw_terminal_as_switch()
+
+    switch_call, input_call = mock_post.call_args_list
+
+    switch_payload = switch_call.kwargs["json"]
+    assert switch_payload["method"] == "Switch.SetConfig"
+    assert switch_payload["params"] == {
+        "id": 0,
+        "config": {"in_mode": "follow", "initial_state": "match_input"},
     }
 
     input_payload = input_call.kwargs["json"]

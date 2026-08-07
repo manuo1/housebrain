@@ -14,7 +14,7 @@ import styles from "./HeatingSchedulePage.module.scss";
 import duplicateHeatingPlan from "../services/duplicateHeatingPlan";
 import HeatingCalendarModel from "../models/HeatingCalendar";
 import { Slot } from "../models/DailyHeatingPlan";
-import DailyHeatingPlan from "../models/DailyHeatingPlan";
+import DailyHeatingPlan, { RawDailyHeatingPlan } from "../models/DailyHeatingPlan";
 import applyAiPlanModification from "../services/applyAiPlanModification";
 
 interface CurrentMonth {
@@ -93,24 +93,37 @@ export default function HeatingSchedulePage() {
     resolvedSlots: Slot[] | null = null
   ) => {
     if (!dailyPlan) return;
-    const newPlan = Object.assign(
-      Object.create(Object.getPrototypeOf(dailyPlan)),
-      dailyPlan,
-      {
-        rooms: dailyPlan.rooms.map((room) => {
-          if (room.id === roomId) {
-            if (resolvedSlots !== null) return { ...room, slots: resolvedSlots };
-            const newSlots = [...room.slots];
-            if (updatedSlot === null && slotIndex !== null) {
-              newSlots.splice(slotIndex, 1);
-            }
-            return { ...room, slots: newSlots };
-          }
-          return room;
-        }),
+
+    // updatedSlot itself is never written into newSlots below: an actual
+    // edit/creation always arrives with resolvedSlots already computed
+    // (see Timeline.handleSlotSave). updatedSlot === null is only used
+    // here as the deletion signal.
+    const newRooms = dailyPlan.rooms.map((room) => {
+      if (room.id !== roomId) return room;
+      if (resolvedSlots !== null) return { ...room, slots: resolvedSlots };
+      const newSlots = [...room.slots];
+      if (updatedSlot === null && slotIndex !== null) {
+        newSlots.splice(slotIndex, 1);
       }
-    ) as DailyHeatingPlan;
-    applyChange(newPlan);
+      return { ...room, slots: newSlots };
+    });
+
+    // Rebuild through the constructor (rather than cloning dailyPlan's
+    // rooms onto its prototype) so raw stays in sync with the edit. raw is
+    // what gets sent to the AI endpoint (applyAiPlanModification) — if it
+    // stayed stale, an AI request made after a manual edit would operate
+    // on the plan as it was before that edit and could silently wipe it
+    // out when the AI's response replaces the whole state.
+    const newRaw: RawDailyHeatingPlan = {
+      date: dailyPlan.date,
+      rooms: newRooms.map((room) => ({
+        room_id: room.id,
+        name: room.name,
+        slots: room.slots,
+      })),
+    };
+
+    applyChange(new DailyHeatingPlan(newRaw));
   };
 
   const handleDuplicationApply = async (payload: DuplicationPayload) => {

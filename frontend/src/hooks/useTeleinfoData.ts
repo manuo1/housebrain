@@ -23,6 +23,9 @@ export default function useTeleinfoData(intervalMs = 1000): UseTeleinfoDataResul
         }
       } catch (err) {
         if (isMounted) {
+          // Clear stale data on error: showing frozen values next to an
+          // error message would look like a live (but wrong) reading.
+          setData(null);
           setError((err as Error).message || "Failed to fetch teleinfo data");
         }
       }

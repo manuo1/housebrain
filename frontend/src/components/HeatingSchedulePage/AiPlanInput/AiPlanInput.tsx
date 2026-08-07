@@ -20,6 +20,7 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
   }, [expanded]);
 
   const handleToggle = () => {
+    if (loading) return;
     if (expanded) {
       setExpanded(false);
       setInstruction("");
@@ -51,6 +52,7 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
       handleSubmit();
     }
     if (e.key === "Escape") {
+      if (loading) return;
       setExpanded(false);
       setInstruction("");
       setError(null);

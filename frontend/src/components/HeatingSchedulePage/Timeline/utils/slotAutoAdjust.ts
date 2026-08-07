@@ -33,8 +33,19 @@ export const calculateOptimalSlotTimes = (clickTime: string, slots: Slot[]): { s
   const clickMin = timeToMinutes(clickTime);
   const { slotBefore, slotAfter } = findAdjacentSlots(clickTime, slots);
 
-  let startMin = clickMin;
-  let endMin = clickMin + 60; // Default 1 hour
+  // No neighboring slot at all (room with no schedule yet): default to a
+  // 1-hour slot at the clicked time instead of falling through to the
+  // day-boundary defaults below, which would otherwise span the entire
+  // day (00:00-23:59) regardless of where the user clicked.
+  if (!slotBefore && !slotAfter) {
+    return {
+      start: minutesToTime(clickMin),
+      end: minutesToTime(Math.min(clickMin + 60, 1439)),
+    };
+  }
+
+  let startMin: number;
+  let endMin: number;
 
   // If there's a slot before, start 1 minute after it ends
   if (slotBefore) {

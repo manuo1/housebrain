@@ -11,14 +11,12 @@ interface UseHeatingPlanHistoryResult {
   hasChanges: boolean;
   applyChange: (newPlan: DailyHeatingPlan) => void;
   undo: () => void;
-  reset: () => void;
   save: () => Promise<void>;
 }
 
 export function useHeatingPlanHistory(selectedDate: string | null): UseHeatingPlanHistoryResult {
   const { accessToken, refresh } = useAuth();
   const [dailyPlan, setDailyPlan] = useState<DailyHeatingPlan | null>(null);
-  const [initialPlan, setInitialPlan] = useState<DailyHeatingPlan | null>(null);
   const [history, setHistory] = useState<DailyHeatingPlan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -33,7 +31,6 @@ export function useHeatingPlanHistory(selectedDate: string | null): UseHeatingPl
       try {
         const data = await fetchDailyHeatingPlan(selectedDate!);
         setDailyPlan(data);
-        setInitialPlan(data);
         setHistory([]);
       } catch (error) {
         console.error("Error loading daily plan:", error);
@@ -56,11 +53,6 @@ export function useHeatingPlanHistory(selectedDate: string | null): UseHeatingPl
     setHistory((prev) => prev.slice(0, -1));
   }, [history]);
 
-  const reset = useCallback(() => {
-    setDailyPlan(initialPlan);
-    setHistory([]);
-  }, [initialPlan]);
-
   const save = useCallback(async (): Promise<void> => {
     if (!accessToken) throw new Error("No access token available");
 
@@ -68,7 +60,6 @@ export function useHeatingPlanHistory(selectedDate: string | null): UseHeatingPl
       await saveDailyHeatingPlan(dailyPlanRef.current!, accessToken, refresh);
       const data = await fetchDailyHeatingPlan(selectedDate!);
       setDailyPlan(data);
-      setInitialPlan(data);
       setHistory([]);
     } catch (error) {
       console.error("Error saving daily plan:", error);
@@ -83,7 +74,6 @@ export function useHeatingPlanHistory(selectedDate: string | null): UseHeatingPl
     hasChanges: history.length > 0,
     applyChange,
     undo,
-    reset,
     save,
   };
 }

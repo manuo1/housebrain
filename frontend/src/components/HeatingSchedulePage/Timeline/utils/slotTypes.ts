@@ -13,6 +13,7 @@ export const isOnOff = (value: string): boolean => {
 };
 
 export const isTemperature = (value: string): boolean => {
+  if (value === "") return false;
   const tempValue = Number(value);
   return !isNaN(tempValue);
 };

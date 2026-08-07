@@ -17,7 +17,7 @@ interface RawRoom {
   slots?: RawSlot[];
 }
 
-interface RawDailyHeatingPlan {
+export interface RawDailyHeatingPlan {
   date?: string | null;
   rooms?: RawRoom[];
 }

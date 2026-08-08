@@ -56,6 +56,7 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 - [Téléinfo - Lecture compteur](docs/backend/teleinfo.md)
 - [Pilotage radiateurs](docs/backend/radiator_control.md)
 - [Equipment - Interrupteurs à impulsion (Shelly)](docs/backend/equipment_pulse_switch.md)
+- [Notifications](docs/backend/notifications.md)
 - [Planification chauffage](docs/backend/heating_planning.md)
 - [Contrôle chauffage](docs/backend/heating_control.md)
 - [Gestion des pièces](docs/backend/rooms.md)
@@ -92,4 +93,4 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Août 2026

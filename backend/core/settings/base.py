@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "consumption",
     "equipment",
     "heating",
+    "notifications",
     "rest_framework",
     "rest_framework_simplejwt",
     "rooms",
@@ -186,3 +187,23 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 # enabled on that device. The username is always "admin" (fixed by the
 # Shelly firmware, hardcoded in actuators/drivers/shelly.py).
 SHELLY_AUTH_PASSWORD = os.getenv("SHELLY_AUTH_PASSWORD")
+
+
+# ============================================
+# NOTIFICATIONS
+# ============================================
+# SMTP settings dedicated to notifications, kept separate from any other
+# potential email use. Gmail + app password: standard SMTP auth is disabled
+# on regular Gmail passwords, an app password is required instead.
+NOTIFICATIONS_EMAIL_HOST = os.getenv("NOTIFICATIONS_EMAIL_HOST", "smtp.gmail.com")
+NOTIFICATIONS_EMAIL_PORT = int(os.getenv("NOTIFICATIONS_EMAIL_PORT", "587"))
+NOTIFICATIONS_EMAIL_USER = os.getenv("NOTIFICATIONS_EMAIL_USER")
+NOTIFICATIONS_EMAIL_PASSWORD = os.getenv("NOTIFICATIONS_EMAIL_PASSWORD")
+NOTIFICATIONS_EMAIL_RECIPIENT = os.getenv("NOTIFICATIONS_EMAIL_RECIPIENT")
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = NOTIFICATIONS_EMAIL_HOST
+EMAIL_PORT = NOTIFICATIONS_EMAIL_PORT
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = NOTIFICATIONS_EMAIL_USER
+EMAIL_HOST_PASSWORD = NOTIFICATIONS_EMAIL_PASSWORD

@@ -27,6 +27,7 @@ class LoggerLabel(StrEnum):
     RADIATORSYNC = "[Radiator Synchronisation]"
     BLUETOOTHLISTENER = "[BluetoothListener]"
     LOADSHEDDING = "[loadShedding]"
+    NOTIFICATIONS = "[Notifications]"
 
 
 UNPLUGGED_MODE = os.getenv("UNPLUGGED_MODE", "False") == "True"

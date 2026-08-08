@@ -36,7 +36,9 @@ class PulseSwitchTriggerView(APIView):
     def post(self, request, pk):
         get_object_or_404(PulseSwitch, pk=pk)
         try:
-            PulseSwitchService.trigger(pk)
+            PulseSwitchService.trigger(
+                pk, triggered_by_username=request.user.username
+            )
         except PulseSwitchBusyError as e:
             return Response({"detail": str(e)}, status=status.HTTP_409_CONFLICT)
         except PulseSwitchError as e:

@@ -60,13 +60,16 @@ def test_trigger_not_found(authenticated_client):
 @pytest.mark.django_db
 def test_trigger_success(authenticated_client, mocker):
     pulse_switch = PulseSwitchFactory()
-    mocker.patch("equipment.api.views.PulseSwitchService.trigger")
+    mock_trigger = mocker.patch("equipment.api.views.PulseSwitchService.trigger")
 
     response = authenticated_client.post(
         f"/api/equipment/pulse-switches/{pulse_switch.pk}/trigger/"
     )
 
     assert response.status_code == status.HTTP_200_OK
+    mock_trigger.assert_called_once_with(
+        pulse_switch.pk, triggered_by_username="testuser"
+    )
 
 
 @pytest.mark.django_db

@@ -19,7 +19,9 @@ class PulseSwitchAdmin(admin.ModelAdmin):
     def trigger_selected(self, request, queryset):
         for pulse_switch in queryset:
             try:
-                PulseSwitchService.trigger(pulse_switch.pk)
+                PulseSwitchService.trigger(
+                    pulse_switch.pk, triggered_by_username=request.user.username
+                )
             except PulseSwitchError as e:
                 self.message_user(
                     request,

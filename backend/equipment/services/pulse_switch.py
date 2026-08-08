@@ -5,6 +5,7 @@ from django.utils import timezone
 from actuators.drivers.shelly import ShellyDriver, ShellyError
 from core.constants import LoggerLabel
 from equipment.models import PulseSwitch
+from notifications.services.notification_service import NotificationService
 
 logger = logging.getLogger("django")
 
@@ -31,7 +32,7 @@ class PulseSwitchService:
     """
 
     @staticmethod
-    def trigger(pulse_switch_id: int) -> None:
+    def trigger(pulse_switch_id: int, triggered_by_username: str = "") -> None:
         try:
             pulse_switch = PulseSwitch.objects.select_related("shelly").get(
                 pk=pulse_switch_id
@@ -79,3 +80,11 @@ class PulseSwitchService:
             PulseSwitch.objects.filter(pk=pulse_switch_id).update(
                 status=PulseSwitch.Status.IDLE
             )
+
+        # Notified only on success, after the lock is released — a failed
+        # or busy trigger doesn't warrant an email.
+        NotificationService.notify(
+            event_code=f"pulse_switch_triggered_{pulse_switch.name}",
+            message=f"Impulsion déclenchée sur « {pulse_switch.name} ».",
+            triggered_by_username=triggered_by_username,
+        )

@@ -24,6 +24,7 @@ class LoggerLabel(StrEnum):
     SHELLYDRIVER = "[Shelly Driver]"
     PULSESWITCH = "[Pulse Switch]"
     MONITORING = "[Monitoring]"
+    DEVICEIO = "[DeviceIO]"
     RADIATORSYNC = "[Radiator Synchronisation]"
     BLUETOOTHLISTENER = "[BluetoothListener]"
     LOADSHEDDING = "[loadShedding]"

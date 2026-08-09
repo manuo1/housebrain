@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "ai",
     "authentication",
     "consumption",
+    "device",
     "equipment",
     "heating",
     "notifications",

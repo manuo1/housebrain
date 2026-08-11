@@ -51,3 +51,6 @@ class DoorContactSensor(models.Model):
     def is_closed(self) -> bool:
         raw = self.sensor_true_false.read_state()
         return raw if self.closed_when_true else not raw
+
+    def get_readable_state(self) -> str:
+        return "Porte fermée" if self.is_closed() else "Porte ouverte"

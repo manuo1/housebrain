@@ -49,6 +49,6 @@ class DoorContactSensorAdmin(admin.ModelAdmin):
     @admin.display(description="État")
     def current_state(self, obj):
         try:
-            return "Porte fermée" if obj.is_closed() else "Porte ouverte"
+            return obj.get_readable_state()
         except DeviceDriverError as e:
             return f"Erreur : {e}"

@@ -1,0 +1,40 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.badge {
+  @include flex-center;
+  width: 26px;
+  height: 26px;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+  transition: $transition-all;
+
+  .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  &.gray {
+    background: rgba(153, 153, 153, 0.15);
+    color: $text-disabled;
+  }
+
+  &.red {
+    background: rgba(255, 100, 50, 0.18);
+    color: $color-orange;
+  }
+
+  &.blue {
+    background: rgba(100, 150, 255, 0.18);
+    color: #88bbff;
+  }
+
+  &.yellow {
+    background: rgba(255, 200, 0, 0.2);
+    color: $color-warning;
+  }
+
+  &.pulse {
+    @include pulse-animation;
+  }
+}

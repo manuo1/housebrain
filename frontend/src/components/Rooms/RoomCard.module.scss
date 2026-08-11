@@ -1,15 +1,20 @@
 @use '../../styles/abstracts/variables' as *;
 @use '../../styles/abstracts/mixins' as *;
 
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: $z-index-overlay;
+}
+
 .roomCard {
   @include flex-column;
-  flex: 1;
-  gap: 10px;
-  min-width: 150px;
-  max-width: 240px;
+  width: 150px;
+  gap: 8px;
   padding: 10px;
   position: relative;
-  overflow: hidden;
+  cursor: pointer;
   @include card-base;
   @include card-hover;
 
@@ -18,5 +23,47 @@
     font-size: 14px;
     color: $text-secondary;
     text-align: left;
+    @include text-ellipsis;
+  }
+
+  .miniRow {
+    @include flex-between;
+  }
+
+  .tempMini {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+    .tempValue {
+      font-size: $font-size-md;
+      font-weight: $font-weight-bold;
+      color: $color-primary;
+    }
+
+    .noData {
+      font-size: $font-size-md;
+      color: $text-dark;
+    }
+  }
+
+  &.expanded {
+    z-index: $z-index-dropdown;
+    border-color: $color-primary;
+  }
+
+  .details {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 150px;
+    @include flex-column;
+    gap: 8px;
+    padding: 10px;
+    cursor: default;
+    z-index: $z-index-dropdown;
+    @include card-base;
+    box-shadow: $shadow-xl, $shadow-primary;
+    border-color: $color-primary;
   }
 }

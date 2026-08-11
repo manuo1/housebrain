@@ -1,0 +1,61 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.equipmentList {
+  background: $gradient-bg;
+  border-radius: $radius-xl;
+  padding: $spacing-base;
+  box-shadow: $shadow-lg;
+  border: 1px solid $border-medium;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-base;
+  overflow-y: auto;
+  align-content: flex-start;
+  justify-content: center;
+  @include custom-scrollbar;
+
+  .loading,
+  .error {
+    @include flex-column-center;
+    gap: $spacing-base;
+    height: 100%;
+    color: $text-secondary;
+  }
+
+  .loading {
+    .spinner {
+      @include spinner(48px, 4px, $color-primary);
+    }
+  }
+
+  .error {
+    .errorIcon {
+      font-size: $font-size-3xl;
+      filter: drop-shadow(0 0 8px rgba(255, 100, 100, 0.4));
+    }
+
+    p {
+      color: #ff6464;
+      font-size: $font-size-md;
+    }
+
+    .retryButton {
+      @include button-primary;
+    }
+  }
+
+  .noEquipment {
+    width: 100%;
+    text-align: center;
+    color: $text-disabled;
+    padding: $spacing-2xl;
+  }
+}
+
+@include respond-to('md') {
+  .equipmentList {
+    gap: $gap-sm;
+  }
+}

@@ -15,13 +15,21 @@
       flex-direction: column;
     }
 
-    .roomsSection,
+    .leftColumn,
     .statsSection {
       flex: 1;
       @include flex-column;
       gap: $gap-lg;
       min-height: 0;
       min-width: 0;
+    }
+
+    .leftColumn {
+      .roomsSection,
+      .equipmentSection {
+        flex: 1;
+        min-height: 0;
+      }
     }
 
     .statsSection {

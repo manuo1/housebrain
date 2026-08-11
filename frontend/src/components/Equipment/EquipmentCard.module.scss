@@ -1,0 +1,32 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.equipmentCard {
+  @include flex-column;
+  width: 150px;
+  gap: 8px;
+  padding: 10px;
+  @include card-base;
+
+  .title {
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-md;
+    color: $text-secondary;
+    text-align: left;
+    @include text-ellipsis;
+  }
+
+  .state {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $color-primary;
+  }
+
+  &.unavailable {
+    opacity: 0.5;
+
+    .state {
+      color: $text-dark;
+    }
+  }
+}

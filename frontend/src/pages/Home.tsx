@@ -1,4 +1,5 @@
 import RoomsList from "../components/Rooms/RoomsList";
+import EquipmentList from "../components/Equipment/EquipmentList";
 import RealtimePowerMonitor from "../components/RealtimePowerMonitor/RealtimePowerMonitor";
 import ConsumptionSummary from "../components/ConsumptionSummary/ConsumptionSummary";
 import useTeleinfoData from "../hooks/useTeleinfoData";
@@ -10,8 +11,13 @@ export default function Home() {
   return (
     <div className={styles.home}>
       <div className={styles.dashboardGrid}>
-        <div className={styles.roomsSection}>
-          <RoomsList />
+        <div className={styles.leftColumn}>
+          <div className={styles.roomsSection}>
+            <RoomsList />
+          </div>
+          <div className={styles.equipmentSection}>
+            <EquipmentList />
+          </div>
         </div>
         <div className={styles.statsSection}>
           {teleinfoData && (

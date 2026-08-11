@@ -47,6 +47,15 @@ class SingleButtonEquipment(Equipment):
 class GarageDoor(SingleButtonEquipment):
     interaction_type = "long_press_with_state"
 
+    # Used by equipment.api.selectors to fetch a full card in one SQL
+    # query regardless of the number of equipment rows — without this,
+    # each get_readable_state()/trigger() call chases its FK chain with
+    # separate queries (N+1).
+    select_related_fields = (
+        "door_sensor__sensor_true_false__device_io__device",
+        "motor__relay_on_off__device_io__device",
+    )
+
     name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
 
     motor = models.OneToOneField(

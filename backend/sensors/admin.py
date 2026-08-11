@@ -1,9 +1,10 @@
 from django import forms
 from django.contrib import admin
 
+from device.drivers.base import DeviceDriverError
 from sensors.utils.cache_sensors_data import get_sensors_data_in_cache
 
-from .models import TemperatureSensor
+from .models import DoorContactSensor, TemperatureSensor
 
 
 class TemperatureSensorForm(forms.ModelForm):
@@ -38,3 +39,16 @@ class TemperatureSensorForm(forms.ModelForm):
 class TemperatureSensorAdmin(admin.ModelAdmin):
     form = TemperatureSensorForm
     list_display = ["name", "mac_address"]
+
+
+@admin.register(DoorContactSensor)
+class DoorContactSensorAdmin(admin.ModelAdmin):
+    list_display = ("name", "current_state")
+    readonly_fields = ("current_state",)
+
+    @admin.display(description="État")
+    def current_state(self, obj):
+        try:
+            return "Porte fermée" if obj.is_closed() else "Porte ouverte"
+        except DeviceDriverError as e:
+            return f"Erreur : {e}"

@@ -1,0 +1,28 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.banner {
+  position: fixed;
+  top: calc($navbar-height + $spacing-base);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-sm $spacing-lg;
+  background: $bg-darker;
+  border: 1px solid $color-primary;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-xl, $shadow-primary;
+  z-index: $z-index-navbar + 1;
+
+  .name {
+    font-weight: $font-weight-semibold;
+    color: $text-secondary;
+  }
+
+  .message {
+    color: $color-danger;
+    font-weight: $font-weight-medium;
+  }
+}

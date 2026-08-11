@@ -30,18 +30,4 @@
       color: $text-dark;
     }
   }
-
-  .authNotice {
-    position: absolute;
-    inset: 0;
-    @include flex-center;
-    background: rgba(0, 0, 0, 0.55);
-    border-radius: $radius-lg;
-    color: $color-danger;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-semibold;
-    text-align: center;
-    padding: $spacing-sm;
-    z-index: $z-index-dropdown;
-  }
 }

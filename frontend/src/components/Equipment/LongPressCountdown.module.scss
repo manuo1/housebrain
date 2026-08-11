@@ -1,0 +1,40 @@
+@use '../../styles/abstracts/variables' as *;
+@use '../../styles/abstracts/mixins' as *;
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  @include flex-center;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: $radius-lg;
+  z-index: $z-index-dropdown;
+}
+
+.ring {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  transform: rotate(-90deg);
+
+  .track {
+    fill: none;
+    stroke: $border-medium;
+    stroke-width: 4;
+  }
+
+  .progress {
+    fill: none;
+    stroke: $color-primary;
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.05s linear;
+  }
+}
+
+.value {
+  position: relative;
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  color: $text-primary;
+  @include text-glow($color-primary);
+}

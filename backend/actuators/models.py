@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from device.models import RelayOnOff
+
 
 class Radiator(models.Model):
     class Importance(models.IntegerChoices):
@@ -102,3 +104,38 @@ class Radiator(models.Model):
             f"Actual: {self.get_actual_state_display()} | "
             f"Requested: {self.get_requested_state_display()} @ {last_req}"
         )
+
+
+class SingleButtonMotor(models.Model):
+    """
+    A motor controlled like a single push-button (e.g. a garage door motor
+    wired to a Shelly relay): each trigger() is one momentary press. The
+    motor's own internal cycle (e.g. open -> stop -> close -> stop) decides
+    what that press actually does — not deducible from software, so this
+    model deliberately tracks no state and knows no direction.
+    """
+
+    relay_on_off = models.OneToOneField(
+        RelayOnOff,
+        on_delete=models.CASCADE,
+        related_name="single_button_motor",
+        verbose_name="Relais",
+    )
+
+    name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
+
+    pulse_seconds = models.FloatField(
+        default=1,
+        verbose_name="Durée du pulse (s)",
+        help_text="Durée d'activation du relais avant relâchement automatique",
+    )
+
+    class Meta:
+        verbose_name = "Moteur bouton unique"
+        verbose_name_plural = "Moteurs bouton unique"
+
+    def __str__(self):
+        return self.name
+
+    def trigger(self) -> None:
+        self.relay_on_off.pulse(self.pulse_seconds)

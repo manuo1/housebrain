@@ -1,7 +1,9 @@
 from django.contrib import admin, messages
 from django.utils import timezone
 
-from .models import Radiator
+from device.drivers.base import DeviceDriverError
+
+from .models import Radiator, SingleButtonMotor
 
 
 @admin.register(Radiator)
@@ -64,3 +66,31 @@ class RadiatorAdmin(admin.ModelAdmin):
             f"{updated} radiateur(s) ont été éteins.",
             messages.SUCCESS,
         )
+
+
+@admin.register(SingleButtonMotor)
+class SingleButtonMotorAdmin(admin.ModelAdmin):
+    list_display = ("name", "relay_on_off", "pulse_seconds")
+    search_fields = ("name",)
+
+    actions = ["trigger_selected"]
+
+    @admin.action(description="Déclencher (trigger) les moteurs sélectionnés")
+    def trigger_selected(self, request, queryset):
+        triggered = 0
+        for motor in queryset:
+            try:
+                motor.trigger()
+                triggered += 1
+            except DeviceDriverError as e:
+                self.message_user(
+                    request,
+                    f"{motor.name} : échec du déclenchement ({e})",
+                    messages.ERROR,
+                )
+        if triggered:
+            self.message_user(
+                request,
+                f"{triggered} moteur(s) déclenché(s).",
+                messages.SUCCESS,
+            )

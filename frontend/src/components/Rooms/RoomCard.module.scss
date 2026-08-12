@@ -67,3 +67,18 @@
     border-color: $color-primary;
   }
 }
+
+@include respond-to('md') {
+  .roomCard {
+    box-sizing: border-box;
+    width: calc(50% - #{$gap-sm} / 2);
+    min-width: 120px;
+    max-width: 150px;
+
+    .details {
+      width: 100%;
+      min-width: 120px;
+      max-width: 150px;
+    }
+  }
+}

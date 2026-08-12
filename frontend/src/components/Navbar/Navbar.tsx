@@ -35,13 +35,10 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const consumptionLinks = [
-    { to: "/teleinfo", icon: "⚡", text: "Téléinformation" },
-    { to: "/consumption", icon: "📈", text: "Historique" },
-  ];
-
-  const heatingLinks = [
-    { to: "/heating/schedule", icon: "⚙️", text: "Planning" },
+  const menuLinks = [
+    { to: "/teleinfo", text: "Téléinformation" },
+    { to: "/consumption", text: "Suivi consommation" },
+    { to: "/heating/schedule", text: "Chauffages" },
   ];
 
   return (
@@ -52,8 +49,7 @@ export default function Navbar() {
           <span>HouseBrain</span>
         </Link>
         <div className={styles.navigation}>
-          <Dropdown title="Consommation" icon="⚡" links={consumptionLinks} />
-          <Dropdown title="Chauffage" icon="🔥" links={heatingLinks} />
+          <Dropdown links={menuLinks} />
           <AuthDropdown />
         </div>
       </div>

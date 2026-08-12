@@ -9,23 +9,6 @@
   .dropdownLink {
     padding: $spacing-md $spacing-base;
     font-size: $font-size-sm;
-    gap: 0.6rem;
     margin: 0 0.4rem;
-
-    .icon {
-      font-size: $font-size-md;
-    }
-  }
-}
-
-@include respond-to('xs') {
-  .dropdown {
-    .dropdownToggle {
-      padding: $spacing-md $spacing-sm;
-
-      .arrow {
-        font-size: $font-size-base;
-      }
-    }
   }
 }

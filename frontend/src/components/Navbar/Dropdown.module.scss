@@ -8,90 +8,52 @@
     background: none;
     border: none;
     color: $text-secondary;
-    font-size: $font-size-md;
-    font-weight: $font-weight-medium;
-    padding: $spacing-md clamp(0.25rem, -0.1021rem + 1.5023vw, 1.25rem);
+    padding: $spacing-md;
     border-radius: $radius-base;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    justify-content: center;
     transition: $transition-all;
-    font-family: inherit;
 
     &:hover {
       background-color: rgba(74, 158, 255, 0.1);
       color: $color-primary;
-      transform: translateY(-1px);
     }
 
     &.active {
       background-color: rgba(74, 158, 255, 0.2);
       color: $color-primary;
-
-      .arrow {
-        transform: rotate(180deg);
-      }
     }
 
-    .titleIcon {
-      font-size: $font-size-md;
-    }
-
-    .arrow {
-      font-size: $font-size-sm;
-      transition: $transition-transform;
-      opacity: $opacity-muted;
+    .hamburger {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
     }
   }
 
   .dropdownMenu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 8px);
     right: 0;
-    background: $gradient-bg;
+    background: $bg-darker;
     border: 1px solid $border-medium;
-    border-radius: $radius-lg;
-    box-shadow: $shadow-lg;
+    border-radius: $radius-base;
+    box-shadow: $shadow-md;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 220px;
-    backdrop-filter: blur(20px);
-    padding: $spacing-sm 0;
+    transform: translateY(-6px);
+    transition: all 0.2s ease;
+    min-width: 200px;
+    padding: $spacing-xs 0;
 
     &.show {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: -8px;
-      right: 20px;
-      width: 16px;
-      height: 16px;
-      background: $gradient-bg;
-      border: 1px solid $border-medium;
-      border-bottom: none;
-      border-right: none;
-      transform: rotate(45deg);
-      border-radius: 2px;
-    }
-  }
-}
-
-/* Responsive */
-@include respond-to('sm') {
-  .dropdownToggle {
-    .title {
-      display: none;
-    }
-    .titleIcon {
-      font-size: $font-size-2xl !important;
     }
   }
 }

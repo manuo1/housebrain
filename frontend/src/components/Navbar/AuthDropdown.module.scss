@@ -8,69 +8,61 @@
   .authToggle {
     background: none;
     border: none;
-    color: $text-secondary;
-    font-size: $font-size-md;
-    font-weight: $font-weight-medium;
-    padding: $spacing-md $spacing-lg;
+    padding: $spacing-md;
     border-radius: $radius-base;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    justify-content: center;
     transition: $transition-all;
-    font-family: inherit;
 
     &:hover {
       background-color: rgba(74, 158, 255, 0.1);
-      color: $color-primary;
-      transform: translateY(-1px);
     }
 
     &.active {
       background-color: rgba(74, 158, 255, 0.2);
-      color: $color-primary;
     }
 
-    .icon {
-      font-size: $font-size-lg;
+    .authIcon {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: $text-secondary;
+      stroke-width: 2;
+      transition: $transition-all;
+
+      &.connected {
+        fill: $color-primary;
+        stroke: $color-primary;
+        filter: drop-shadow(0 0 6px rgba(74, 158, 255, 0.6));
+      }
+
+      .slash {
+        stroke: $color-danger;
+      }
     }
   }
 
   .authMenu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 8px);
     right: 0;
-    background: $gradient-bg;
+    background: $bg-darker;
     border: 1px solid $border-medium;
-    border-radius: $radius-lg;
-    box-shadow: $shadow-lg;
+    border-radius: $radius-base;
+    box-shadow: $shadow-md;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(-6px);
+    transition: all 0.2s ease;
     min-width: 280px;
-    backdrop-filter: blur(20px);
     padding: $spacing-lg;
 
     &.show {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: -8px;
-      right: 20px;
-      width: 16px;
-      height: 16px;
-      background: $gradient-bg;
-      border: 1px solid $border-medium;
-      border-bottom: none;
-      border-right: none;
-      transform: rotate(45deg);
-      border-radius: 2px;
     }
   }
 }
@@ -165,10 +157,6 @@
     background: rgba(255, 255, 255, 0.05);
     border-radius: $radius-base;
 
-    .userIcon {
-      font-size: $font-size-2xl;
-    }
-
     .userName {
       color: $text-primary;
       font-weight: $font-weight-semibold;
@@ -198,12 +186,7 @@
 @include respond-to('md') {
   .authDropdown {
     .authToggle {
-      padding: $spacing-sm $gap-md;
-      font-size: $font-size-sm;
-
-      .icon {
-        font-size: $font-size-base;
-      }
+      padding: $spacing-sm;
     }
 
     .authMenu {
@@ -230,8 +213,7 @@
 @include respond-to('xs') {
   .authDropdown {
     .authToggle {
-      padding: 0.4rem 0.6rem;
-      font-size: $font-size-2xl;
+      padding: 0.4rem;
     }
 
     .authMenu {

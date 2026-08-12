@@ -55,16 +55,19 @@ export default function AuthDropdown() {
       <button
         className={`${styles.authToggle} ${isOpen ? styles.active : ""}`}
         onClick={toggleDropdown}
+        aria-label={user ? "Compte connecté" : "Compte non connecté"}
       >
-        <span className={styles.icon}>👤</span>
-        {user ? "✅" : "🚫"}
+        <svg className={`${styles.authIcon} ${user ? styles.connected : ""}`} viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+          {!user && <line className={styles.slash} x1="4" y1="20" x2="20" y2="4" />}
+        </svg>
       </button>
 
       <div className={`${styles.authMenu} ${isOpen ? styles.show : ""}`}>
         {user ? (
           <div className={styles.userMenu}>
             <div className={styles.userInfo}>
-              <span className={styles.userIcon}>👤</span>
               <span className={styles.userName}>{user.username}</span>
             </div>
             <button onClick={handleLogout} className={styles.logoutButton}>

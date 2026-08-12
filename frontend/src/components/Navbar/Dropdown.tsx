@@ -5,17 +5,14 @@ import styles from "./Dropdown.module.scss";
 
 interface NavLink {
   to: string;
-  icon?: string;
   text: string;
 }
 
 interface DropdownProps {
-  title: string;
   links: NavLink[];
-  icon?: string;
 }
 
-export default function Dropdown({ title, links, icon }: DropdownProps) {
+export default function Dropdown({ links }: DropdownProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isTouchDevice, setIsTouchDevice] = useState<boolean>(false);
   const location = useLocation();
@@ -52,15 +49,18 @@ export default function Dropdown({ title, links, icon }: DropdownProps) {
       <button
         className={`${styles.dropdownToggle} ${isOpen ? styles.active : ""}`}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Menu"
       >
-        {icon && <span className={styles.titleIcon}>{icon}</span>}
-        <span className={styles.title}>{title}</span>
-        <span className={styles.arrow}>▾</span>
+        <svg className={styles.hamburger} viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="17" x2="20" y2="17" />
+        </svg>
       </button>
 
       <div className={`${styles.dropdownMenu} ${isOpen ? styles.show : ""}`}>
         {links.map((link, index) => (
-          <DropdownLink key={index} to={link.to} icon={link.icon} text={link.text} />
+          <DropdownLink key={index} to={link.to} text={link.text} />
         ))}
       </div>
     </div>

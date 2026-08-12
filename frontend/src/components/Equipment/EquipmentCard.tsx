@@ -60,6 +60,10 @@ export default function EquipmentCard({ equipment }: EquipmentCardProps) {
         onTouchEnd={handlePressEnd}
         onTouchCancel={handlePressEnd}
       >
+        <svg className={styles.holdIcon} viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" fill="none" strokeWidth="1.5" />
+          <circle cx="12" cy="12" r="3.5" />
+        </svg>
         <div className={styles.title}>{equipment.name}</div>
         <div className={styles.state}>
           {equipment.operational ? equipment.state : "Indisponible"}

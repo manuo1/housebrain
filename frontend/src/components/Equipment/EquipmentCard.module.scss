@@ -7,13 +7,35 @@
   gap: 8px;
   padding: 10px;
   position: relative;
+  cursor: pointer;
+  transition: $transition-all;
   @include card-base;
+  background: linear-gradient(145deg, #2a3a4d 0%, #16181c 100%);
+  border-color: rgba(74, 158, 255, 0.35);
+
+  &:active {
+    transform: scale(0.96);
+    border-color: $color-primary;
+    box-shadow: $shadow-primary;
+  }
+
+  .holdIcon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    stroke: $color-primary;
+    fill: $color-primary;
+    opacity: 0.55;
+  }
 
   .title {
     font-weight: $font-weight-semibold;
     font-size: $font-size-md;
     color: $text-secondary;
     text-align: left;
+    padding-right: 16px;
     @include text-ellipsis;
   }
 
@@ -25,6 +47,11 @@
 
   &.unavailable {
     opacity: 0.5;
+    cursor: default;
+
+    .holdIcon {
+      opacity: 0.25;
+    }
 
     .state {
       color: $text-dark;

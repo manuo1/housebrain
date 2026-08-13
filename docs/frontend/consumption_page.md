@@ -25,45 +25,52 @@ Visualisation des données de consommation électrique journalière avec possibi
 ```
 src/
 ├── pages/
-│   └── ConsumptionPage.jsx              # Page principale (2 blocs)
+│   └── ConsumptionPage.tsx              # Page principale (2 blocs), export DailyConsumptionPage
 ├── components/
 │   └── ConsumptionBlock/
-│       ├── ConsumptionBlock.jsx         # Bloc graphique complet
+│       ├── ConsumptionBlock.tsx         # Bloc graphique complet
 │       ├── FilterBar/
-│       │   ├── FilterBar.jsx            # Barre de filtres
-│       │   ├── TypeSelector.jsx         # Sélecteur Wh/W/€
-│       │   ├── TimeStepSelector.jsx     # Sélecteur résolution
-│       │   └── DateSelector.jsx         # Sélecteur date
-│       ├── StepChart/                   # Graphique custom (voir doc)
+│       │   ├── FilterBar.tsx            # Barre de filtres
+│       │   ├── TypeSelector.tsx         # Sélecteur Wh/W/€
+│       │   ├── TimeStepSelector.tsx     # Sélecteur résolution
+│       │   └── DateSelector.tsx         # Sélecteur date
+│       ├── StepChart/                   # Graphique custom (voir doc dédiée)
+│       │   ├── StepChart.tsx
+│       │   ├── Axis/                    # AxisX, AxisY
+│       │   ├── GridLines/               # VerticalGridLines, HorizontalGridLines
+│       │   └── DrawArea/
+│       │       └── DataPoint/           # AreaRectangle, LineRectangle, HoverRectangle, DataPoint
 │       └── TotalsCards/
-│           ├── TotalsCards.jsx          # Container des totaux
-│           └── TotalCard.jsx            # Carte individuelle
+│           ├── TotalsCards.tsx          # Container des totaux
+│           └── TotalCard.tsx            # Carte individuelle
+├── constants/
+│   └── consumptionConstants.ts          # VALUE_TYPES (wh/average_watt/euros), STEP_OPTIONS (1/30/60)
 ├── services/
-│   └── fetchDailyConsumption.js         # Appel API
+│   └── fetchDailyConsumption.ts         # Appel API
 ├── transformers/
 │   └── consumptionToChart/              # Logique de transformation
-│       ├── consumptionToChart.js        # Orchestrateur principal
-│       ├── computeAxisX.js              # Labels heures
-│       ├── computeAxisY.js              # Labels valeurs + max
-│       ├── computeChartValues.js        # Transformation points
-│       ├── computeAreaHeight.js         # Hauteur barre (%)
-│       ├── computePointColors.js        # Couleurs périodes tarifaires
-│       ├── computeLineHeight.js         # Delta point suivant
-│       ├── computeTooltip.js            # Contenu tooltip
-│       └── constants.js                 # Couleurs + config
+│       ├── consumptionToChart.ts        # Orchestrateur principal
+│       ├── computeAxisX.ts              # Labels heures
+│       ├── computeAxisY.ts              # Labels valeurs + max
+│       ├── computeChartValues.ts        # Transformation points
+│       ├── computeAreaHeight.ts         # Hauteur barre (%)
+│       ├── computePointColors.ts        # Couleurs périodes tarifaires
+│       ├── computeLineHeight.ts         # Delta point suivant
+│       ├── computeTooltip.ts            # Contenu tooltip
+│       └── constants.ts                 # Couleurs + config
 └── models/
-    └── DailyConsumption.js              # Modèle de données
+    └── DailyConsumption.ts              # Modèle de données (typé)
 ```
 
 ---
 
 ## Page ConsumptionPage
 
-**Fichier :** `src/pages/ConsumptionPage.jsx`
+**Fichier :** `src/pages/ConsumptionPage.tsx` (export `DailyConsumptionPage`)
 
 ### Structure
 
-```jsx
+```tsx
 <div className={styles.dailyConsumption}>
   <div className={styles.graphBlock}>
     <ConsumptionBlock />
@@ -80,17 +87,17 @@ src/
 
 ## Composant ConsumptionBlock
 
-**Fichier :** `src/components/ConsumptionBlock/ConsumptionBlock.jsx`
+**Fichier :** `src/components/ConsumptionBlock/ConsumptionBlock.tsx`
 
 ### État local
 
-```javascript
-const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-const [step, setStep] = useState(1);              // 1, 30, ou 60 minutes
-const [displayType, setDisplayType] = useState('wh'); // 'wh', 'average_watt', ou 'euros'
-const [dailyConsumption, setDailyConsumption] = useState(null);
-const [isLoading, setIsLoading] = useState(true);
-const [error, setError] = useState(null);
+```typescript
+const [date, setDate] = useState<string>(getTodayDate()); // dateUtils, évite le bug UTC (veille entre 0h-2h)
+const [step, setStep] = useState<number>(1);              // 1, 30, ou 60 minutes
+const [displayType, setDisplayType] = useState<DisplayType>('average_watt'); // 'wh', 'average_watt', ou 'euros'
+const [dailyConsumption, setDailyConsumption] = useState<DailyConsumption | null>(null);
+const [isLoading, setIsLoading] = useState<boolean>(true);
+const [error, setError] = useState<string | null>(null);
 ```
 
 ### Flux de données
@@ -112,17 +119,19 @@ const [error, setError] = useState(null);
 ```jsx
 <div className={styles.consumptionBlock}>
   <FilterBar {...} />
-  <StepChart data={chartData} />
+  <StepChart data={chartData} isLoading={isLoading} />
   <TotalsCards totals={dailyConsumption?.totals} />
   {/* Overlay loading/error */}
 </div>
 ```
 
+`StepChart` reçoit `isLoading` pour appliquer une classe `.loading` (opacity) pendant le fetch, sans démonter le graphique — évite le flash graph→vide→graph lors de la nav jour/jour.
+
 ---
 
 ## FilterBar
 
-**Fichier :** `src/components/ConsumptionBlock/FilterBar/FilterBar.jsx`
+**Fichier :** `src/components/ConsumptionBlock/FilterBar/FilterBar.tsx`
 
 ### Sous-composants
 
@@ -275,7 +284,7 @@ transformDailyConsumptionToChart(dailyConsumption, displayType)
 
 ## TotalsCards
 
-**Fichier :** `src/components/ConsumptionBlock/TotalsCards/TotalsCards.jsx`
+**Fichier :** `src/components/ConsumptionBlock/TotalsCards/TotalsCards.tsx`
 
 ### Structure des totaux
 
@@ -290,15 +299,17 @@ transformDailyConsumptionToChart(dailyConsumption, displayType)
 
 ### Affichage
 
-Itération sur les entrées du dictionnaire :
+Si `totals` est absent/vide : `"Aucun total disponible"`.
+
+Sinon, itération sur les entrées du dictionnaire, avec fallback `"-"` par valeur nulle :
 
 ```jsx
 {Object.entries(totals).map(([label, total]) => (
   <TotalCard
     key={label}
     label={label}
-    kwh={formatWh(total.wh)}
-    euros={formatEuro(total.euros)}
+    kwh={total?.wh != null ? formatWh(total.wh) : "-"}
+    euros={total?.euros != null ? formatEuro(total.euros) : "-"}
   />
 ))}
 ```
@@ -351,7 +362,7 @@ Layout flex qui passe en colonne sur mobile (même comportement que FilterBar).
 
 ## Service fetchDailyConsumption
 
-**Fichier :** `src/services/fetchDailyConsumption.js`
+**Fichier :** `src/services/fetchDailyConsumption.ts`
 
 ### Appel API
 
@@ -410,4 +421,4 @@ Voir documentation dédiée : [Custom Charts](./custom_charts.md)
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Août 2026

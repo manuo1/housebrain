@@ -1,5 +1,6 @@
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 
 from core.constants import LoggerLabel
@@ -14,8 +15,47 @@ class DeviceIOError(Exception):
     """Exception for DeviceIO service errors"""
 
 
+def _is_linked_downstream(instance) -> bool:
+    """
+    True if `instance` is the target of any OneToOne reverse relation (e.g.
+    RelayOnOff -> SingleButtonMotor, itself later -> GarageDoor). Walks
+    Django's model meta instead of importing actuators/sensors/equipment
+    directly - device is the lowest layer and must never import upward.
+    """
+    for related in instance._meta.related_objects:
+        if not related.one_to_one:
+            continue
+        try:
+            getattr(instance, related.get_accessor_name())
+        except ObjectDoesNotExist:
+            continue
+        return True
+    return False
+
+
 class DeviceIOService:
     """Service to provision a Device's IOs, and to change a DeviceIO's mode, keeping RelayOnOff/SensorTrueFalse in sync with it."""
+
+    @staticmethod
+    def is_device_deletable(device: Device) -> bool:
+        """
+        False if any of this Device's IOs currently backs a RelayOnOff/
+        SensorTrueFalse that's itself in use downstream (e.g. an orphan
+        SingleButtonMotor never assembled into a GarageDoor). Deleting the
+        Device would silently cascade through DeviceIO -> RelayOnOff/
+        SensorTrueFalse and orphan that business-layer object - not caught
+        by on_delete=PROTECT further up the chain (e.g. GarageDoor.motor),
+        which only protects once a GarageDoor actually exists.
+        """
+        for device_io in device.io.all():
+            for accessor in ("relay_on_off", "sensor_true_false"):
+                try:
+                    hardware_io = getattr(device_io, accessor)
+                except ObjectDoesNotExist:
+                    continue
+                if _is_linked_downstream(hardware_io):
+                    return False
+        return True
 
     @staticmethod
     @transaction.atomic
@@ -73,18 +113,30 @@ class DeviceIOService:
                 f"(type {io_spec.type})"
             )
 
-        # TODO once Equipment points to RelayOnOff/SensorTrueFalse instead
-        # of directly to actuators.Shelly: refuse here if the row about to
-        # be deleted below is still linked to an Equipment, instead of
-        # silently deleting it — see [[housebrain-device]].
+        # Refuse the mode change if the row about to be deleted below is
+        # still in use downstream (e.g. a SingleButtonMotor, or further up
+        # an Equipment) - deleting it here would silently orphan whatever
+        # depends on it.
         if device_io.mode == IOMode.SENSOR_TRUE_FALSE:
-            SensorTrueFalse.objects.filter(device_io=device_io).delete()
+            sensor = SensorTrueFalse.objects.get(device_io=device_io)
+            if _is_linked_downstream(sensor):
+                raise DeviceIOError(
+                    f"DeviceIO {device_io_id} is still in use (linked to a business-layer "
+                    "object) - detach it there first before changing its mode"
+                )
+            sensor.delete()
         elif device_io.mode == IOMode.RELAY_ON_OFF:
             # Not reachable today: a RELAY_ON_OFF-type IO's only allowed
             # mode is RELAY_ON_OFF itself (IO_TYPE_ALLOWED_MODES), so
             # new_mode == device_io.mode would already have returned above.
             # Kept for symmetry, in case a future IOType allows it to change.
-            RelayOnOff.objects.filter(device_io=device_io).delete()
+            relay = RelayOnOff.objects.get(device_io=device_io)
+            if _is_linked_downstream(relay):
+                raise DeviceIOError(
+                    f"DeviceIO {device_io_id} is still in use (linked to a business-layer "
+                    "object) - detach it there first before changing its mode"
+                )
+            relay.delete()
 
         try:
             device_io.get_driver().set_sensor_mode(

@@ -132,3 +132,11 @@ class IPDeviceAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if is_new:
             DeviceIOService.provision_device(obj)
+
+    def has_delete_permission(self, request, obj=None):
+        # Blocks deletion when an orphan business-layer object (e.g. a
+        # SingleButtonMotor never assembled into a GarageDoor) would be
+        # silently cascade-deleted - see DeviceIOService.is_device_deletable().
+        if obj is not None and not DeviceIOService.is_device_deletable(obj):
+            return False
+        return super().has_delete_permission(request, obj)

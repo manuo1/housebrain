@@ -8,7 +8,7 @@ from rooms.api.services import (
     add_temperature_measurements_to_rooms,
     transform_room_data_for_api,
 )
-from sensors.utils.cache_sensors_data import get_sensors_data_in_cache
+from bluetooth.utils.cache_bluetooth_data import get_sensors_data_in_cache
 
 
 class RoomListView(APIView):

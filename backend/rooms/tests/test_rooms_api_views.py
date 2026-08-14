@@ -40,6 +40,9 @@ def test_room_list_returns_transformed_rooms(mocker, api_client):
     mocker.patch(
         "rooms.api.views.get_sensors_data_in_cache", return_value=SENSORS_CACHE
     )
+    mocker.patch(
+        "rooms.api.services.get_sensor_temperatures", return_value=(20.5, 20.4)
+    )
 
     response = api_client.get("/api/rooms/")
 
@@ -53,7 +56,7 @@ def test_room_list_returns_transformed_rooms(mocker, api_client):
     assert room["radiator"]["id"] == 5
     assert room["radiator"]["state"] == ApiRadiatorState.ON
     assert room["temperature"]["id"] == 10
-    assert room["temperature"]["measurements"]["temperature"] is None  # dt too old
+    assert room["temperature"]["measurements"]["temperature"] == 20.5
 
 
 @pytest.mark.django_db

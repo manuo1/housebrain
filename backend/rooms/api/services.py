@@ -1,27 +1,22 @@
-from django.utils import timezone
-
-from core.utils.date_utils import is_delta_within_two_minute, parse_iso_datetime
 from core.utils.temperatures import calculate_temperature_trend
 from rooms.api.utils import calculate_radiator_state, get_mac_short
 from rooms.models import Room
-from sensors.services.rssi import rssi_to_signal_strength
+from bluetooth.services.rssi import rssi_to_signal_strength
+from sensors.services.temperatures import get_sensor_temperatures
 
 
 def add_temperature_measurements_to_rooms(
     rooms_data: list[dict], sensors_cache: dict
 ) -> None:
     """
-    Enrich room dicts with real-time temperature sensor measurements from cache.
+    Enrich room dicts with the RSSI of their temperature sensor, read from
+    the bluetooth cache. Temperature values themselves are not pulled here:
+    _transform_temperature fetches them per-room via get_sensor_temperatures,
+    which is also the single source of truth for freshness (used by the
+    thermostat too).
     """
-    default_temperature_sensor_data = {
-        "temperature_sensor__rssi": None,
-        "temperature_sensor__current_temperature": None,
-        "temperature_sensor__current_dt": None,
-        "temperature_sensor__previous_temperature": None,
-        "temperature_sensor__previous_dt": None,
-    }
     for room in rooms_data:
-        room.update(default_temperature_sensor_data)
+        room["temperature_sensor__rssi"] = None
 
         mac_address = room.get("temperature_sensor__mac_address")
 
@@ -33,22 +28,7 @@ def add_temperature_measurements_to_rooms(
         if not sensor:
             continue
 
-        measurements = sensor.get("measurements", {})
-        previous_measurements = sensor.get("previous_measurements", {})
-
-        room.update(
-            {
-                "temperature_sensor__rssi": sensor.get("rssi"),
-                "temperature_sensor__current_temperature": measurements.get(
-                    "temperature"
-                ),
-                "temperature_sensor__current_dt": measurements.get("dt"),
-                "temperature_sensor__previous_temperature": previous_measurements.get(
-                    "temperature"
-                ),
-                "temperature_sensor__previous_dt": previous_measurements.get("dt"),
-            }
-        )
+        room["temperature_sensor__rssi"] = sensor.get("rssi")
 
 
 def transform_room_data_for_api(room_dict: dict) -> dict:
@@ -78,56 +58,32 @@ def _transform_heating(room_dict: dict) -> dict:
 
 
 def _transform_temperature(room_dict: dict) -> dict:
-    """Transform temperature sensor data for API response."""
+    """
+    Transform temperature sensor data for API response. Freshness (current
+    < 1min, previous < 2min) is entirely delegated to get_sensor_temperatures,
+    the same logic used by the thermostat.
+    """
+    mac_address = room_dict.get("temperature_sensor__mac_address")
 
-    temperature_data = {
+    current_temperature, previous_temperature = (
+        get_sensor_temperatures(mac_address) if mac_address else (None, None)
+    )
+
+    trend = None
+    if current_temperature is not None and previous_temperature is not None:
+        trend = calculate_temperature_trend(current_temperature, previous_temperature)
+
+    return {
         "id": room_dict.get("temperature_sensor__id"),
-        "mac_short": get_mac_short(room_dict.get("temperature_sensor__mac_address")),
+        "mac_short": get_mac_short(mac_address),
         "signal_strength": rssi_to_signal_strength(
             room_dict.get("temperature_sensor__rssi")
         ),
         "measurements": {
-            "temperature": None,
-            "trend": None,
+            "temperature": current_temperature,
+            "trend": trend,
         },
     }
-
-    # Add current temperature if it is recent
-    current_temperature = room_dict.get("temperature_sensor__current_temperature")
-
-    if current_temperature is None:
-        return temperature_data
-
-    current_temperature_dt = parse_iso_datetime(
-        room_dict.get("temperature_sensor__current_dt")
-    )
-
-    if current_temperature_dt is None or not is_delta_within_two_minute(
-        current_temperature_dt, timezone.now()
-    ):
-        return temperature_data
-
-    temperature_data["measurements"]["temperature"] = current_temperature
-
-    # Add temperature trend if the two measurements are close enough
-    previous_temperature = room_dict.get("temperature_sensor__previous_temperature")
-    previous_temperature_dt = parse_iso_datetime(
-        room_dict.get("temperature_sensor__previous_dt")
-    )
-    if (
-        not previous_temperature_dt
-        or not previous_temperature
-        or not is_delta_within_two_minute(
-            current_temperature_dt, previous_temperature_dt
-        )
-    ):
-        return temperature_data
-
-    temperature_data["measurements"]["trend"] = calculate_temperature_trend(
-        current_temperature, previous_temperature
-    )
-
-    return temperature_data
 
 
 def _transform_radiator(room_dict: dict) -> dict:

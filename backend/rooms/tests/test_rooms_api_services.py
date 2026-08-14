@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from freezegun import freeze_time
 
@@ -41,7 +43,12 @@ def test_add_temperature_measurements_to_rooms_with_no_room():
 
 
 def test_add_temperature_measurements_to_rooms_add_default_fields():
-    rooms_data = ROOMS_DATA
+    rooms_data = [
+        {
+            "id": 1,
+            "temperature_sensor__mac_address": "38:1F:8D:65:E9:1C",
+        }
+    ]
 
     sensors_cache = {}
 
@@ -52,16 +59,17 @@ def test_add_temperature_measurements_to_rooms_add_default_fields():
             "id": 1,
             "temperature_sensor__mac_address": "38:1F:8D:65:E9:1C",
             "temperature_sensor__rssi": None,
-            "temperature_sensor__current_temperature": None,
-            "temperature_sensor__current_dt": None,
-            "temperature_sensor__previous_temperature": None,
-            "temperature_sensor__previous_dt": None,
         }
     ]
 
 
 def test_add_temperature_measurements_to_rooms_add_cache_data():
-    rooms_data = ROOMS_DATA
+    rooms_data = [
+        {
+            "id": 1,
+            "temperature_sensor__mac_address": "38:1F:8D:65:E9:1C",
+        }
+    ]
 
     sensors_cache = SENSORS_CACHE
     add_temperature_measurements_to_rooms(rooms_data, sensors_cache)
@@ -71,10 +79,6 @@ def test_add_temperature_measurements_to_rooms_add_cache_data():
             "id": 1,
             "temperature_sensor__mac_address": "38:1F:8D:65:E9:1C",
             "temperature_sensor__rssi": -87,
-            "temperature_sensor__current_temperature": 20.69,
-            "temperature_sensor__current_dt": "2025-10-15T12:59:32.465Z",
-            "temperature_sensor__previous_temperature": 20.68,
-            "temperature_sensor__previous_dt": "2025-10-15T12:58:37.566Z",
         }
     ]
 
@@ -90,22 +94,6 @@ def test_multiple_rooms_and_sensors():
     assert rooms_data[0]["temperature_sensor__rssi"] == -87
     assert rooms_data[1]["temperature_sensor__rssi"] is None
     assert rooms_data[2]["temperature_sensor__rssi"] is None
-
-
-def test_sensor_with_partial_data():
-    rooms_data = [{"id": 1, "temperature_sensor__mac_address": "38:1F:8D:65:E9:1C"}]
-    sensors_cache = {
-        "38:1F:8D:65:E9:1C": {
-            "rssi": -70,
-            "measurements": {},  # vide
-            # previous_measurements manquant
-        }
-    }
-    add_temperature_measurements_to_rooms(rooms_data, sensors_cache)
-    room = rooms_data[0]
-    assert room["temperature_sensor__rssi"] == -70
-    assert room["temperature_sensor__current_temperature"] is None
-    assert room["temperature_sensor__previous_temperature"] is None
 
 
 def test_room_with_unknown_mac():
@@ -288,119 +276,48 @@ BASE_ROOM_DATA = {
 }
 
 
-@pytest.mark.parametrize(
-    "now_iso, current_dt, delta_ok, expected_temp, expected_trend",
-    [
-        # --- Cas 1 : mesure récente (<1 min) + trend positive ---
-        (
-            "2025-10-16T10:00:00Z",
-            "2025-10-16T09:59:30Z",  # 30s avant
-            True,
-            21.0,
-            TemperatureTrend.UP,
-        ),
-        # --- Cas 2 : mesure récente mais trend quasi stable (diff < 0.1) ---
-        (
-            "2025-10-16T10:00:00Z",
-            "2025-10-16T09:59:30Z",
-            True,
-            20.05,
-            TemperatureTrend.SAME,
-        ),
-        # --- Cas 3 : mesure récente mais trend descendante ---
-        (
-            "2025-10-16T10:00:00Z",
-            "2025-10-16T09:59:30Z",
-            True,
-            19.5,
-            TemperatureTrend.DOWN,
-        ),
-        # --- Cas 4 : mesure trop ancienne (>2 min) → pas de temperature ---
-        (
-            "2025-10-16T10:00:00Z",
-            "2025-10-16T09:57:30Z",  # 2m30 avant
-            False,
-            None,
-            None,
-        ),
-    ],
-)
-@freeze_time("2025-10-16T10:00:00Z")
-def test_transform_temperature_with_various_deltas(
-    now_iso, current_dt, delta_ok, expected_temp, expected_trend
-):
-    """Teste la logique complète de température : fraicheur et tendance."""
+def test_transform_temperature_no_mac_address():
+    """Pas de capteur assigné à la pièce → pas d'appel à get_sensor_temperatures."""
     room_dict = {
-        **BASE_ROOM_DATA,
-        "temperature_sensor__current_temperature": expected_temp
-        if expected_temp
-        else 20.0,
-        "temperature_sensor__current_dt": current_dt,
-        "temperature_sensor__previous_temperature": 20.0,
-        "temperature_sensor__previous_dt": "2025-10-16T09:59:00Z",
+        "temperature_sensor__id": None,
+        "temperature_sensor__rssi": None,
     }
 
     result = _transform_temperature(room_dict)
 
-    assert result["id"] == 10
-    assert result["mac_short"].endswith("EE:FF")  # get_mac_short = 3 derniers segments
-    assert isinstance(result["signal_strength"], int)
-
-    if not delta_ok:
-        # Trop ancien → aucun relevé
-        assert result["measurements"]["temperature"] is None
-        assert result["measurements"]["trend"] is None
-    else:
-        # Relevé récent
-        assert result["measurements"]["temperature"] == pytest.approx(
-            expected_temp, 0.01
-        )
-        assert result["measurements"]["trend"] == expected_trend
-
-
-@freeze_time("2025-10-16T10:00:00Z")
-def test_transform_temperature_missing_current_temperature():
-    """Aucune temperature actuelle → pas de mesures."""
-    room_dict = {
-        **BASE_ROOM_DATA,
-        "temperature_sensor__current_temperature": None,
-    }
-
-    result = _transform_temperature(room_dict)
-
+    assert result["id"] is None
     assert result["measurements"] == {"temperature": None, "trend": None}
 
 
-@freeze_time("2025-10-16T10:00:00Z")
-def test_transform_temperature_missing_previous_values():
-    """Pas de valeur précédente → trend non calculée."""
-    room_dict = {
-        **BASE_ROOM_DATA,
-        "temperature_sensor__current_temperature": 21.0,
-        "temperature_sensor__current_dt": "2025-10-16T09:59:40Z",
-        "temperature_sensor__previous_temperature": None,
-        "temperature_sensor__previous_dt": None,
-    }
+@pytest.mark.parametrize(
+    "current, previous, expected_temp, expected_trend",
+    [
+        (21.0, 20.0, 21.0, TemperatureTrend.UP),
+        (20.05, 20.0, 20.05, TemperatureTrend.SAME),
+        (19.5, 20.0, 19.5, TemperatureTrend.DOWN),
+        (None, 20.0, None, None),  # current périmé (>1min) → get_sensor_temperatures renvoie None
+        (21.0, None, 21.0, None),  # previous périmé (>2min) → pas de trend
+        (None, None, None, None),
+    ],
+)
+def test_transform_temperature_delegates_freshness_to_get_sensor_temperatures(
+    current, previous, expected_temp, expected_trend
+):
+    """La fraîcheur (1min current / 2min previous) est entièrement déléguée à
+    get_sensor_temperatures, même logique que le thermostat."""
+    room_dict = {**BASE_ROOM_DATA}
 
-    result = _transform_temperature(room_dict)
+    with patch(
+        "rooms.api.services.get_sensor_temperatures",
+        return_value=(current, previous),
+    ):
+        result = _transform_temperature(room_dict)
 
-    assert result["measurements"]["temperature"] == 21.0
-    assert result["measurements"]["trend"] is None
-
-
-@freeze_time("2025-10-16T10:00:00Z")
-def test_transform_temperature_invalid_datetime():
-    """Datetime invalide doit être ignorée."""
-    room_dict = {
-        **BASE_ROOM_DATA,
-        "temperature_sensor__current_temperature": 21.0,
-        "temperature_sensor__current_dt": "BAD_FORMAT",
-    }
-
-    result = _transform_temperature(room_dict)
-
-    assert result["measurements"]["temperature"] is None
-    assert result["measurements"]["trend"] is None
+    assert result["id"] == 10
+    assert result["mac_short"].endswith("EE:FF")
+    assert isinstance(result["signal_strength"], int)
+    assert result["measurements"]["temperature"] == expected_temp
+    assert result["measurements"]["trend"] == expected_trend
 
 
 def test_transform_temperature_rssi_signal_strength_levels():
@@ -408,14 +325,17 @@ def test_transform_temperature_rssi_signal_strength_levels():
     rssi_values = [-45, -55, -65, -75, -85]
     room_ids = []
 
-    for idx, rssi in enumerate(rssi_values, start=1):
-        room_dict = {
-            **BASE_ROOM_DATA,
-            "temperature_sensor__id": idx,
-            "temperature_sensor__rssi": rssi,
-        }
-        result = _transform_temperature(room_dict)
-        room_ids.append(result["id"])
-        assert 1 <= result["signal_strength"] <= 5
+    with patch(
+        "rooms.api.services.get_sensor_temperatures", return_value=(None, None)
+    ):
+        for idx, rssi in enumerate(rssi_values, start=1):
+            room_dict = {
+                **BASE_ROOM_DATA,
+                "temperature_sensor__id": idx,
+                "temperature_sensor__rssi": rssi,
+            }
+            result = _transform_temperature(room_dict)
+            room_ids.append(result["id"])
+            assert 1 <= result["signal_strength"] <= 5
 
     assert len(room_ids) == len(rssi_values)

@@ -10,6 +10,8 @@ Le module Bluetooth détecte automatiquement les capteurs de température et hum
 
 Les données sont stockées en cache Redis uniquement (pas de base de données) car l'historique n'est pas nécessaire pour l'usage actuel.
 
+**Répartition entre apps** : la couche purement hardware (scan BLE, décodage BTHome, cache, RSSI) vit dans l'app `bluetooth`, sans aucune notion métier. L'app `sensors` garde uniquement `TemperatureSensor` (association mac_address ↔ pièce, table DB) et sa lecture avec fraîcheur (`sensors.services.temperatures.get_sensor_temperatures`), qui appelle `bluetooth` pour la donnée brute en cache. `sensors` ne connaît ni le scan, ni le décodage, ni le cache directement.
+
 ### Utilisation des mesures
 
 Les mesures de température servent à :
@@ -53,8 +55,8 @@ Le listener fonctionne comme un service systemd indépendant avec watchdog.
 
 **Composants :**
 - `bluetooth-listener.service` : Service systemd
-- `bluetooth_listener.py` : Scanner BLE asyncio
-- `bthome.py` : Décodeur de payload
+- `bluetooth/listener.py` : Scanner BLE asyncio
+- `bluetooth/services/bthome.py` : Décodeur de payload
 
 **Watchdog :**
 Le listener notifie systemd à chaque fin de cycle de scan (watchdog 120 secondes).
@@ -110,7 +112,7 @@ Payload : [flags][0x02][0x13][0x09]
 ### Stockage cache uniquement
 
 Les données capteurs sont stockées dans Redis avec :
-- Clé : `sensors_data`
+- Clé : `bluetooth_data`
 - Timeout : `None` (persistant)
 - Structure : dictionnaire indexé par adresse MAC
 
@@ -150,6 +152,8 @@ Cela permet de détecter une tendance :
 - Température monte
 - Température descend
 - Température stable
+
+Ce seuil de fraîcheur (1min/2min) est appliqué une seule fois, dans `sensors.services.temperatures.get_sensor_temperatures` — c'est le point d'entrée unique utilisé à la fois par le thermostat (`heating`) et l'affichage température par pièce (`rooms/api`), pour éviter toute divergence entre les deux usages.
 
 ---
 
@@ -199,11 +203,8 @@ Sélectionnez un capteur dans la liste déroulante et associez-le à une pièce.
 ## Monitoring
 
 ### Page de monitoring
-```
-/backend/sensors/data/
-```
 
-Affiche tous les capteurs détectés avec leurs mesures en temps-réel (JSON). Il s'agit d'une simple vue Django (pas d'API REST DRF) : sensors n'expose pas de endpoints sous `/api/`, contrairement à teleinfo/heating/rooms/ai.
+Supprimée (`/backend/sensors/data/`) : c'était un relicat de la période de développement, sans consommateur réel (le front et le thermostat lisent le cache via `bluetooth`/`sensors`, pas via cette route). Aucun remplacement prévu ; à recréer uniquement si un besoin de debug direct se présente.
 
 ### Logs
 ```bash
@@ -249,4 +250,4 @@ Si RSSI < -80 dBm :
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Juillet 2026
+Dernière mise à jour : Août 2026

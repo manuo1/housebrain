@@ -121,8 +121,8 @@ Retourne la liste de toutes les pièces avec leurs données temps-réel agrégé
 - `id` : ID du capteur
 - `mac_short` : 3 derniers segments de l'adresse MAC (ex: "46:C0:F4")
 - `signal_strength` : Qualité du signal en barres (1-5)
-- `measurements.temperature` : Température actuelle en °C (null si données périmées > 2 min)
-- `measurements.trend` : Tendance ("up", "down", "same", null)
+- `measurements.temperature` : Température actuelle en °C (null si données périmées > 1 min)
+- `measurements.trend` : Tendance ("up", "down", "same", null — nécessite en plus une mesure précédente valide, périmée au-delà de 2 min)
 
 **radiator :**
 - `id` : ID du radiateur
@@ -210,9 +210,17 @@ Ces actions mettent à jour `requested_heating_state` et déclenchent immédiate
 
 ### Capteur non associé
 
-Si `temperature_sensor` est null, l'API retourne :
+Si `temperature_sensor` est null, l'API retourne quand même un objet `temperature` complet, avec tous les champs à `null` :
 ```json
-"temperature": null
+"temperature": {
+  "id": null,
+  "mac_short": null,
+  "signal_strength": null,
+  "measurements": {
+    "temperature": null,
+    "trend": null
+  }
+}
 ```
 
 ### Radiateur non associé
@@ -224,7 +232,10 @@ Si `radiator` est null, l'API retourne :
 
 ### Mesures périmées
 
-Si les données du capteur datent de plus de 2 minutes :
+La fraîcheur est calculée séparément pour la mesure courante et la précédente (même logique que le thermostat, voir [Capteurs Bluetooth](./bluetooth_sensors.md)) :
+- Mesure courante périmée (> 1 min) → `temperature` à `null`
+- Mesure précédente périmée (> 2 min) → `trend` à `null` (même si `temperature` est valide)
+
 ```json
 "temperature": {
   "measurements": {
@@ -237,4 +248,4 @@ Si les données du capteur datent de plus de 2 minutes :
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Août 2026

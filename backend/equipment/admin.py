@@ -15,7 +15,7 @@ class GarageDoorAdmin(admin.ModelAdmin):
     @admin.display(description="État")
     def current_state(self, obj):
         try:
-            return obj.get_readable_state()
+            return obj.get_status()["state"]
         except DeviceDriverError as e:
             return f"Erreur : {e}"
 

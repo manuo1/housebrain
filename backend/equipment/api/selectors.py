@@ -1,4 +1,5 @@
 from device.drivers.base import DeviceDriverError
+from equipment.constants import EquipmentStatusLevel
 from equipment.registry import EQUIPMENT_MODELS
 
 
@@ -8,10 +9,13 @@ def _build_card(equipment) -> dict:
         "name": equipment.name,
     }
     try:
-        card["state"] = equipment.get_readable_state()
+        status = equipment.get_status()
+        card["state"] = status["state"]
+        card["status_level"] = status["status_level"]
         card["operational"] = True
     except DeviceDriverError:
         card["state"] = None
+        card["status_level"] = EquipmentStatusLevel.PROBLEM
         card["operational"] = False
     return card
 

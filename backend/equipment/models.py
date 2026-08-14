@@ -1,16 +1,22 @@
 from django.db import models
 
 from actuators.models import SingleButtonMotor
+from equipment.constants import EquipmentStatusLevel
 from sensors.models import DoorContactSensor
 
 
 class Equipment(models.Model):
     """
     Abstract base for any equipment exposed to the user as a home-screen
-    card: something with a readable current state. Deliberately doesn't
-    say how many sensors back that state, or how it's triggered — e.g. a
-    future roller shutter could combine two limit sensors into one
-    get_readable_state() string, with no change needed here.
+    card: something with a readable current state and a status level.
+    Deliberately doesn't say how many sensors back that state, or how
+    it's triggered — e.g. a future roller shutter could combine two limit
+    sensors into one get_status() result, with no change needed here.
+
+    get_status() bundles state (text) and status_level (color hint) in a
+    single call so a concrete equipment only needs one hardware read per
+    card build, even if computing both values requires the same sensor
+    read — splitting them into two methods would double the read.
 
     `interaction_type` is a class attribute (fixed per concrete type, not
     a DB field — an instance never changes how it's meant to be
@@ -25,7 +31,8 @@ class Equipment(models.Model):
     class Meta:
         abstract = True
 
-    def get_readable_state(self) -> str:
+    def get_status(self) -> dict:
+        """Returns {"state": str, "status_level": EquipmentStatusLevel}."""
         raise NotImplementedError
 
 
@@ -82,5 +89,11 @@ class GarageDoor(SingleButtonEquipment):
     def trigger(self) -> None:
         self.motor.trigger()
 
-    def get_readable_state(self) -> str:
-        return self.door_sensor.get_readable_state()
+    def get_status(self) -> dict:
+        is_closed = self.door_sensor.is_closed()
+        return {
+            "state": "Porte fermée" if is_closed else "Porte ouverte",
+            "status_level": (
+                EquipmentStatusLevel.OK if is_closed else EquipmentStatusLevel.WARNING
+            ),
+        }

@@ -26,9 +26,7 @@ def authenticated_client(api_client, db):
 
 @pytest.mark.django_db
 def test_equipment_list_returns_long_press_with_state_cards(api_client, mocker):
-    mocker.patch(
-        "sensors.models.DoorContactSensor.get_readable_state", return_value="Porte fermée"
-    )
+    mocker.patch("sensors.models.DoorContactSensor.is_closed", return_value=True)
     door = GarageDoorFactory(name="Porte de garage")
 
     response = api_client.get("/api/equipment/")
@@ -39,6 +37,7 @@ def test_equipment_list_returns_long_press_with_state_cards(api_client, mocker):
             "id": f"garagedoor:{door.pk}",
             "name": "Porte de garage",
             "state": "Porte fermée",
+            "status_level": "ok",
             "operational": True,
         }
     ]

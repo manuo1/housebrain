@@ -121,8 +121,8 @@ Retourne la liste de toutes les pièces avec leurs données temps-réel agrégé
 - `id` : ID du capteur
 - `mac_short` : 3 derniers segments de l'adresse MAC (ex: "46:C0:F4")
 - `signal_strength` : Qualité du signal en barres (1-5)
-- `measurements.temperature` : Température actuelle en °C (null si données périmées > 1 min)
-- `measurements.trend` : Tendance ("up", "down", "same", null — nécessite en plus une mesure précédente valide, périmée au-delà de 2 min)
+- `measurements.temperature` : Température actuelle en °C (null si données périmées > 2 min)
+- `measurements.trend` : Tendance ("up", "down", "same", null — nécessite en plus une mesure précédente valide, périmée au-delà de 3 min)
 
 **radiator :**
 - `id` : ID du radiateur
@@ -233,8 +233,8 @@ Si `radiator` est null, l'API retourne :
 ### Mesures périmées
 
 La fraîcheur est calculée séparément pour la mesure courante et la précédente (même logique que le thermostat, voir [Capteurs Bluetooth](./bluetooth_sensors.md)) :
-- Mesure courante périmée (> 1 min) → `temperature` à `null`
-- Mesure précédente périmée (> 2 min) → `trend` à `null` (même si `temperature` est valide)
+- Mesure courante périmée (> 2 min) → `temperature` à `null`
+- Mesure précédente périmée (> 3 min) → `trend` à `null` (même si `temperature` est valide)
 
 ```json
 "temperature": {

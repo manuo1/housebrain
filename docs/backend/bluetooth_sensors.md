@@ -145,15 +145,15 @@ Pour chaque capteur détecté :
 ### Détection de tendance
 
 Deux mesures sont conservées :
-- **current** : mesure actuelle (fraîcheur < 1 minute)
-- **previous** : mesure précédente (fraîcheur < 2 minutes)
+- **current** : mesure actuelle (fraîcheur < 2 minutes)
+- **previous** : mesure précédente (fraîcheur < 3 minutes)
 
 Cela permet de détecter une tendance :
 - Température monte
 - Température descend
 - Température stable
 
-Ce seuil de fraîcheur (1min/2min) est appliqué une seule fois, dans `sensors.services.temperatures.get_sensor_temperatures` — c'est le point d'entrée unique utilisé à la fois par le thermostat (`heating`) et l'affichage température par pièce (`rooms/api`), pour éviter toute divergence entre les deux usages.
+Ce seuil de fraîcheur (2min/3min) est appliqué une seule fois, dans `sensors.services.temperatures.get_sensor_temperatures` — c'est le point d'entrée unique utilisé à la fois par le thermostat (`heating`) et l'affichage température par pièce (`rooms/api`), pour éviter toute divergence entre les deux usages. Seuil volontairement plus large qu'un minimum théorique (1min/2min) pour absorber le décalage entre le cycle de scan BLE (30s scan + 30s pause) et le polling front (5s) — sans marge, l'affichage tombait souvent entre deux mesures et laissait un trou.
 
 ---
 

@@ -21,7 +21,6 @@ api_patterns = [
 
 backend_patterns = [
     path("auth/", include("authentication.urls")),
-    path("sensors/", include("sensors.urls")),
 ]
 
 

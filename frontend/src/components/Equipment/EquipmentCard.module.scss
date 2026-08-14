@@ -52,9 +52,29 @@
     .holdIcon {
       opacity: 0.25;
     }
+  }
+
+  &.level-ok {
+    .state {
+      color: $color-primary;
+    }
+  }
+
+  &.level-warning {
+    border-color: rgba(255, 153, 102, 0.5);
+    box-shadow: 0 0 8px rgba(255, 153, 102, 0.25);
 
     .state {
-      color: $text-dark;
+      color: $color-orange;
+    }
+  }
+
+  &.level-problem {
+    border-color: rgba(255, 107, 107, 0.6);
+    box-shadow: $glow-danger;
+
+    .state {
+      color: $color-danger;
     }
   }
 }

@@ -52,7 +52,7 @@ export default function EquipmentCard({ equipment }: EquipmentCardProps) {
         message={showAuthNotice ? "Connexion requise" : triggerError}
       />
       <div
-        className={`${styles.equipmentCard} ${!equipment.operational ? styles.unavailable : ""}`}
+        className={`${styles.equipmentCard} ${styles[`level-${equipment.statusLevel}`] ?? ""} ${!equipment.operational ? styles.unavailable : ""}`}
         onMouseDown={handlePressStart}
         onMouseUp={handlePressEnd}
         onMouseLeave={handlePressEnd}

@@ -1,0 +1,16 @@
+from django.core.cache import cache
+
+from core.utils.env_utils import environment_is_development
+from mock_data.bluetooth import MOCKED_BLUETOOTH_DATA
+
+
+def get_sensors_data_in_cache():
+    if environment_is_development():
+        return MOCKED_BLUETOOTH_DATA
+    return cache.get("bluetooth_data", {})
+
+
+def get_sensor_data_in_cache(mac_address: str) -> object | None:
+    if not isinstance(mac_address, str):
+        return
+    return get_sensors_data_in_cache().get(mac_address)

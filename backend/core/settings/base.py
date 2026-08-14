@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "actuators",
     "ai",
     "authentication",
+    "bluetooth",
     "consumption",
     "device",
     "equipment",

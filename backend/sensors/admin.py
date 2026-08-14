@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib import admin
 
+from bluetooth.utils.cache_bluetooth_data import get_sensors_data_in_cache
 from device.drivers.base import DeviceDriverError
-from sensors.utils.cache_sensors_data import get_sensors_data_in_cache
 
 from .models import DoorContactSensor, TemperatureSensor
 

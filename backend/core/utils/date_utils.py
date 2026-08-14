@@ -3,14 +3,14 @@ from datetime import date, datetime, timedelta
 from core.constants import WeekDayLabel
 
 
-def is_delta_within_one_minute(dt1: datetime, dt2: datetime) -> bool:
-    """Check if the difference between two datetime objects is less than or equal to 1 minute."""
-    return abs(dt1 - dt2) <= timedelta(minutes=1)
-
-
 def is_delta_within_two_minute(dt1: datetime, dt2: datetime) -> bool:
     """Check if the difference between two datetime objects is less than or equal to 2 minute."""
     return abs(dt1 - dt2) <= timedelta(minutes=2)
+
+
+def is_delta_within_three_minute(dt1: datetime, dt2: datetime) -> bool:
+    """Check if the difference between two datetime objects is less than or equal to 3 minute."""
+    return abs(dt1 - dt2) <= timedelta(minutes=3)
 
 
 def is_delta_within_five_seconds(dt1: datetime, dt2: datetime) -> bool:

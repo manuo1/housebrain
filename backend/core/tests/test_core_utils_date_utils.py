@@ -8,7 +8,7 @@ from core.utils.date_utils import (
     get_previous_monday,
     get_week_containing_date,
     is_delta_within_five_seconds,
-    is_delta_within_one_minute,
+    is_delta_within_three_minute,
     is_delta_within_two_minute,
     parse_iso_datetime,
     weekdays_str_list_to_datetime_weekdays_list,
@@ -20,23 +20,8 @@ from core.utils.date_utils import (
     [
         (timedelta(seconds=30), True),  # moins d'une minute
         (timedelta(minutes=1), True),  # exactement une minute
-        (timedelta(minutes=1, seconds=1), False),  # plus d'une minute
-    ],
-)
-@freeze_time("2025-10-15 12:00:00+01:00")
-def test_is_delta_within_one_minute_param(delta, expected):
-    now = datetime.now()
-    other_dt = now - delta
-    assert is_delta_within_one_minute(now, other_dt) is expected
-
-
-@pytest.mark.parametrize(
-    "delta, expected",
-    [
-        (timedelta(seconds=30), True),  # moins d'une minute
-        (timedelta(minutes=1), True),  # exactement une minute
         (timedelta(minutes=2), True),  # exactement 2 minute
-        (timedelta(minutes=2, seconds=1), False),  # plus d'une minute
+        (timedelta(minutes=2, seconds=1), False),  # plus de 2 minutes
     ],
 )
 @freeze_time("2025-10-15 12:00:00+01:00")
@@ -44,6 +29,22 @@ def test_is_delta_within_two_minute_param(delta, expected):
     now = datetime.now()
     other_dt = now - delta
     assert is_delta_within_two_minute(now, other_dt) is expected
+
+
+@pytest.mark.parametrize(
+    "delta, expected",
+    [
+        (timedelta(seconds=30), True),  # moins d'une minute
+        (timedelta(minutes=2), True),  # exactement 2 minute
+        (timedelta(minutes=3), True),  # exactement 3 minute
+        (timedelta(minutes=3, seconds=1), False),  # plus de 3 minutes
+    ],
+)
+@freeze_time("2025-10-15 12:00:00+01:00")
+def test_is_delta_within_three_minute_param(delta, expected):
+    now = datetime.now()
+    other_dt = now - delta
+    assert is_delta_within_three_minute(now, other_dt) is expected
 
 
 @pytest.mark.parametrize(

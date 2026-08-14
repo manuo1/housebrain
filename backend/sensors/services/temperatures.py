@@ -2,7 +2,7 @@ from django.utils import timezone
 
 from bluetooth.utils.cache_bluetooth_data import get_sensor_data_in_cache
 from core.utils.date_utils import (
-    is_delta_within_one_minute,
+    is_delta_within_three_minute,
     is_delta_within_two_minute,
     parse_iso_datetime,
 )
@@ -15,7 +15,7 @@ def get_sensor_temperatures(mac_address: str) -> tuple:
     current, previous = None, None
     try:
         dt = parse_iso_datetime(sensor_info["measurements"]["dt"])
-        temperature_is_recent = is_delta_within_one_minute(dt, now)
+        temperature_is_recent = is_delta_within_two_minute(dt, now)
         if temperature_is_recent:
             current = validate_temperature_value(
                 sensor_info["measurements"]["temperature"]
@@ -24,7 +24,7 @@ def get_sensor_temperatures(mac_address: str) -> tuple:
         pass
     try:
         previous_dt = parse_iso_datetime(sensor_info["previous_measurements"]["dt"])
-        temperature_is_recent = is_delta_within_two_minute(previous_dt, now)
+        temperature_is_recent = is_delta_within_three_minute(previous_dt, now)
         if temperature_is_recent:
             previous = validate_temperature_value(
                 sensor_info["previous_measurements"]["temperature"]

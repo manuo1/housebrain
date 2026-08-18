@@ -59,6 +59,8 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 - [Equipement - Porte de garage](docs/backend/equipment_garage_door.md)
 - [Notifications](docs/backend/notifications.md)
 - [Planification chauffage](docs/backend/heating_planning.md)
+- [Modification de planning via IA](docs/backend/ai_heating_modification.md)
+- [Duplication de planning via IA](docs/backend/ai_heating_duplication.md)
 - [Contrôle chauffage](docs/backend/heating_control.md)
 - [Gestion des pièces](docs/backend/rooms.md)
 - [Monitoring consommation](docs/backend/energy_consumption.md)
@@ -74,7 +76,8 @@ Pour le déploiement : [docs/software/raspberry_app_deployment.md](docs/software
 - [Page Planification Chauffage](docs/frontend/heating_schedule_page.md)
 - [Timeline - Éditeur de créneaux](docs/frontend/heating_timeline.md)
 - [Calendrier et sélection](docs/frontend/heating_calendar.md)
-- [Système de duplication](docs/frontend/heating_duplication.md)
+- [Modification via IA](docs/frontend/ai_heating_modification.md)
+- [Duplication via chat IA](docs/frontend/heating_duplication.md)
 
 
 ---

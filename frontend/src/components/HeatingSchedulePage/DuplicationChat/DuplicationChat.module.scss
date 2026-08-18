@@ -1,0 +1,142 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.duplicationChat {
+  @include flex-column;
+  gap: $gap-md;
+  height: 100%;
+
+  h3 {
+    font-size: $font-size-lg;
+    margin: 0;
+    color: $text-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+// ============================================
+// MESSAGE LIST
+// ============================================
+
+.messageList {
+  @include flex-column;
+  gap: $gap-sm;
+  flex: 1;
+  overflow-y: auto;
+  @include custom-scrollbar;
+}
+
+.placeholder {
+  font-size: $font-size-xs;
+  color: $text-muted;
+  margin: 0;
+}
+
+.userMsg,
+.assistantMsg {
+  font-size: $font-size-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  line-height: 1.5;
+  max-width: 90%;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.userMsg {
+  align-self: flex-end;
+  background: $color-primary;
+  color: white;
+}
+
+.assistantMsg {
+  align-self: flex-start;
+  background: $bg-dark;
+  border: 1px solid $border-medium;
+  color: $text-primary;
+}
+
+// ============================================
+// ERROR
+// ============================================
+
+.errorMessage {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $color-danger;
+}
+
+// ============================================
+// VALIDATION BUTTONS
+// ============================================
+
+.validationButtons {
+  display: flex;
+  gap: $gap-sm;
+
+  button {
+    @include button-base;
+    flex: 1;
+    padding: $spacing-xs $spacing-md;
+    font-size: $font-size-sm;
+
+    &:disabled {
+      opacity: $opacity-disabled;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ============================================
+// INPUT ROW
+// ============================================
+
+.inputRow {
+  display: flex;
+  gap: $gap-sm;
+
+  input {
+    @include input-base;
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      box-shadow: $glow-primary;
+    }
+
+    &:disabled {
+      opacity: $opacity-muted;
+      cursor: not-allowed;
+    }
+  }
+
+  button {
+    @include button-primary;
+    padding: $spacing-xs $spacing-md;
+    font-size: $font-size-sm;
+    flex-shrink: 0;
+
+    &:disabled {
+      opacity: $opacity-disabled;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+// ============================================
+// RESET
+// ============================================
+
+.resetButton {
+  @include button-base;
+  align-self: flex-start;
+  padding: $spacing-xs $spacing-md;
+  font-size: $font-size-sm;
+}

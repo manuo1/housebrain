@@ -8,10 +8,9 @@ import RoomsSelector from "../components/HeatingSchedulePage/RoomsSelector/Rooms
 import DateHeader from "../components/HeatingSchedulePage/DateHeader/DateHeader";
 import Timeline from "../components/HeatingSchedulePage/Timeline/Timeline";
 import TimelineSaveActions from "../components/HeatingSchedulePage/Timeline/TimelineSaveActions";
-import DuplicationPanel, { DuplicationPayload } from "../components/HeatingSchedulePage/Duplication/DuplicationPanel";
 import AiPlanInput from "../components/HeatingSchedulePage/AiPlanInput/AiPlanInput";
+import DuplicationChat from "../components/HeatingSchedulePage/DuplicationChat/DuplicationChat";
 import styles from "./HeatingSchedulePage.module.scss";
-import duplicateHeatingPlan from "../services/duplicateHeatingPlan";
 import HeatingCalendarModel from "../models/HeatingCalendar";
 import { Slot } from "../models/DailyHeatingPlan";
 import DailyHeatingPlan, { RawDailyHeatingPlan } from "../models/DailyHeatingPlan";
@@ -126,24 +125,6 @@ export default function HeatingSchedulePage() {
     applyChange(new DailyHeatingPlan(newRaw));
   };
 
-  const handleDuplicationApply = async (payload: DuplicationPayload) => {
-    if (!accessToken) {
-      console.error("User not authenticated");
-      return;
-    }
-    setPageError(null);
-    try {
-      await duplicateHeatingPlan(payload, accessToken, refresh);
-      if (currentMonth) {
-        const data = await fetchHeatingCalendar(currentMonth.year, currentMonth.month);
-        setCalendar(data);
-      }
-    } catch (error) {
-      console.error("Erreur lors de la duplication:", error);
-      setPageError((error as Error).message || "Erreur lors de la duplication.");
-    }
-  };
-
   const handleAiRequest = async (instruction: string) => {
     if (!dailyPlan || !accessToken) return;
     const newPlan = await applyAiPlanModification(
@@ -152,6 +133,16 @@ export default function HeatingSchedulePage() {
       refresh
     );
     applyChange(newPlan);
+  };
+
+  const handleDuplicationSuccess = async () => {
+    if (!currentMonth) return;
+    try {
+      const data = await fetchHeatingCalendar(currentMonth.year, currentMonth.month);
+      setCalendar(data);
+    } catch (error) {
+      console.error("Error reloading calendar after duplication:", error);
+    }
   };
 
   if (!calendar || !selectedDate) {
@@ -216,14 +207,11 @@ export default function HeatingSchedulePage() {
         )}
       </main>
 
-      <aside className={styles.rightPanel}>
-        <DuplicationPanel
-          sourceDate={selectedDate}
-          selectedRooms={dailyPlan?.rooms.filter((r) => selectedRoomIds.includes(r.id)) || []}
-          onApply={handleDuplicationApply}
-          user={user}
-        />
-      </aside>
+      {user && selectedDate && (
+        <div className={styles.rightPanel}>
+          <DuplicationChat sourceDate={selectedDate} onDuplicationSuccess={handleDuplicationSuccess} />
+        </div>
+      )}
     </div>
   );
 }

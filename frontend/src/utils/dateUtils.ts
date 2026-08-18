@@ -22,30 +22,6 @@ export function getDayLabel(isoWeekday: number): string {
   return days[isoWeekday] ?? "N/A";
 }
 
-export function getDayShort(isoWeekday: number): string {
-  const daysShort: Record<number, string> = {
-    1: "L",
-    2: "M",
-    3: "M",
-    4: "J",
-    5: "V",
-    6: "S",
-    7: "D",
-  };
-  return daysShort[isoWeekday] ?? "?";
-}
-
-// Source unique clé <-> jour ISO, partagée par WeekdaySelector et DuplicationSummary
-export const WEEKDAYS: { key: string; isoWeekday: number }[] = [
-  { key: "monday", isoWeekday: 1 },
-  { key: "tuesday", isoWeekday: 2 },
-  { key: "wednesday", isoWeekday: 3 },
-  { key: "thursday", isoWeekday: 4 },
-  { key: "friday", isoWeekday: 5 },
-  { key: "saturday", isoWeekday: 6 },
-  { key: "sunday", isoWeekday: 7 },
-];
-
 export function getMonthLabel(month: number): string {
   const months: Record<number, string> = {
     1: "Janvier",
@@ -121,50 +97,4 @@ export function isToday(dateStr: string): boolean {
 
 export function isFuture(dateStr: string): boolean {
   return dateStr > getTodayDate();
-}
-
-// --- Fonctions semaine (pour la duplication) ---
-
-export function getMondayOfWeek(dateStr: string): string {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  const day = date.getDay();
-  const jsDay = day === 0 ? 7 : day;
-  return addDays(dateStr, -(jsDay - 1));
-}
-
-export function getSundayOfWeek(dateStr: string): string {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  const day = date.getDay();
-  const jsDay = day === 0 ? 7 : day;
-  return addDays(dateStr, 7 - jsDay);
-}
-
-export function getNextMonday(dateStr: string): string {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  const day = date.getDay();
-  const jsDay = day === 0 ? 7 : day;
-  const daysUntilNextMonday = 8 - jsDay;
-  return addDays(dateStr, daysUntilNextMonday);
-}
-
-export interface WeekRange {
-  monday: string;
-  sunday: string;
-  mondayText: string;
-  sundayText: string;
-}
-
-export function getWeekRange(dateStr: string): WeekRange | null {
-  if (!dateStr) return null;
-  const monday = getMondayOfWeek(dateStr);
-  const sunday = getSundayOfWeek(dateStr);
-  return {
-    monday,
-    sunday,
-    mondayText: formatDateDD_MM_YYYY(monday),
-    sundayText: formatDateDD_MM_YYYY(sunday),
-  };
 }

@@ -1,6 +1,6 @@
 # Heating Schedule Page - Planification du chauffage
 
-Page d'édition des plannings de chauffage journaliers avec calendrier, timeline interactive et système de duplication.
+Page d'édition des plannings de chauffage journaliers avec calendrier, timeline interactive et duplication via chat IA.
 
 ---
 
@@ -14,8 +14,9 @@ Interface complète de gestion des plannings de chauffage permettant de créer, 
 - Calendrier mensuel avec visualisation des états de planification
 - Sélection des pièces à afficher/éditer
 - Édition graphique des créneaux horaires (timeline)
+- Modification de créneaux via instruction IA en langage naturel
 - Undo/redo avec sauvegarde backend
-- Duplication de plannings (jour ou semaine)
+- Duplication de plannings via chat IA conversationnel
 
 ---
 
@@ -26,23 +27,25 @@ Interface complète de gestion des plannings de chauffage permettant de créer, 
 ```
 src/
 ├── pages/
-│   └── HeatingSchedulePage.jsx            # Page principale (orchestration)
+│   └── HeatingSchedulePage.tsx            # Page principale (orchestration)
 ├── hooks/
 │   └── HeatingSchedulePage/
-│       └── useHeatingPlanHistory.js       # État + undo/redo + save
+│       └── useHeatingPlanHistory.ts       # État + undo/redo + save
 ├── models/
-│   ├── HeatingCalendar.js                 # Modèle calendrier
-│   └── DailyHeatingPlan.js                # Modèle planning journalier
+│   ├── HeatingCalendar.ts                 # Modèle calendrier
+│   └── DailyHeatingPlan.ts                # Modèle planning journalier
 ├── services/
-│   ├── fetchHeatingCalendar.js            # GET calendar
-│   ├── fetchDailyHeatingPlan.js           # GET plan
-│   ├── saveDailyHeatingPlan.js            # POST plan
-│   └── duplicateHeatingPlan.js            # POST duplicate
+│   ├── fetchHeatingCalendar.ts            # GET calendar
+│   ├── fetchDailyHeatingPlan.ts           # GET plan
+│   ├── saveDailyHeatingPlan.ts            # POST plan
+│   ├── applyAiPlanModification.ts         # POST modify (IA)
+│   └── duplicateHeatingPlanAi.ts          # POST duplicate (chat IA)
 └── components/HeatingSchedulePage/
     ├── Calendar/                           # Voir heating_calendar.md
     ├── RoomsSelector/                      # Voir heating_calendar.md
     ├── Timeline/                           # Voir heating_timeline.md
-    └── Duplication/                        # Voir heating_duplication.md
+    ├── AiPlanInput/                        # Voir ai_heating_modification.md
+    └── DuplicationChat/                    # Voir heating_duplication.md
 ```
 
 ### Layout 3 zones
@@ -50,30 +53,32 @@ src/
 ```
 ┌──────────────┬───────────────────────┬──────────────┐
 │  Calendar    │   DateHeader          │  Duplication │
-│              │   Timeline            │  Panel       │
-│  Rooms       │   (créneaux)          │              │
-│  Selector    │                       │              │
+│              │   AiPlanInput         │  Chat        │
+│  Rooms       │   Timeline            │              │
+│  Selector    │   (créneaux)          │              │
 └──────────────┴───────────────────────┴──────────────┘
   Sidebar Left      Main Content         Sidebar Right
 ```
+
+`.rightPanel` (sidebar droite) n'est rendu que si l'utilisateur est connecté. En mobile (breakpoint `lg`), les 3 zones passent en colonne — `.rightPanel` reste affiché, en dernière position sous le contenu principal.
 
 ---
 
 ## Page HeatingSchedulePage
 
-**Fichier :** `src/pages/HeatingSchedulePage.jsx`
+**Fichier :** `src/pages/HeatingSchedulePage.tsx`
 
 ### Responsabilités
 
-- Orchestration des 3 zones (Calendar, Timeline, Duplication)
+- Orchestration des zones (Calendar, RoomsSelector, AiPlanInput, Timeline, DuplicationChat)
 - Gestion de la date et du mois sélectionnés
 - Gestion de la sélection des pièces
 - Bridge entre Timeline et le hook d'historique
-- Rafraîchissement du calendrier après duplication
+- Rafraîchissement du calendrier après duplication IA (`handleDuplicationSuccess`)
 
 ### État principal
 
-```javascript
+```typescript
 const { dailyPlan, loading, canUndo, hasChanges, undo, save, applyChange } =
   useHeatingPlanHistory(selectedDate);
 ```
@@ -89,8 +94,14 @@ const { dailyPlan, loading, canUndo, hasChanges, undo, save, applyChange } =
 **Changement de date :**
 - User clique jour → `selectedDate` change → Hook refetch automatique
 
-**Modification créneaux :**
-- Timeline → `handleSlotUpdate()` → `applyChange(newPlan)` → History stack
+**Modification créneaux (manuelle) :**
+- Timeline → `handleSlotUpdate()` → reconstruit `DailyHeatingPlan` via son constructeur (pas de clonage de prototype, garde `raw` synchronisé) → `applyChange(newPlan)` → History stack
+
+**Modification via IA :**
+- `AiPlanInput` → `handleAiRequest(instruction)` → `applyAiPlanModification({instruction, plan: dailyPlan.raw}, ...)` → `applyChange(newPlan)` — même chemin que toute modification manuelle
+
+**Duplication via IA :**
+- `DuplicationChat` gère son propre état conversationnel en interne (voir [heating_duplication.md](./heating_duplication.md)) ; en cas de succès, appelle `onDuplicationSuccess` → `handleDuplicationSuccess()` refetch le calendrier du mois courant
 
 **Sauvegarde :**
 - User clique "Enregistrer" → `save()` → POST backend → Refetch → Clear history
@@ -99,29 +110,29 @@ const { dailyPlan, loading, canUndo, hasChanges, undo, save, applyChange } =
 
 ## Hook useHeatingPlanHistory
 
-**Fichier :** `src/hooks/HeatingSchedulePage/useHeatingPlanHistory.js`
+**Fichier :** `src/hooks/HeatingSchedulePage/useHeatingPlanHistory.ts`
 
 ### Principe
 
-Gère l'état du planning avec historique pour undo/redo et sauvegarde backend.
+Gère l'état du planning avec historique pour undo et sauvegarde backend.
 
 ### Fonctionnement
 
 **État géré :**
-- `dailyPlan` : État actuel (DailyHeatingPlan)
-- `initialPlan` : État initial après fetch/save
+- `dailyPlan` : État actuel (`DailyHeatingPlan`)
 - `history` : Stack pour undo (array de plans précédents)
 
 **Fonctions exposées :**
 - `applyChange(newPlan)` : Pousse état actuel dans history, applique nouveau plan
 - `undo()` : Restaure dernier état de l'historique
 - `save()` : POST backend + refetch + clear history
+- `canUndo`/`hasChanges` : dérivés de `history.length > 0`
 
 **Auto-fetch :**
 Le hook fetch automatiquement le planning à chaque changement de `selectedDate`.
 
 **Point technique :**
-Utilise `useRef` pour éviter stale closure dans `save()` (accède à la dernière valeur de `dailyPlan`).
+Utilise `useRef` (`dailyPlanRef`) pour éviter stale closure dans `save()` (accède à la dernière valeur de `dailyPlan`).
 
 ---
 
@@ -129,36 +140,34 @@ Utilise `useRef` pour éviter stale closure dans `save()` (accède à la derniè
 
 ### HeatingCalendar
 
-**Fichier :** `src/models/HeatingCalendar.js`
+**Fichier :** `src/models/HeatingCalendar.ts`
 
-```javascript
+```typescript
 {
-  year: number,
-  month: number,
-  today: SimpleDate,
-  days: [{ date: SimpleDate, status: 'empty'|'normal'|'different' }]
+  year: number | null,
+  month: number | null,
+  today: SimpleDate | null,
+  days: { date: SimpleDate | null, status: DayStatusType }[]
 }
 ```
 
-**Status des jours :**
-- `empty` : Pas de planning
-- `normal` : Planning = template de la pièce
-- `different` : Planning personnalisé
+**Status des jours (`DayStatus`) :**
+- `EMPTY` : Pas de planning
+- `NORMAL` : Planning = même hash que la semaine précédente
+- `DIFFERENT` : Planning différent de la semaine précédente
 
 ### DailyHeatingPlan
 
-**Fichier :** `src/models/DailyHeatingPlan.js`
+**Fichier :** `src/models/DailyHeatingPlan.ts`
 
-```javascript
+```typescript
 {
-  date: "YYYY-MM-DD",
-  rooms: [
-    {
-      id: number,
-      name: string,
-      slots: [{ start: "HH:MM", end: "HH:MM", value: "20.5"|"on"|"off" }]
-    }
-  ]
+  date: string | null,
+  rooms: {
+    id: number | null,
+    name: string,
+    slots: { start: string, end: string, value: number | string | null }[]
+  }[]
 }
 ```
 
@@ -172,7 +181,7 @@ Utilise `useRef` pour éviter stale closure dans `save()` (accède à la derniè
 
 **Endpoint :** `GET /api/heating/calendar/?year=X&month=Y`
 
-Paramètres `null` = mois en cours. Retourne `HeatingCalendar`.
+Paramètres `undefined` = mois en cours. Retourne `HeatingCalendar`.
 
 ### fetchDailyHeatingPlan(date)
 
@@ -190,28 +199,20 @@ Retourne `DailyHeatingPlan`.
 
 Utilise `fetchWithAuth` pour refresh automatique du token si 401.
 
-### duplicateHeatingPlan(duplicationData, accessToken, refreshCallback)
+### applyAiPlanModification(payload, accessToken, refreshCallback)
 
-**Endpoint :** `POST /api/heating/plans/duplicate/`
+**Endpoint :** `POST /api/ai/heating/modify/` — voir [ai_heating_modification.md](./ai_heating_modification.md).
 
-**Payload :**
-```javascript
-{
-  type: "day"|"week",
-  source_date: "YYYY-MM-DD",
-  repeat_since: "YYYY-MM-DD",
-  repeat_until: "YYYY-MM-DD",
-  room_ids: [1, 2, 3],
-  weekdays: ["monday", "friday"] // Si type="day" uniquement
-}
-```
+### duplicateHeatingPlanAi(sourceDate, echanges, accessToken, refreshCallback, step, data)
+
+**Endpoint :** `POST /api/ai/heating/duplicate/` — protocole conversationnel (`echanges`/`step`/`data`), voir [heating_duplication.md](./heating_duplication.md).
 
 ---
 
 ## Gestion de l'authentification
 
-Les composants d'édition (Timeline, SaveActions, DuplicationPanel) vérifient la présence de `user` :
-- Si absent → Blocage des interactions + message "Vous devez être connecté"
+Les composants d'édition (Timeline, TimelineSaveActions, AiPlanInput, DuplicationChat) ne sont rendus que si `user` est présent (sauf Timeline, toujours affichée mais en lecture seule) :
+- Si absent → message "Vous devez être connecté pour modifier ces éléments", zones IA/duplication masquées
 - Si présent → Fonctionnalités activées
 
 Tous les services d'écriture utilisent `fetchWithAuth` qui gère le refresh token automatique en cas de 401.
@@ -220,7 +221,7 @@ Tous les services d'écriture utilisent `fetchWithAuth` qui gère le refresh tok
 
 ## Flux utilisateur
 
-### Éditer un planning
+### Éditer un planning manuellement
 
 1. Sélectionner un jour dans le calendrier
 2. Optionnel : Déselectionner des pièces
@@ -228,14 +229,13 @@ Tous les services d'écriture utilisent `fetchWithAuth` qui gère le refresh tok
 4. Utiliser "Annuler" si besoin (undo)
 5. Cliquer "Enregistrer" pour sauvegarder
 
+### Modifier via IA
+
+Voir [ai_heating_modification.md](./ai_heating_modification.md) — bouton "✦ Modifier via IA" dans le header.
+
 ### Dupliquer un planning
 
-1. Sélectionner le jour source
-2. Déselectionner les pièces à exclure
-3. Configurer la duplication dans le panneau de droite (mode, dates, jours)
-4. Vérifier le récapitulatif
-5. "Appliquer la duplication" → Confirmation → Backend duplique
-6. Calendrier se rafraîchit automatiquement
+Voir [heating_duplication.md](./heating_duplication.md) — chat dans la sidebar droite.
 
 ---
 
@@ -243,9 +243,10 @@ Tous les services d'écriture utilisent `fetchWithAuth` qui gère le refresh tok
 
 - **Timeline - Éditeur de créneaux :** [heating_timeline.md](./heating_timeline.md)
 - **Calendrier et sélection :** [heating_calendar.md](./heating_calendar.md)
-- **Système de duplication :** [heating_duplication.md](./heating_duplication.md)
+- **Modification via IA :** [ai_heating_modification.md](./ai_heating_modification.md)
+- **Duplication via chat IA :** [heating_duplication.md](./heating_duplication.md)
 
 ---
 
 Auteur : Emmanuel Oudot
-Dernière mise à jour : Décembre 2025
+Dernière mise à jour : Août 2026

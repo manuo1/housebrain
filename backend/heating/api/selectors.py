@@ -54,6 +54,10 @@ def invalid_room_ids_in_plans(plans: list) -> set:
     return invalid_room_ids(room_ids_in_request)
 
 
+def get_room_names_by_ids(room_ids: set[int]) -> dict[int, str]:
+    return dict(Room.objects.filter(id__in=room_ids).values_list("id", "name"))
+
+
 def get_room_heating_day_plan_data(day: date, room_ids: set[int]) -> list[tuple]:
     if not isinstance(day, date) or not isinstance(room_ids, set):
         return []

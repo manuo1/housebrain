@@ -1,17 +1,13 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from freezegun import freeze_time
 
 from core.utils.date_utils import (
-    get_next_sunday,
-    get_previous_monday,
-    get_week_containing_date,
     is_delta_within_five_seconds,
     is_delta_within_three_minute,
     is_delta_within_two_minute,
     parse_iso_datetime,
-    weekdays_str_list_to_datetime_weekdays_list,
 )
 
 
@@ -89,109 +85,3 @@ def test_is_delta_within_five_seconds(delta, expected):
     now = datetime.now()
     other_dt = now - delta
     assert is_delta_within_five_seconds(now, other_dt) is expected
-
-
-@pytest.mark.parametrize(
-    "label_list, weekday",
-    [
-        (
-            [
-                "monday",
-                "tuesday",
-                "wednesday",
-                "thursday",
-                "friday",
-                "saturday",
-                "sunday",
-            ],
-            [0, 1, 2, 3, 4, 5, 6],
-        ),
-        (["monday"], [0]),
-        ("tuesday", None),
-        (None, None),
-        (False, None),
-        ([], []),
-        ({}, None),
-        (["monday", "not_a_day"], None),  # valid label mixed with an invalid one
-        (["invalid"], None),  # single invalid label
-        (["Monday"], None),  # wrong case, must match WeekDayLabel exactly
-    ],
-)
-def test_weekdays_str_list_to_datetime_weekdays_list(label_list, weekday):
-    assert weekdays_str_list_to_datetime_weekdays_list(label_list) == weekday
-
-
-@pytest.mark.parametrize(
-    "input_date,expected_start",
-    [
-        (date(2025, 1, 15), date(2025, 1, 13)),  # mercredi
-        (date(2025, 1, 13), date(2025, 1, 13)),  # lundi
-        (date(2025, 1, 19), date(2025, 1, 13)),  # dimanche
-        (date(2024, 12, 30), date(2024, 12, 30)),  # autre semaine
-    ],
-)
-def test_get_week_containing_date_valid(input_date, expected_start):
-    result = get_week_containing_date(input_date)
-
-    assert len(result) == 7
-    assert result[0] == expected_start
-    assert result == [expected_start + timedelta(days=i) for i in range(7)]
-
-
-@pytest.mark.parametrize("input_date", ["a", False, None, {}])
-def test_get_week_containing_date_invalid(input_date):
-    result = get_week_containing_date(input_date)
-    assert result == []
-
-
-MONDAY = date(2025, 12, 15)
-TUESDAY = date(2025, 12, 16)
-WEDNESDAY = date(2025, 12, 17)
-THURSDAY = date(2025, 12, 18)
-FRIDAY = date(2025, 12, 19)
-SATURDAY = date(2025, 12, 20)
-SUNDAY = date(2025, 12, 21)
-
-
-@pytest.mark.parametrize(
-    "input_date, expected",
-    [
-        (MONDAY, MONDAY),
-        (TUESDAY, MONDAY),
-        (WEDNESDAY, MONDAY),
-        (THURSDAY, MONDAY),
-        (FRIDAY, MONDAY),
-        (SATURDAY, MONDAY),
-        (SUNDAY, MONDAY),
-        # strange cases
-        ("a", None),
-        (False, None),
-        (None, None),
-        ([], None),
-    ],
-)
-def test_get_previous_monday(input_date, expected):
-    result = get_previous_monday(input_date)
-    assert result == expected
-
-
-@pytest.mark.parametrize(
-    "input_date, expected",
-    [
-        (MONDAY, SUNDAY),
-        (TUESDAY, SUNDAY),
-        (WEDNESDAY, SUNDAY),
-        (THURSDAY, SUNDAY),
-        (FRIDAY, SUNDAY),
-        (SATURDAY, SUNDAY),
-        (SUNDAY, SUNDAY),
-        # strange cases
-        ("a", None),
-        (False, None),
-        (None, None),
-        ([], None),
-    ],
-)
-def test_get_next_sunday(input_date, expected):
-    result = get_next_sunday(input_date)
-    assert result == expected

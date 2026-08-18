@@ -1,6 +1,4 @@
-from datetime import date, datetime, timedelta
-
-from core.constants import WeekDayLabel
+from datetime import datetime, timedelta
 
 
 def is_delta_within_two_minute(dt1: datetime, dt2: datetime) -> bool:
@@ -26,68 +24,3 @@ def parse_iso_datetime(dt_str: str) -> datetime | None:
         return datetime.fromisoformat(dt_str)
     except (ValueError, TypeError):
         return None
-
-
-def weekdays_str_list_to_datetime_weekdays_list(labels: list[str]) -> list[int] | None:
-    """Convert a list of weekday labels (e.g. WeekDayLabel.MONDAY) to datetime weekday ints (Mon=0..Sun=6).
-
-    Returns None if labels isn't a list or contains a label that doesn't match WeekDayLabel.
-    """
-    if not isinstance(labels, list):
-        return
-    mapping = {
-        WeekDayLabel.MONDAY: 0,
-        WeekDayLabel.TUESDAY: 1,
-        WeekDayLabel.WEDNESDAY: 2,
-        WeekDayLabel.THURSDAY: 3,
-        WeekDayLabel.FRIDAY: 4,
-        WeekDayLabel.SATURDAY: 5,
-        WeekDayLabel.SUNDAY: 6,
-    }
-
-    result = []
-    for label in labels:
-        try:
-            enum_value = WeekDayLabel(label)
-        except ValueError:
-            return
-
-        result.append(mapping[enum_value])
-
-    return result
-
-
-def get_week_containing_date(day: date) -> list[date]:
-    """Return the 7 dates (Monday to Sunday) of the week containing `day`.
-
-    Returns an empty list if `day` isn't a date.
-    """
-    if not isinstance(day, date):
-        return []
-    start = day - timedelta(days=day.weekday())
-    return [start + timedelta(days=i) for i in range(7)]
-
-
-def get_previous_monday(day: date) -> date | None:
-    """Return the Monday of the week containing `day` (same day if `day` is already a Monday).
-
-    Returns None if `day` isn't a date-like object.
-    """
-    try:
-        return day - timedelta(days=day.weekday())
-    except AttributeError:
-        return
-
-
-def get_next_sunday(day: date) -> date | None:
-    """Return the Sunday of the week containing `day` (same day if `day` is already a Sunday).
-
-    Note: despite the name, this is not "the next Sunday after `day`" in the chronological
-    sense — it's the Sunday that closes out `day`'s own week, symmetric with get_previous_monday.
-
-    Returns None if `day` isn't a date-like object.
-    """
-    try:
-        return day - timedelta(days=day.weekday()) + timedelta(days=6)
-    except AttributeError:
-        return

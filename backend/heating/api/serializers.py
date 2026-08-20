@@ -56,3 +56,14 @@ class RoomHeatingPlanInputSerializer(serializers.Serializer):
 
 class HeatingPlansInputSerializer(serializers.Serializer):
     plans = RoomHeatingPlanInputSerializer(many=True)
+
+
+class ChangedRoomSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class HeatingPlansSaveResultSerializer(serializers.Serializer):
+    created = serializers.IntegerField()
+    updated = serializers.IntegerField()
+    changed_rooms = ChangedRoomSerializer(many=True)

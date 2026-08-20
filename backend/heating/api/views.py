@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from heating.api.constants import DayStatus
 from heating.api.selectors import (
     get_daily_heating_plan,
+    get_room_names_by_ids,
     invalid_room_ids_in_plans,
 )
 from heating.api.serializers import (
@@ -18,6 +19,7 @@ from heating.api.serializers import (
     HeatingCalendarInputSerializer,
     HeatingCalendarSerializer,
     HeatingPlansInputSerializer,
+    HeatingPlansSaveResultSerializer,
 )
 from heating.api.services import add_day_status
 from heating.models import HeatingPattern, RoomHeatingDayPlan
@@ -64,6 +66,7 @@ class DailyHeatingPlan(APIView):
         params = input_serializer.validated_data
         plans = params.get("plans", [])
         changes = {"updated": 0, "created": 0}
+        changed_room_ids = set()
 
         invalid_room_ids = invalid_room_ids_in_plans(plans)
 
@@ -90,10 +93,20 @@ class DailyHeatingPlan(APIView):
 
             if is_created:
                 changes["created"] += 1
+                changed_room_ids.add(plan["room_id"])
             else:
                 if room_heating_day_plan.heating_pattern != heating_pattern:
                     room_heating_day_plan.heating_pattern = heating_pattern
                     room_heating_day_plan.save()
                     changes["updated"] += 1
+                    changed_room_ids.add(plan["room_id"])
 
-        return Response(changes, status=status.HTTP_201_CREATED)
+        room_names = get_room_names_by_ids(changed_room_ids)
+        changes["changed_rooms"] = [
+            {"id": room_id, "name": room_names[room_id]}
+            for room_id in changed_room_ids
+            if room_id in room_names
+        ]
+
+        output_serializer = HeatingPlansSaveResultSerializer(changes)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)

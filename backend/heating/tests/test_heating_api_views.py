@@ -44,7 +44,7 @@ PLAN_3 = {"room_id": ROOM_ID, "date": "2025-12-12", "slots": HEATINGPATTERN_1}
 
 @pytest.mark.django_db
 def test_create_heating_plan_with_new_heating_pattern(authenticated_client):
-    RoomFactory(id=ROOM_ID)
+    RoomFactory(id=ROOM_ID, name="Test Room")
     data = {"plans": [PLAN_1, PLAN_2, PLAN_3]}
 
     # no RoomHeatingDayPlan or HeatingPattern
@@ -58,6 +58,7 @@ def test_create_heating_plan_with_new_heating_pattern(authenticated_client):
     # PLAN_1, PLAN_2 and PLAN_3 created
     assert response.data["created"] == 3
     assert response.data["updated"] == 0
+    assert response.data["changed_rooms"] == [{"id": ROOM_ID, "name": "Test Room"}]
     assert RoomHeatingDayPlan.objects.count() == 3
     # reuse twice a heating pattern => only 2 HeatingPattern created
     assert HeatingPattern.objects.count() == 2
@@ -66,7 +67,7 @@ def test_create_heating_plan_with_new_heating_pattern(authenticated_client):
 @pytest.mark.django_db
 def test_heating_plan_update_with_new_heating_pattern(authenticated_client):
     RoomHeatingDayPlanFactory(
-        room=RoomFactory(id=ROOM_ID),
+        room=RoomFactory(id=ROOM_ID, name="Test Room"),
         date=DEFAULT_DATE,
         heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
     )
@@ -86,6 +87,7 @@ def test_heating_plan_update_with_new_heating_pattern(authenticated_client):
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["created"] == 0
     assert response.data["updated"] == 1
+    assert response.data["changed_rooms"] == [{"id": ROOM_ID, "name": "Test Room"}]
     # we update existing RoomHeatingDayPlan = no new RoomHeatingDayPlan
     assert RoomHeatingDayPlan.objects.count() == 1
     # The new heating pattern didn't exist yet, it was created.
@@ -95,7 +97,7 @@ def test_heating_plan_update_with_new_heating_pattern(authenticated_client):
 @pytest.mark.django_db
 def test_heating_plan_update_with_existing_heating_pattern(authenticated_client):
     RoomHeatingDayPlanFactory(
-        room=RoomFactory(id=ROOM_ID),
+        room=RoomFactory(id=ROOM_ID, name="Test Room"),
         date=DEFAULT_DATE,
         heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
     )
@@ -117,6 +119,7 @@ def test_heating_plan_update_with_existing_heating_pattern(authenticated_client)
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["created"] == 0
     assert response.data["updated"] == 1
+    assert response.data["changed_rooms"] == [{"id": ROOM_ID, "name": "Test Room"}]
     # we update existing RoomHeatingDayPlan = no new RoomHeatingDayPlan
     assert RoomHeatingDayPlan.objects.count() == 1
     # The heating pattern already existed, it was reused.
@@ -126,7 +129,7 @@ def test_heating_plan_update_with_existing_heating_pattern(authenticated_client)
 @pytest.mark.django_db
 def test_heating_plan_update_with_same_heating_pattern(authenticated_client):
     RoomHeatingDayPlanFactory(
-        room=RoomFactory(id=ROOM_ID),
+        room=RoomFactory(id=ROOM_ID, name="Test Room"),
         date=DEFAULT_DATE,
         heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
     )
@@ -147,6 +150,7 @@ def test_heating_plan_update_with_same_heating_pattern(authenticated_client):
     # We update existing RoomHeatingDayPlan with the same pattern = no change
     assert response.data["created"] == 0
     assert response.data["updated"] == 0
+    assert response.data["changed_rooms"] == []
     assert RoomHeatingDayPlan.objects.count() == 1
     assert HeatingPattern.objects.count() == 1
 

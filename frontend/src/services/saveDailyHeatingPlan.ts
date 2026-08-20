@@ -18,6 +18,17 @@ interface BackendPayload {
   plans: BackendPlan[];
 }
 
+export interface ChangedRoom {
+  id: number;
+  name: string;
+}
+
+export interface SaveDailyHeatingPlanResult {
+  created: number;
+  updated: number;
+  changed_rooms: ChangedRoom[];
+}
+
 function determineSlotType(value: Slot["value"]): "onoff" | "temp" {
   if (value === "on" || value === "off") return "onoff";
   if (typeof value === "number" || (typeof value === "string" && !isNaN(parseFloat(value)))) return "temp";
@@ -41,7 +52,7 @@ export default async function saveDailyHeatingPlan(
   dailyPlan: DailyHeatingPlan,
   accessToken: string,
   refreshCallback: RefreshCallback
-): Promise<unknown> {
+): Promise<SaveDailyHeatingPlanResult> {
   const payload = transformPlanForBackend(dailyPlan);
 
   const response = await fetchWithAuth(

@@ -1,18 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/useAuth";
 import duplicateHeatingPlanAi, {
   Echange,
   DuplicationData,
   DuplicationStep,
 } from "../../../services/duplicateHeatingPlanAi";
+import { ChangedRoom } from "../../../services/saveDailyHeatingPlan";
 import styles from "./DuplicationChat.module.scss";
+
+export interface PropagationSeed {
+  rooms: ChangedRoom[];
+  nonce: number;
+}
 
 interface DuplicationChatProps {
   sourceDate: string;
   onDuplicationSuccess: () => void;
+  propagationSeed?: PropagationSeed | null;
 }
 
-export default function DuplicationChat({ sourceDate, onDuplicationSuccess }: DuplicationChatProps) {
+function joinRoomNamesFr(names: string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+  return names.slice(0, -1).join(", ") + " et " + names[names.length - 1];
+}
+
+function buildPropagationEchanges(rooms: ChangedRoom[]): Echange[] {
+  const roomsFr = joinRoomNamesFr(rooms.map((r) => r.name));
+  return [
+    {
+      role: "user",
+      content: `Je viens de modifier le planning de ${roomsFr}. Je veux propager ce changement sur d'autres jours.`,
+    },
+    { role: "assistant", content: "Précisez la période." },
+  ];
+}
+
+export default function DuplicationChat({ sourceDate, onDuplicationSuccess, propagationSeed }: DuplicationChatProps) {
   const { accessToken, refresh } = useAuth();
   const [echanges, setEchanges] = useState<Echange[]>([]);
   const [step, setStep] = useState<DuplicationStep | null>(null);
@@ -28,6 +51,18 @@ export default function DuplicationChat({ sourceDate, onDuplicationSuccess }: Du
     setInputValue("");
     setNetworkError(null);
   };
+
+  // A new save with changed rooms always overrides whatever conversation was
+  // in progress (finished or not) — the propagation offer takes priority.
+  useEffect(() => {
+    if (!propagationSeed || propagationSeed.rooms.length === 0) return;
+    setEchanges(buildPropagationEchanges(propagationSeed.rooms));
+    setStep("clarify");
+    setData(null);
+    setInputValue("");
+    setNetworkError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propagationSeed?.nonce]);
 
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading || !accessToken) return;

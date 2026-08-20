@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import fetchDailyHeatingPlan from "../../services/fetchDailyHeatingPlan";
-import saveDailyHeatingPlan from "../../services/saveDailyHeatingPlan";
+import saveDailyHeatingPlan, { ChangedRoom } from "../../services/saveDailyHeatingPlan";
 import { useAuth } from "../../contexts/useAuth";
 import DailyHeatingPlan from "../../models/DailyHeatingPlan";
 
@@ -11,7 +11,7 @@ interface UseHeatingPlanHistoryResult {
   hasChanges: boolean;
   applyChange: (newPlan: DailyHeatingPlan) => void;
   undo: () => void;
-  save: () => Promise<void>;
+  save: () => Promise<ChangedRoom[]>;
 }
 
 export function useHeatingPlanHistory(selectedDate: string | null): UseHeatingPlanHistoryResult {
@@ -53,14 +53,15 @@ export function useHeatingPlanHistory(selectedDate: string | null): UseHeatingPl
     setHistory((prev) => prev.slice(0, -1));
   }, [history]);
 
-  const save = useCallback(async (): Promise<void> => {
+  const save = useCallback(async (): Promise<ChangedRoom[]> => {
     if (!accessToken) throw new Error("No access token available");
 
     try {
-      await saveDailyHeatingPlan(dailyPlanRef.current!, accessToken, refresh);
+      const result = await saveDailyHeatingPlan(dailyPlanRef.current!, accessToken, refresh);
       const data = await fetchDailyHeatingPlan(selectedDate!);
       setDailyPlan(data);
       setHistory([]);
+      return result.changed_rooms;
     } catch (error) {
       console.error("Error saving daily plan:", error);
       throw error;

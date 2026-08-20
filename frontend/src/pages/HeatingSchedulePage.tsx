@@ -9,7 +9,7 @@ import DateHeader from "../components/HeatingSchedulePage/DateHeader/DateHeader"
 import Timeline from "../components/HeatingSchedulePage/Timeline/Timeline";
 import TimelineSaveActions from "../components/HeatingSchedulePage/Timeline/TimelineSaveActions";
 import AiPlanInput from "../components/HeatingSchedulePage/AiPlanInput/AiPlanInput";
-import DuplicationChat from "../components/HeatingSchedulePage/DuplicationChat/DuplicationChat";
+import DuplicationChat, { PropagationSeed } from "../components/HeatingSchedulePage/DuplicationChat/DuplicationChat";
 import styles from "./HeatingSchedulePage.module.scss";
 import HeatingCalendarModel from "../models/HeatingCalendar";
 import { Slot } from "../models/DailyHeatingPlan";
@@ -29,6 +29,7 @@ export default function HeatingSchedulePage() {
   const [currentMonth, setCurrentMonth] = useState<CurrentMonth | null>(null);
   const [selectedRoomIds, setSelectedRoomIds] = useState<(number | null)[]>([]);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [propagationSeed, setPropagationSeed] = useState<PropagationSeed | null>(null);
 
   const { dailyPlan, loading, canUndo, hasChanges, undo, save, applyChange } =
     useHeatingPlanHistory(selectedDate);
@@ -145,6 +146,13 @@ export default function HeatingSchedulePage() {
     }
   };
 
+  const handleSave = async () => {
+    const changedRooms = await save();
+    if (changedRooms.length > 0) {
+      setPropagationSeed({ rooms: changedRooms, nonce: Date.now() });
+    }
+  };
+
   if (!calendar || !selectedDate) {
     return (
       <div className={styles.loading}>
@@ -176,7 +184,7 @@ export default function HeatingSchedulePage() {
             {user ? (
               <TimelineSaveActions
                 onCancel={undo}
-                onSave={save}
+                onSave={handleSave}
                 canUndo={canUndo}
                 hasChanges={hasChanges}
                 onError={setPageError}
@@ -209,7 +217,11 @@ export default function HeatingSchedulePage() {
 
       {user && selectedDate && (
         <div className={styles.rightPanel}>
-          <DuplicationChat sourceDate={selectedDate} onDuplicationSuccess={handleDuplicationSuccess} />
+          <DuplicationChat
+            sourceDate={selectedDate}
+            onDuplicationSuccess={handleDuplicationSuccess}
+            propagationSeed={propagationSeed}
+          />
         </div>
       )}
     </div>

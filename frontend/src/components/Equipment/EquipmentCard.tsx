@@ -8,9 +8,10 @@ import Equipment from "../../models/Equipment";
 
 interface EquipmentCardProps {
   equipment: Equipment;
+  onOpeningTriggered?: () => void;
 }
 
-export default function EquipmentCard({ equipment }: EquipmentCardProps) {
+export default function EquipmentCard({ equipment, onOpeningTriggered }: EquipmentCardProps) {
   const { user, accessToken, refresh } = useAuth();
   const [showAuthNotice, setShowAuthNotice] = useState(false);
   const [triggerError, setTriggerError] = useState<string | null>(null);
@@ -19,8 +20,12 @@ export default function EquipmentCard({ equipment }: EquipmentCardProps) {
     durationMs: 5000,
     onComplete: async () => {
       if (!accessToken) return;
+      // Snapshot avant trigger : la porte de garage étant "fermée" veut dire
+      // que ce déclenchement ouvre (fermeture non couverte par le polling accéléré).
+      const wasClosed = equipment.state?.toLowerCase().includes("fermé") ?? false;
       try {
         await triggerEquipment(equipment.id, accessToken, refresh);
+        if (wasClosed) onOpeningTriggered?.();
       } catch (err) {
         console.error(err);
         setTriggerError("Erreur lors du déclenchement");

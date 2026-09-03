@@ -1,6 +1,6 @@
 import factory
 
-from actuators.models import Radiator, SingleButtonMotor
+from actuators.models import OnOffSwitch, Radiator, SingleButtonMotor
 from device.tests.factories import RelayOnOffFactory
 
 
@@ -20,3 +20,11 @@ class SingleButtonMotorFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Moteur {n}")
     relay_on_off = factory.SubFactory(RelayOnOffFactory)
     pulse_seconds = 1
+
+
+class OnOffSwitchFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OnOffSwitch
+
+    name = factory.Sequence(lambda n: f"Interrupteur {n}")
+    relay_on_off = factory.SubFactory(RelayOnOffFactory)

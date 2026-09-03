@@ -139,3 +139,38 @@ class SingleButtonMotor(models.Model):
 
     def trigger(self) -> None:
         self.relay_on_off.pulse(self.pulse_seconds)
+
+
+class OnOffSwitch(models.Model):
+    """
+    A maintained on/off actuator (e.g. a Shelly relay in series with a
+    contactor coil) — as opposed to SingleButtonMotor, which pulses.
+    Named on control behavior, not the physical load it drives, so it's
+    reusable for any future maintained on/off equipment (e.g. a pool
+    pump), not just a water heater.
+    """
+
+    relay_on_off = models.OneToOneField(
+        RelayOnOff,
+        on_delete=models.CASCADE,
+        related_name="on_off_switch",
+        verbose_name="Relais",
+    )
+
+    name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
+
+    class Meta:
+        verbose_name = "Interrupteur on/off"
+        verbose_name_plural = "Interrupteurs on/off"
+
+    def __str__(self):
+        return self.name
+
+    def turn_on(self) -> None:
+        self.relay_on_off.turn_on()
+
+    def turn_off(self) -> None:
+        self.relay_on_off.turn_off()
+
+    def read_state(self) -> bool:
+        return self.relay_on_off.read_state()

@@ -5,8 +5,8 @@ equipment type (e.g. a future RollerShutter) means adding it here, no
 other generic code (selectors/views) needs to change.
 """
 
-from equipment.models import GarageDoor
+from equipment.models import GarageDoor, WaterHeater
 
-EQUIPMENT_MODELS = [GarageDoor]
+EQUIPMENT_MODELS = [GarageDoor, WaterHeater]
 
 EQUIPMENT_MODELS_BY_NAME = {model._meta.model_name: model for model in EQUIPMENT_MODELS}

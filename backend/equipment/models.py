@@ -1,6 +1,6 @@
 from django.db import models
 
-from actuators.models import SingleButtonMotor
+from actuators.models import OnOffSwitch, SingleButtonMotor
 from equipment.constants import EquipmentStatusLevel
 from sensors.models import DoorContactSensor
 
@@ -96,4 +96,50 @@ class GarageDoor(SingleButtonEquipment):
             "status_level": (
                 EquipmentStatusLevel.OK if is_closed else EquipmentStatusLevel.WARNING
             ),
+        }
+
+
+class WaterHeater(Equipment):
+    """
+    A water heater whose day/night contactor coil is driven by a Shelly
+    relay wired in series with the Linky teleinfo signal — turning the
+    relay on/off forces HC/HP instead of following the Linky schedule.
+
+    Extends Equipment directly, not SingleButtonEquipment: unlike
+    GarageDoor, control here is maintained on/off, not a momentary
+    trigger. Wraps actuators.OnOffSwitch (mirrors GarageDoor wrapping
+    SingleButtonMotor).
+    """
+
+    interaction_type = "toggle_with_state"
+
+    select_related_fields = ("switch__relay_on_off__device_io__device",)
+
+    name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
+
+    switch = models.OneToOneField(
+        OnOffSwitch,
+        on_delete=models.PROTECT,
+        related_name="water_heater",
+        verbose_name="Interrupteur",
+    )
+
+    class Meta:
+        verbose_name = "Chauffe-eau"
+        verbose_name_plural = "Chauffe-eau"
+
+    def __str__(self):
+        return self.name
+
+    def turn_on(self) -> None:
+        self.switch.turn_on()
+
+    def turn_off(self) -> None:
+        self.switch.turn_off()
+
+    def get_status(self) -> dict:
+        is_on = self.switch.read_state()
+        return {
+            "state": "Marche forcée (HC)" if is_on else "Arrêt (HP)",
+            "status_level": EquipmentStatusLevel.OK,
         }

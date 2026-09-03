@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from device.drivers.base import DeviceDriverError
 
-from .models import Radiator, SingleButtonMotor
+from .models import OnOffSwitch, Radiator, SingleButtonMotor
 
 
 @admin.register(Radiator)
@@ -92,5 +92,40 @@ class SingleButtonMotorAdmin(admin.ModelAdmin):
             self.message_user(
                 request,
                 f"{triggered} moteur(s) déclenché(s).",
+                messages.SUCCESS,
+            )
+
+
+@admin.register(OnOffSwitch)
+class OnOffSwitchAdmin(admin.ModelAdmin):
+    list_display = ("name", "relay_on_off")
+    search_fields = ("name",)
+
+    actions = ["turn_on_selected", "turn_off_selected"]
+
+    @admin.action(description="Allumer les interrupteurs sélectionnés")
+    def turn_on_selected(self, request, queryset):
+        self._apply(request, queryset, "turn_on", "allumé(s)")
+
+    @admin.action(description="Éteindre les interrupteurs sélectionnés")
+    def turn_off_selected(self, request, queryset):
+        self._apply(request, queryset, "turn_off", "éteint(s)")
+
+    def _apply(self, request, queryset, method_name, verb):
+        done = 0
+        for switch in queryset:
+            try:
+                getattr(switch, method_name)()
+                done += 1
+            except DeviceDriverError as e:
+                self.message_user(
+                    request,
+                    f"{switch.name} : échec ({e})",
+                    messages.ERROR,
+                )
+        if done:
+            self.message_user(
+                request,
+                f"{done} interrupteur(s) {verb}.",
                 messages.SUCCESS,
             )

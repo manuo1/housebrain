@@ -161,6 +161,13 @@ class RelayOnOff(models.Model):
         """Turns on, and lets the device itself revert to off after `seconds`."""
         self.device_io.get_driver().set_io_output(self.device_io.key, on=True, pulse_seconds=seconds)
 
+    def read_state(self) -> bool:
+        """
+        Reads back the relay's own output state (not a separate sensor —
+        an actuator reading back what it's currently driving).
+        """
+        return self.device_io.get_driver().read_io_state(self.device_io.key)
+
 
 class SensorTrueFalse(models.Model):
     """

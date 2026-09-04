@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "equipment",
     "heating",
     "notifications",
+    "planning",
     "rest_framework",
     "rest_framework_simplejwt",
     "rooms",

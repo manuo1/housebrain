@@ -44,6 +44,7 @@ class GarageDoorAdmin(admin.ModelAdmin):
 class WaterHeaterAdmin(admin.ModelAdmin):
     list_display = ("name", "current_state")
     readonly_fields = ("current_state",)
+    search_fields = ("name",)
 
     actions = ["turn_on_selected", "turn_off_selected"]
 

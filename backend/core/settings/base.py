@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "scheduler",
     "sensors",
     "teleinfo",
+    "water_heater",
 ]
 
 MIDDLEWARE = [

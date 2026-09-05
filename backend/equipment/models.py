@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from actuators.models import OnOffSwitch, SingleButtonMotor
 from equipment.constants import EquipmentStatusLevel
@@ -111,6 +112,20 @@ class WaterHeater(Equipment):
     SingleButtonMotor).
     """
 
+    class RequestedState(models.TextChoices):
+        """System intention for water heater state"""
+
+        OFF = "OFF", "Éteint"
+        ON = "ON", "Allumé"
+        LOAD_SHED = "LOAD_SHED", "Délestage (Éteint)"
+
+    class ActualState(models.TextChoices):
+        """Last known hardware state of the water heater's switch"""
+
+        OFF = "OFF", "Éteint"
+        ON = "ON", "Allumé"
+        UNDEFINED = "UNDEFINED", "Indéterminé"
+
     interaction_type = "toggle_with_state"
 
     select_related_fields = ("switch__relay_on_off__device_io__device",)
@@ -122,6 +137,38 @@ class WaterHeater(Equipment):
         on_delete=models.PROTECT,
         related_name="water_heater",
         verbose_name="Interrupteur",
+    )
+
+    requested_state = models.CharField(
+        max_length=20,
+        choices=RequestedState.choices,
+        default=RequestedState.OFF,
+        verbose_name="État demandé",
+        help_text="État souhaité par le système",
+    )
+
+    actual_state = models.CharField(
+        max_length=20,
+        choices=ActualState.choices,
+        default=ActualState.UNDEFINED,
+        verbose_name="État réel",
+        help_text="État réel du chauffe-eau selon le hardware",
+    )
+
+    # NOTE: last_requested is intentionally NOT auto_now, same reasoning
+    # as Radiator.last_requested — the service that changes
+    # requested_state should set it explicitly.
+    last_requested = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="Dernière demande",
+        help_text="Horodatage de la dernière modification de requested_state",
+    )
+
+    error = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Erreur",
+        help_text="Message d'erreur en cas de problème de communication hardware",
     )
 
     class Meta:

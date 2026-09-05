@@ -10,6 +10,10 @@ from heating.services.heating_synchronization import (
     synchronize_room_heating_states_with_radiators,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
 )
+from water_heater.services.water_heater_synchronization import (
+    WaterHeaterSyncService,
+    synchronize_water_heater_requested_states_with_day_plan,
+)
 
 logger = logging.getLogger("django")
 
@@ -34,6 +38,14 @@ class Command(BaseCommand):
         logger.info(f"{label} radiator_hardware_sync: start")
         RadiatorSyncService.synchronize_database_and_hardware()
         logger.info(f"{label} radiator_hardware_sync: done")
+
+        logger.info(f"{label} sync_water_heater_requested_states: start")
+        synchronize_water_heater_requested_states_with_day_plan()
+        logger.info(f"{label} sync_water_heater_requested_states: done")
+
+        logger.info(f"{label} water_heater_hardware_sync: start")
+        WaterHeaterSyncService.synchronize_database_and_hardware()
+        logger.info(f"{label} water_heater_hardware_sync: done")
 
         logger.info(f"{label} log_system_metrics: start")
         log_system_metrics()

@@ -41,7 +41,7 @@ Allume les radiateurs en attente selon la puissance disponible.
 Pour chaque pièce ayant un planning défini pour le jour :
 
 1. **Lecture du créneau actuel**
-   - Récupération des slots du HeatingPattern
+   - Récupération des slots du `SchedulePattern` (app `planning`)
    - Recherche du slot correspondant à l'heure actuelle
 
 2. **Traitement selon le type de slot**

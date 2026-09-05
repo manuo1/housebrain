@@ -4,11 +4,8 @@ import pytest
 
 from actuators.tests.factories import RadiatorFactory
 from heating.selectors.heating import get_rooms_heating_plans_data
-from heating.tests.factories import (
-    HeatingPatternFactory,
-    HeatingPatternOnOffFactory,
-    RoomHeatingDayPlanFactory,
-)
+from heating.tests.factories import RoomHeatingDayPlanFactory
+from planning.tests.factories import SchedulePatternFactory, SchedulePatternOnOffFactory
 from rooms.models import Room
 from rooms.tests.factories import RoomFactory
 from sensors.tests.factories import TemperatureSensorFactory
@@ -20,7 +17,7 @@ def test_get_rooms_heating_plans_data_select():
 
     RoomHeatingDayPlanFactory(
         date=DATE,
-        heating_pattern=HeatingPatternFactory(),
+        heating_pattern=SchedulePatternFactory(),
         room=RoomFactory(
             id=1,
             radiator=RadiatorFactory(),
@@ -32,7 +29,7 @@ def test_get_rooms_heating_plans_data_select():
     )
     RoomHeatingDayPlanFactory(
         date=DATE,
-        heating_pattern=HeatingPatternOnOffFactory(),
+        heating_pattern=SchedulePatternOnOffFactory(),
         room=RoomFactory(
             id=2,
             radiator=RadiatorFactory(),
@@ -45,7 +42,7 @@ def test_get_rooms_heating_plans_data_select():
     # invalid : date
     RoomHeatingDayPlanFactory(
         date=DATE + timedelta(days=1),
-        heating_pattern=HeatingPatternFactory(
+        heating_pattern=SchedulePatternFactory(
             slots=[{"start": "07:00", "end": "09:00", "type": "temp", "value": 1.0}]
         ),
         room=RoomFactory(id=3),
@@ -53,7 +50,7 @@ def test_get_rooms_heating_plans_data_select():
     # invalid : no radiator
     RoomHeatingDayPlanFactory(
         date=DATE,
-        heating_pattern=HeatingPatternFactory(
+        heating_pattern=SchedulePatternFactory(
             slots=[{"start": "07:00", "end": "09:00", "type": "temp", "value": 2.0}]
         ),
         room=RoomFactory(id=5, radiator=None),

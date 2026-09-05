@@ -120,7 +120,7 @@ def modify_heating_plan(instruction: str, plan: dict) -> dict
 2. Appel LLM via `_get_llm_client()`
 3. Parsing JSON de la réponse (avec strip markdown défensif)
 4. Vérification du champ `success` retourné par le LLM
-5. Validation métier via `HeatingPattern.get_or_create_from_slots()`
+5. Validation métier via `SchedulePattern.get_or_create_from_slots()` (app `planning`)
 6. Retour du plan nettoyé (sans champs `success`/`reason`)
 
 **Pour changer de provider LLM :**
@@ -162,7 +162,7 @@ Si `success: true` → les champs `success` et `reason` sont retirés avant reto
 
 ## Validation du plan retourné
 
-Réutilise la logique existante de `HeatingPattern.get_or_create_from_slots()` qui déclenche `HeatingPattern.clean()` :
+Réutilise la logique existante de `SchedulePattern.get_or_create_from_slots()` (app `planning`) qui déclenche `SchedulePattern.clean()` :
 - Pas de chevauchement de slots
 - Durée minimum 30 minutes
 - Type unique par pièce

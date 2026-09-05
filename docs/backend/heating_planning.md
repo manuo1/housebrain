@@ -8,11 +8,13 @@ Système de gestion des plannings de chauffage par pièce avec patterns réutili
 
 Le module heating planning permet de définir des plannings horaires de chauffage pour chaque pièce. Il utilise un système de patterns réutilisables pour optimiser le stockage et faciliter la duplication.
 
+Le modèle de pattern (`SchedulePattern`) vit dans une app dédiée `planning`, indépendante de `heating` : il ne connaît aucun de ses consommateurs (compte ses usages par introspection Django plutôt que par import direct), ce qui permet à d'autres équipements (chauffe-eau, etc.) de le réutiliser sans dépendre de `heating`.
+
 ---
 
 ## Modèles
 
-### HeatingPattern - Patterns réutilisables
+### SchedulePattern - Patterns réutilisables (app `planning`)
 
 Un pattern définit une configuration horaire complète pour une journée.
 
@@ -60,7 +62,7 @@ Associe un pattern à une pièce pour un jour donné.
 ```python
 room              # FK vers Room
 date              # Date du planning
-heating_pattern   # FK vers HeatingPattern
+heating_pattern   # FK vers planning.SchedulePattern
 created_at        # Timestamp création
 updated_at        # Timestamp dernière modification
 ```
@@ -91,7 +93,7 @@ slots_hash = hashlib.md5(slots_str.encode("utf-8")).hexdigest()
 
 **Création/récupération :**
 ```python
-pattern, created = HeatingPattern.get_or_create_from_slots(slots)
+pattern, created = SchedulePattern.get_or_create_from_slots(slots)
 ```
 
 Si un pattern avec le même hash existe déjà, il est réutilisé.
@@ -232,10 +234,10 @@ Gérée par l'IA conversationnelle — voir [ai_heating_duplication.md](./ai_hea
 
 ## Administration Django
 
-### HeatingPattern
+### SchedulePattern (app `planning`)
 
 ```
-/backend/admin/heating/heatingpattern/
+/backend/admin/planning/schedulepattern/
 ```
 
 **Affichage :**
@@ -297,7 +299,7 @@ Mélange de type temp et onoff. Corriger pour uniformiser.
 **"Slot value does not match its type" :**
 Valeur incorrecte (ex: string dans un slot temp).
 
-**"An identical heating pattern already exists" :**
+**"An identical schedule pattern already exists" :**
 Un pattern identique existe déjà et sera réutilisé automatiquement.
 
 ---

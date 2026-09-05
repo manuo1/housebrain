@@ -16,12 +16,9 @@ from heating.services.heating_synchronization import (
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
     turn_on_radiators_according_to_the_available_power,
 )
-from heating.tests.factories import (
-    HeatingPatternFactory,
-    HeatingPatternOnOffFactory,
-    RoomHeatingDayPlanFactory,
-)
+from heating.tests.factories import RoomHeatingDayPlanFactory
 from heating.utils.cache_heating import get_radiators_to_turn_on_in_cache
+from planning.tests.factories import SchedulePatternFactory, SchedulePatternOnOffFactory
 from rooms.models import Room
 from rooms.tests.factories import RoomFactory
 
@@ -274,7 +271,7 @@ def test_get_slot_data(slots, searched_time, expected):
 @freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_onoff_pattern_during_on_slot():
     """Test that room state is set to ON during an 'on' slot"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
@@ -296,7 +293,7 @@ def test_sync_onoff_pattern_during_on_slot():
 @freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_onoff_pattern_during_off_slot():
     """Test that room state is set to OFF during an 'off' slot"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "off"},
         ]
@@ -318,7 +315,7 @@ def test_sync_onoff_pattern_during_off_slot():
 @freeze_time("2025-01-15 10:00:00+01:00")
 def test_sync_onoff_pattern_outside_slots():
     """Test that room state is set to OFF when outside any slot"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
@@ -340,7 +337,7 @@ def test_sync_onoff_pattern_outside_slots():
 @freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_temp_pattern_sets_thermostat_mode():
     """Test that temperature pattern sets thermostat mode"""
-    pattern = HeatingPatternFactory(
+    pattern = SchedulePatternFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "temp", "value": 20.0},
         ]
@@ -360,7 +357,7 @@ def test_sync_temp_pattern_sets_thermostat_mode():
 @freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_only_updates_changed_fields():
     """Test that sync only updates when fields have changed"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
@@ -388,7 +385,7 @@ def test_sync_only_updates_changed_fields():
 @freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_ignores_rooms_without_radiator():
     """Test that sync ignores rooms without radiator"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
@@ -423,12 +420,12 @@ def test_sync_no_plan_for_date():
 @freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_multiple_rooms():
     """Test that sync handles multiple rooms correctly"""
-    pattern_on = HeatingPatternOnOffFactory(
+    pattern_on = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
     )
-    pattern_off = HeatingPatternOnOffFactory(
+    pattern_off = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "off"},
         ]
@@ -515,7 +512,7 @@ def test_get_slot_data_handles_none_inputs():
 @freeze_time("2025-01-15 07:00:00+01:00")
 def test_sync_at_exact_slot_start_time():
     """Test that sync works at exact start time of slot"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
@@ -535,7 +532,7 @@ def test_sync_at_exact_slot_start_time():
 @freeze_time("2025-01-15 09:00:00+01:00")
 def test_sync_at_exact_slot_end_time():
     """Test that sync works at exact end time of slot"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]
@@ -558,7 +555,7 @@ def test_sync_at_exact_slot_end_time():
 @freeze_time("2025-01-15 13:00:00+01:00")
 def test_sync_finds_correct_slot_among_multiple():
     """Test that sync finds the correct slot when multiple slots exist"""
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
             {"start": "12:00", "end": "14:00", "type": "onoff", "value": "off"},
@@ -586,7 +583,7 @@ def test_sync_room_with_radiator_but_no_plan_today():
         requested_heating_state=Room.RequestedHeatingState.UNKNOWN,
     )
     # Create plan for different date
-    pattern = HeatingPatternOnOffFactory(
+    pattern = SchedulePatternOnOffFactory(
         slots=[
             {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"},
         ]

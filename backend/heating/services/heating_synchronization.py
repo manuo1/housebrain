@@ -14,13 +14,13 @@ from heating.mappers import (
     heating_pattern_slot_value_to_room_requested_heating_state,
     radiator_state_matches_room_state,
 )
-from heating.models import HeatingPattern
 from heating.selectors.heating import get_rooms_heating_plans_data
 from heating.services.thermostat import get_requested_heating_state_based_on_temperature
 from heating.utils.cache_heating import (
     get_radiators_to_turn_on_in_cache,
     set_radiators_to_turn_on_in_cache,
 )
+from planning.models import SchedulePattern
 from rooms.models import Room
 from rooms.mutators.rooms import update_room_heating_fields
 from rooms.selectors.heating import get_rooms_heating_state_data
@@ -148,7 +148,7 @@ def synchronize_room_requested_heating_states_with_room_heating_day_plan():
         )
 
         match setpoint_type:
-            case HeatingPattern.SlotType.TEMPERATURE:
+            case SchedulePattern.SlotType.TEMPERATURE:
                 heating_control_mode = Room.HeatingControlMode.THERMOSTAT
                 temperature_setpoint = validate_temperature_value(setpoint_value)
                 requested_heating_state = (
@@ -158,7 +158,7 @@ def synchronize_room_requested_heating_states_with_room_heating_day_plan():
                     )
                 ) or room_plan["room__requested_heating_state"]
 
-            case HeatingPattern.SlotType.ONOFF:
+            case SchedulePattern.SlotType.ONOFF:
                 temperature_setpoint = None
                 requested_heating_state = (
                     heating_pattern_slot_value_to_room_requested_heating_state(

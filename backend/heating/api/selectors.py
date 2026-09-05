@@ -3,7 +3,8 @@ from datetime import date
 from django.db.models import F, JSONField, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 
-from heating.models import HeatingPattern, RoomHeatingDayPlan
+from heating.models import RoomHeatingDayPlan
+from planning.models import SchedulePattern
 from rooms.models import Room
 
 
@@ -82,8 +83,8 @@ def get_room_heating_day_plan_data(day: date, room_ids: set[int]) -> list[tuple]
     if not rooms_without_plans:
         return existing_plans
 
-    # Get or create the empty heating pattern
-    empty_pattern, _ = HeatingPattern.get_or_create_from_slots([])
+    # Get or create the empty pattern
+    empty_pattern, _ = SchedulePattern.get_or_create_from_slots([])
 
     # Add entries for rooms without plans
     for room_id in rooms_without_plans:

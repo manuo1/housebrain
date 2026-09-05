@@ -25,7 +25,7 @@ User saisit instruction
 → Django valide l'input (serializer)
 → plan_modifier.modify_heating_plan()
 → Groq LLM génère le plan modifié
-→ Validation du plan retourné (HeatingPattern.clean())
+→ Validation du plan retourné (SchedulePattern.clean())
 → Retour du plan au frontend
 → applyChange(newPlan)
 → Plan inséré dans l'historique undo

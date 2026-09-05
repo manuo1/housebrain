@@ -4,7 +4,8 @@ import pytest
 
 from heating.api.mutators import duplicate_heating_plan_with_override
 from heating.models import RoomHeatingDayPlan
-from heating.tests.factories import HeatingPatternFactory, RoomHeatingDayPlanFactory
+from heating.tests.factories import RoomHeatingDayPlanFactory
+from planning.tests.factories import SchedulePatternFactory
 from rooms.tests.factories import RoomFactory
 
 DEFAULT_DATE = date(2025, 12, 9)
@@ -15,7 +16,7 @@ DEFAULT_SLOTS = [{"start": "07:00", "end": "23:30", "type": "onoff", "value": "o
 def test_duplicate_heating_plan_creates_new_plans():
     """Test creating new heating plans for dates without existing plans"""
     room = RoomFactory(id=1)
-    heating_pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+    heating_pattern = SchedulePatternFactory(slots=DEFAULT_SLOTS)
 
     duplication_dates = [DEFAULT_DATE, DEFAULT_DATE + timedelta(days=1)]
 
@@ -40,10 +41,10 @@ def test_duplicate_heating_plan_overrides_existing_plans():
     """Test overriding existing heating plans with new pattern"""
     room = RoomFactory(id=1)
 
-    old_pattern = HeatingPatternFactory(
+    old_pattern = SchedulePatternFactory(
         slots=[{"start": "08:00", "end": "18:00", "type": "onoff", "value": "on"}]
     )
-    new_pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+    new_pattern = SchedulePatternFactory(slots=DEFAULT_SLOTS)
 
     # Create existing plan
     existing_plan = RoomHeatingDayPlanFactory(
@@ -72,10 +73,10 @@ def test_duplicate_heating_plan_mixed_new_and_existing():
     """Test creating and overriding plans in same operation"""
     room = RoomFactory(id=1)
 
-    old_pattern = HeatingPatternFactory(
+    old_pattern = SchedulePatternFactory(
         slots=[{"start": "08:00", "end": "18:00", "type": "onoff", "value": "on"}]
     )
-    new_pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+    new_pattern = SchedulePatternFactory(slots=DEFAULT_SLOTS)
 
     # Create existing plan for first date only
     RoomHeatingDayPlanFactory(room=room, date=DEFAULT_DATE, heating_pattern=old_pattern)
@@ -105,7 +106,7 @@ def test_duplicate_heating_plan_mixed_new_and_existing():
 def test_duplicate_heating_plan_empty_dates():
     """Test with empty duplication dates list"""
     room = RoomFactory(id=1)
-    heating_pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+    heating_pattern = SchedulePatternFactory(slots=DEFAULT_SLOTS)
 
     result = duplicate_heating_plan_with_override(
         room_id=room.id, heating_pattern_id=heating_pattern.id, duplication_dates=[]
@@ -121,8 +122,8 @@ def test_duplicate_heating_plan_multiple_rooms_isolation():
     room_1 = RoomFactory(id=1)
     room_2 = RoomFactory(id=2)
 
-    pattern_1 = HeatingPatternFactory(slots=DEFAULT_SLOTS)
-    pattern_2 = HeatingPatternFactory(
+    pattern_1 = SchedulePatternFactory(slots=DEFAULT_SLOTS)
+    pattern_2 = SchedulePatternFactory(
         slots=[{"start": "12:00", "end": "18:00", "type": "onoff", "value": "on"}]
     )
 
@@ -151,7 +152,7 @@ def test_duplicate_heating_plan_multiple_rooms_isolation():
 def test_duplicate_heating_plan_same_date_multiple_times():
     """Test duplicating same date multiple times in list (should deduplicate)"""
     room = RoomFactory(id=1)
-    heating_pattern = HeatingPatternFactory(slots=DEFAULT_SLOTS)
+    heating_pattern = SchedulePatternFactory(slots=DEFAULT_SLOTS)
 
     # Same date repeated
     duplication_dates = [DEFAULT_DATE, DEFAULT_DATE, DEFAULT_DATE]

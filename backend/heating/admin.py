@@ -5,43 +5,7 @@ from django.db import IntegrityError
 from django.utils import formats
 from django.utils.html import format_html
 
-from heating.models import HeatingPattern, RoomHeatingDayPlan
-
-
-@admin.register(HeatingPattern)
-class HeatingPatternAdmin(admin.ModelAdmin):
-    list_display = ["id", "slots_preview", "usage_count", "created_at"]
-    readonly_fields = ["slots_hash", "created_at", "usage_count"]
-    search_fields = ["slots_hash", "id"]
-    list_filter = ["created_at"]
-
-    def slots_preview(self, obj):
-        """Display a preview of slots"""
-        if not obj.slots:
-            return "-"
-
-        max_displayed_slots = 4
-        preview_slots = obj.slots[:max_displayed_slots]
-        parts = []
-
-        for slot in preview_slots:
-            parts.append(f"[{slot['start']}-{slot['end']} {slot['value']}]")
-
-        result = " ".join(parts)
-
-        if len(obj.slots) > max_displayed_slots:
-            result += f" +{len(obj.slots) - max_displayed_slots}"
-
-        return result
-
-    slots_preview.short_description = "Créneaux"
-
-    def usage_count(self, obj):
-        """Display number of day plans using this pattern"""
-        count = obj.day_plans.count()
-        return f"{count} plan{'s' if count > 1 else ''}"
-
-    usage_count.short_description = "Utilisations"
+from heating.models import RoomHeatingDayPlan
 
 
 class DuplicateToDateActionForm(ActionForm):

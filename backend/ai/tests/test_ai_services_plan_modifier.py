@@ -13,7 +13,7 @@ from ai.services.plan_modifier import (
     modify_heating_plan,
 )
 from ai.services.groq_client import GroqClient
-from heating.models import HeatingPattern
+from planning.models import SchedulePattern
 
 
 # ------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ def test_validate_plan_accepts_valid_slots():
 
     _validate_plan(plan)  # must not raise
 
-    assert HeatingPattern.objects.count() == 1
+    assert SchedulePattern.objects.count() == 1
 
 
 @pytest.mark.django_db
@@ -187,7 +187,7 @@ def test_validate_plan_rejects_invalid_slots_with_room_name_in_message():
             {
                 "room_id": 1,
                 "name": "Salon",
-                # start after end -> invalid, HeatingPattern.clean() will reject it
+                # start after end -> invalid, SchedulePattern.clean() will reject it
                 "slots": [
                     {"start": "09:00", "end": "07:00", "type": "temp", "value": 20.0}
                 ],

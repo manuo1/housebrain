@@ -9,8 +9,9 @@ from heating.api.selectors import (
     get_slots_hashes,
     invalid_room_ids_in_plans,
 )
-from heating.models import HeatingPattern
-from heating.tests.factories import HeatingPatternFactory, RoomHeatingDayPlanFactory
+from heating.tests.factories import RoomHeatingDayPlanFactory
+from planning.models import SchedulePattern
+from planning.tests.factories import SchedulePatternFactory
 from rooms.tests.factories import RoomFactory
 
 DEFAULT_DATE = date(2025, 12, 9)
@@ -18,10 +19,10 @@ DEFAULT_DATE = date(2025, 12, 9)
 
 @pytest.mark.django_db
 def test_get_slots_hashes():
-    heating_pattern_1 = HeatingPatternFactory(
+    heating_pattern_1 = SchedulePatternFactory(
         slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
     )
-    heating_pattern_2 = HeatingPatternFactory(
+    heating_pattern_2 = SchedulePatternFactory(
         slots=[{"start": "12:00", "end": "23:30", "type": "onoff", "value": "on"}]
     )
     RoomHeatingDayPlanFactory(
@@ -39,7 +40,7 @@ def test_get_slots_hashes():
 
 @pytest.mark.django_db
 def test_get_slots_hashes_out_range():
-    heating_pattern_1 = HeatingPatternFactory(
+    heating_pattern_1 = SchedulePatternFactory(
         slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
     )
 
@@ -91,8 +92,8 @@ def test_get_daily_heating_plan_normal_cases():
     pattern_1 = [{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
     pattern_2 = [{"start": "12:00", "end": "23:30", "type": "onoff", "value": "on"}]
 
-    heating_pattern_1 = HeatingPatternFactory(slots=pattern_1)
-    heating_pattern_2 = HeatingPatternFactory(slots=pattern_2)
+    heating_pattern_1 = SchedulePatternFactory(slots=pattern_1)
+    heating_pattern_2 = SchedulePatternFactory(slots=pattern_2)
 
     # Heating Day Plan in selected date
     RoomHeatingDayPlanFactory(
@@ -157,10 +158,6 @@ def test_invalid_room_ids_in_plans(plan, expected):
 # tests get_room_heating_day_plan
 # ------------------------------------------------------------------------------
 
-
-from datetime import date
-
-import pytest
 
 DEFAULT_DATE = date(2025, 12, 9)
 
@@ -231,7 +228,7 @@ def test_get_room_heating_day_plan_data(
     patterns = {}
     for room_id, pattern_key in setup_plans:
         if pattern_key not in patterns:
-            patterns[pattern_key] = HeatingPatternFactory(
+            patterns[pattern_key] = SchedulePatternFactory(
                 slots=[
                     {
                         "start": f"{len(patterns):02d}:00",
@@ -269,7 +266,7 @@ def test_get_room_heating_day_plan_data(
     # Assert: Check empty pattern behavior
     if check_empty_pattern:
         # Get the empty pattern (should exist now)
-        empty_pattern = HeatingPattern.objects.filter(slots=[]).first()
+        empty_pattern = SchedulePattern.objects.filter(slots=[]).first()
         assert empty_pattern is not None
 
         # Find rooms without existing plans
@@ -293,7 +290,7 @@ def test_get_room_heating_day_plan_data_empty_pattern_reused():
     result_1 = get_room_heating_day_plan_data(DEFAULT_DATE, {room_1.id})
 
     # Check empty pattern was created
-    empty_patterns_count = HeatingPattern.objects.filter(slots=[]).count()
+    empty_patterns_count = SchedulePattern.objects.filter(slots=[]).count()
     assert empty_patterns_count == 1
     empty_pattern_id = result_1[0][1]
 
@@ -301,7 +298,7 @@ def test_get_room_heating_day_plan_data_empty_pattern_reused():
     result_2 = get_room_heating_day_plan_data(DEFAULT_DATE, {room_2.id})
 
     # Check no additional empty pattern was created
-    assert HeatingPattern.objects.filter(slots=[]).count() == 1
+    assert SchedulePattern.objects.filter(slots=[]).count() == 1
 
     # Check both rooms have same empty pattern
     assert result_2[0][1] == empty_pattern_id
@@ -313,13 +310,13 @@ def test_get_room_heating_day_plan_data_empty_pattern_already_exists():
     room = RoomFactory(id=1)
 
     # Pre-create empty pattern
-    existing_empty_pattern = HeatingPattern.objects.create(slots=[])
+    existing_empty_pattern = SchedulePattern.objects.create(slots=[])
 
     # Call function
     result = get_room_heating_day_plan_data(DEFAULT_DATE, {room.id})
 
     # Check it used existing pattern, not created a new one
-    assert HeatingPattern.objects.filter(slots=[]).count() == 1
+    assert SchedulePattern.objects.filter(slots=[]).count() == 1
     assert result[0][1] == existing_empty_pattern.id
 
 
@@ -329,7 +326,7 @@ def test_get_room_heating_day_plan_data_wrong_date():
     room_1 = RoomFactory(id=1)
     room_2 = RoomFactory(id=2)
 
-    pattern = HeatingPatternFactory(
+    pattern = SchedulePatternFactory(
         slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
     )
 
@@ -341,7 +338,7 @@ def test_get_room_heating_day_plan_data_wrong_date():
         DEFAULT_DATE + timedelta(days=1), {room_1.id, room_2.id}
     )
 
-    empty_pattern = HeatingPattern.objects.filter(slots=[]).first()
+    empty_pattern = SchedulePattern.objects.filter(slots=[]).first()
     assert len(result) == 2
     assert all(pid == empty_pattern.id for _, pid in result)
 
@@ -351,10 +348,10 @@ def test_get_room_heating_day_plan_data_filters_by_date():
     """Test that only plans matching the requested date are returned"""
     room = RoomFactory(id=1)
 
-    pattern_1 = HeatingPatternFactory(
+    pattern_1 = SchedulePatternFactory(
         slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
     )
-    pattern_2 = HeatingPatternFactory(
+    pattern_2 = SchedulePatternFactory(
         slots=[{"start": "12:00", "end": "18:00", "type": "onoff", "value": "on"}]
     )
 
@@ -380,7 +377,7 @@ def test_get_room_heating_day_plan_data_filters_by_rooms():
     room_2 = RoomFactory(id=2)
     room_3 = RoomFactory(id=3)
 
-    pattern = HeatingPatternFactory(
+    pattern = SchedulePatternFactory(
         slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
     )
 
@@ -433,7 +430,7 @@ def test_get_room_heating_day_plan_data_invalid_types(day, room_ids):
 def test_get_room_heating_day_plan_data_returns_list_of_tuples():
     """Test that result format is list of tuples (room_id, heating_pattern_id)"""
     room = RoomFactory(id=1)
-    pattern = HeatingPatternFactory(
+    pattern = SchedulePatternFactory(
         slots=[{"start": "07:00", "end": "23:30", "type": "onoff", "value": "on"}]
     )
 

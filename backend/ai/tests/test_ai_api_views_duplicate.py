@@ -8,9 +8,10 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from heating.models import RoomHeatingDayPlan
-from heating.tests.factories import HeatingPatternFactory, RoomHeatingDayPlanFactory
 from actuators.tests.factories import RadiatorFactory
+from heating.models import RoomHeatingDayPlan
+from heating.tests.factories import RoomHeatingDayPlanFactory
+from planning.tests.factories import SchedulePatternFactory
 from rooms.tests.factories import RoomFactory
 
 User = get_user_model()
@@ -75,7 +76,7 @@ def test_clarify_step_llm_needs_more_info_stays_in_clarify(api_client):
     authenticated_client = authenticate_the_client(api_client)
     room = RoomFactory(radiator=RadiatorFactory())
     RoomHeatingDayPlanFactory(
-        room=room, date=SOURCE_DATE, heating_pattern=HeatingPatternFactory()
+        room=room, date=SOURCE_DATE, heating_pattern=SchedulePatternFactory()
     )
 
     llm_response = {
@@ -117,7 +118,7 @@ def test_clarify_step_llm_ready_and_valid_moves_to_to_validate(api_client):
     authenticated_client = authenticate_the_client(api_client)
     room = RoomFactory(name="Chambre P", radiator=RadiatorFactory())
     RoomHeatingDayPlanFactory(
-        room=room, date=SOURCE_DATE, heating_pattern=HeatingPatternFactory()
+        room=room, date=SOURCE_DATE, heating_pattern=SchedulePatternFactory()
     )
 
     llm_response = {**READY_INTERPRETATION, "room_ids": [room.id]}
@@ -160,7 +161,7 @@ def test_clarify_step_llm_ready_but_business_rule_invalid_stays_in_clarify(
     authenticated_client = authenticate_the_client(api_client)
     room = RoomFactory(name="Chambre P", radiator=RadiatorFactory())
     RoomHeatingDayPlanFactory(
-        room=room, date=SOURCE_DATE, heating_pattern=HeatingPatternFactory()
+        room=room, date=SOURCE_DATE, heating_pattern=SchedulePatternFactory()
     )
 
     # weekdays=[6] (Sunday) but range 17-19 aug has no Sunday -> validation error
@@ -196,7 +197,7 @@ def test_clarify_step_warning_message_appended_to_recap(api_client):
     authenticated_client = authenticate_the_client(api_client)
     room = RoomFactory(name="Chambre P", radiator=RadiatorFactory())
     RoomHeatingDayPlanFactory(
-        room=room, date=SOURCE_DATE, heating_pattern=HeatingPatternFactory()
+        room=room, date=SOURCE_DATE, heating_pattern=SchedulePatternFactory()
     )
 
     # every day for a long range -> more than 30 days impacted -> warning
@@ -252,7 +253,7 @@ def test_validate_step_executes_duplication(api_client):
     authenticated_client = authenticate_the_client(api_client)
     room = RoomFactory(name="Chambre P", radiator=RadiatorFactory())
     RoomHeatingDayPlanFactory(
-        room=room, date=SOURCE_DATE, heating_pattern=HeatingPatternFactory()
+        room=room, date=SOURCE_DATE, heating_pattern=SchedulePatternFactory()
     )
 
     assert RoomHeatingDayPlan.objects.count() == 1
@@ -291,7 +292,7 @@ def test_validate_step_revalidates_tampered_data_returns_to_clarify(
     authenticated_client = authenticate_the_client(api_client)
     room = RoomFactory(name="Chambre P", radiator=RadiatorFactory())
     RoomHeatingDayPlanFactory(
-        room=room, date=SOURCE_DATE, heating_pattern=HeatingPatternFactory()
+        room=room, date=SOURCE_DATE, heating_pattern=SchedulePatternFactory()
     )
 
     response = authenticated_client.post(

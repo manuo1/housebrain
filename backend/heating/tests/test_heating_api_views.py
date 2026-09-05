@@ -8,8 +8,10 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from actuators.tests.factories import RadiatorFactory
-from heating.models import HeatingPattern, RoomHeatingDayPlan
-from heating.tests.factories import HeatingPatternFactory, RoomHeatingDayPlanFactory
+from heating.models import RoomHeatingDayPlan
+from heating.tests.factories import RoomHeatingDayPlanFactory
+from planning.models import SchedulePattern
+from planning.tests.factories import SchedulePatternFactory
 from rooms.tests.factories import RoomFactory
 
 User = get_user_model()
@@ -34,12 +36,12 @@ DEFAULT_DATE = date(2025, 12, 10)
 DEFAULT_DATE_STR = "2025-12-10"
 
 
-HEATINGPATTERN_1 = [{"start": "07:00", "end": "09:00", "type": "temp", "value": 20.0}]
-HEATINGPATTERN_2 = [{"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}]
+SLOTS_1 = [{"start": "07:00", "end": "09:00", "type": "temp", "value": 20.0}]
+SLOTS_2 = [{"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}]
 
-PLAN_1 = {"room_id": ROOM_ID, "date": "2025-12-10", "slots": HEATINGPATTERN_1}
-PLAN_2 = {"room_id": ROOM_ID, "date": "2025-12-11", "slots": HEATINGPATTERN_2}
-PLAN_3 = {"room_id": ROOM_ID, "date": "2025-12-12", "slots": HEATINGPATTERN_1}
+PLAN_1 = {"room_id": ROOM_ID, "date": "2025-12-10", "slots": SLOTS_1}
+PLAN_2 = {"room_id": ROOM_ID, "date": "2025-12-11", "slots": SLOTS_2}
+PLAN_3 = {"room_id": ROOM_ID, "date": "2025-12-12", "slots": SLOTS_1}
 
 
 @pytest.mark.django_db
@@ -47,9 +49,9 @@ def test_create_heating_plan_with_new_heating_pattern(authenticated_client):
     RoomFactory(id=ROOM_ID, name="Test Room")
     data = {"plans": [PLAN_1, PLAN_2, PLAN_3]}
 
-    # no RoomHeatingDayPlan or HeatingPattern
+    # no RoomHeatingDayPlan or SchedulePattern
     assert RoomHeatingDayPlan.objects.count() == 0
-    assert HeatingPattern.objects.count() == 0
+    assert SchedulePattern.objects.count() == 0
 
     response = authenticated_client.post(
         "/api/heating/plans/daily/", data, format="json"
@@ -60,8 +62,8 @@ def test_create_heating_plan_with_new_heating_pattern(authenticated_client):
     assert response.data["updated"] == 0
     assert response.data["changed_rooms"] == [{"id": ROOM_ID, "name": "Test Room"}]
     assert RoomHeatingDayPlan.objects.count() == 3
-    # reuse twice a heating pattern => only 2 HeatingPattern created
-    assert HeatingPattern.objects.count() == 2
+    # reuse twice a pattern => only 2 SchedulePattern created
+    assert SchedulePattern.objects.count() == 2
 
 
 @pytest.mark.django_db
@@ -69,16 +71,14 @@ def test_heating_plan_update_with_new_heating_pattern(authenticated_client):
     RoomHeatingDayPlanFactory(
         room=RoomFactory(id=ROOM_ID, name="Test Room"),
         date=DEFAULT_DATE,
-        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+        heating_pattern=SchedulePatternFactory(slots=SLOTS_1),
     )
     assert RoomHeatingDayPlan.objects.count() == 1
-    assert HeatingPattern.objects.count() == 1
+    assert SchedulePattern.objects.count() == 1
 
-    # same room, same date but different heating pattern = we expect an update
+    # same room, same date but different pattern = we expect an update
     data = {
-        "plans": [
-            {"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": HEATINGPATTERN_2}
-        ]
+        "plans": [{"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": SLOTS_2}]
     }
 
     response = authenticated_client.post(
@@ -90,8 +90,8 @@ def test_heating_plan_update_with_new_heating_pattern(authenticated_client):
     assert response.data["changed_rooms"] == [{"id": ROOM_ID, "name": "Test Room"}]
     # we update existing RoomHeatingDayPlan = no new RoomHeatingDayPlan
     assert RoomHeatingDayPlan.objects.count() == 1
-    # The new heating pattern didn't exist yet, it was created.
-    assert HeatingPattern.objects.count() == 2
+    # The new pattern didn't exist yet, it was created.
+    assert SchedulePattern.objects.count() == 2
 
 
 @pytest.mark.django_db
@@ -99,18 +99,16 @@ def test_heating_plan_update_with_existing_heating_pattern(authenticated_client)
     RoomHeatingDayPlanFactory(
         room=RoomFactory(id=ROOM_ID, name="Test Room"),
         date=DEFAULT_DATE,
-        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+        heating_pattern=SchedulePatternFactory(slots=SLOTS_1),
     )
-    HeatingPatternFactory(slots=HEATINGPATTERN_2)
+    SchedulePatternFactory(slots=SLOTS_2)
 
     assert RoomHeatingDayPlan.objects.count() == 1
-    assert HeatingPattern.objects.count() == 2
+    assert SchedulePattern.objects.count() == 2
 
-    # same room, same date but different heating pattern = we expect an update
+    # same room, same date but different pattern = we expect an update
     data = {
-        "plans": [
-            {"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": HEATINGPATTERN_2}
-        ]
+        "plans": [{"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": SLOTS_2}]
     }
 
     response = authenticated_client.post(
@@ -122,8 +120,8 @@ def test_heating_plan_update_with_existing_heating_pattern(authenticated_client)
     assert response.data["changed_rooms"] == [{"id": ROOM_ID, "name": "Test Room"}]
     # we update existing RoomHeatingDayPlan = no new RoomHeatingDayPlan
     assert RoomHeatingDayPlan.objects.count() == 1
-    # The heating pattern already existed, it was reused.
-    assert HeatingPattern.objects.count() == 2
+    # The pattern already existed, it was reused.
+    assert SchedulePattern.objects.count() == 2
 
 
 @pytest.mark.django_db
@@ -131,16 +129,14 @@ def test_heating_plan_update_with_same_heating_pattern(authenticated_client):
     RoomHeatingDayPlanFactory(
         room=RoomFactory(id=ROOM_ID, name="Test Room"),
         date=DEFAULT_DATE,
-        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+        heating_pattern=SchedulePatternFactory(slots=SLOTS_1),
     )
 
     assert RoomHeatingDayPlan.objects.count() == 1
-    assert HeatingPattern.objects.count() == 1
+    assert SchedulePattern.objects.count() == 1
 
     data = {
-        "plans": [
-            {"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": HEATINGPATTERN_1}
-        ]
+        "plans": [{"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": SLOTS_1}]
     }
 
     response = authenticated_client.post(
@@ -152,7 +148,7 @@ def test_heating_plan_update_with_same_heating_pattern(authenticated_client):
     assert response.data["updated"] == 0
     assert response.data["changed_rooms"] == []
     assert RoomHeatingDayPlan.objects.count() == 1
-    assert HeatingPattern.objects.count() == 1
+    assert SchedulePattern.objects.count() == 1
 
 
 def test_create_heating_plan_unauthenticated(api_client):
@@ -232,7 +228,7 @@ def test_create_heating_plan_invalide_slots(authenticated_client, slots, error_m
     RoomHeatingDayPlanFactory(
         room=RoomFactory(id=ROOM_ID),
         date=DEFAULT_DATE,
-        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+        heating_pattern=SchedulePatternFactory(slots=SLOTS_1),
     )
     response = authenticated_client.post(
         "/api/heating/plans/daily/",
@@ -248,10 +244,10 @@ def test_heating_plan_update_with_empty_slot(authenticated_client):
     RoomHeatingDayPlanFactory(
         room=RoomFactory(id=ROOM_ID),
         date=DEFAULT_DATE,
-        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+        heating_pattern=SchedulePatternFactory(slots=SLOTS_1),
     )
     assert RoomHeatingDayPlan.objects.count() == 1
-    assert HeatingPattern.objects.count() == 1
+    assert SchedulePattern.objects.count() == 1
 
     data = {"plans": [{"room_id": ROOM_ID, "date": DEFAULT_DATE_STR, "slots": []}]}
 
@@ -263,8 +259,8 @@ def test_heating_plan_update_with_empty_slot(authenticated_client):
     assert response.data["updated"] == 1
     # we update existing RoomHeatingDayPlan = no new RoomHeatingDayPlan
     assert RoomHeatingDayPlan.objects.count() == 1
-    # The new heating pattern didn't exist yet, it was created.
-    assert HeatingPattern.objects.count() == 2
+    # The new pattern didn't exist yet, it was created.
+    assert SchedulePattern.objects.count() == 2
 
 
 # ------------------------------------------------------------------------------
@@ -314,7 +310,7 @@ def test_daily_heating_plan_get_with_explicit_date_returns_room_slots(api_client
     RoomHeatingDayPlanFactory(
         room=room,
         date=DEFAULT_DATE,
-        heating_pattern=HeatingPatternFactory(slots=HEATINGPATTERN_1),
+        heating_pattern=SchedulePatternFactory(slots=SLOTS_1),
     )
 
     response = api_client.get(f"/api/heating/plans/daily/?date={DEFAULT_DATE_STR}")

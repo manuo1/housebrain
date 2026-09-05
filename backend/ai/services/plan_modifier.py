@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 from ai.services.groq_client import GroqClient
 from ai.services.prompt_builder import build_prompt
 from ai.services.prompts.heating import get_system_prompt, get_user_prompt
-from heating.models import HeatingPattern
+from planning.models import SchedulePattern
 
 logger = logging.getLogger("django")
 
@@ -100,7 +100,7 @@ def _normalize_plan(plan: dict) -> dict:
 def _validate_plan(plan: dict) -> None:
     """
     Validates the plan returned by the LLM.
-    Checks structure and runs HeatingPattern.clean() on each room's slots
+    Checks structure and runs SchedulePattern.clean() on each room's slots
     to enforce all business rules (overlap, duration, type consistency, etc.).
     """
     if not isinstance(plan, dict):
@@ -114,7 +114,7 @@ def _validate_plan(plan: dict) -> None:
         slots = room.get("slots", [])
 
         try:
-            HeatingPattern.get_or_create_from_slots(slots)
+            SchedulePattern.get_or_create_from_slots(slots)
         except DjangoValidationError as e:
             logger.warning("Invalid slots for room %s: %s", room_name, e)
             raise DRFValidationError(

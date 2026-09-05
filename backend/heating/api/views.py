@@ -22,7 +22,8 @@ from heating.api.serializers import (
     HeatingPlansSaveResultSerializer,
 )
 from heating.api.services import add_day_status
-from heating.models import HeatingPattern, RoomHeatingDayPlan
+from heating.models import RoomHeatingDayPlan
+from planning.models import SchedulePattern
 
 
 class HeatingCalendarView(APIView):
@@ -74,9 +75,9 @@ class DailyHeatingPlan(APIView):
             raise DRFValidationError(f"Invalid room_ids : {invalid_room_ids}")
 
         for plan in plans:
-            # HeatingPattern
+            # SchedulePattern
             try:
-                heating_pattern, _ = HeatingPattern.get_or_create_from_slots(
+                heating_pattern, _ = SchedulePattern.get_or_create_from_slots(
                     plan["slots"]
                 )
             except DjangoValidationError as e:

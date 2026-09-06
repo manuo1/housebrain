@@ -20,3 +20,4 @@ class WaterHeaterFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f"Chauffe-eau {n}")
     switch = factory.SubFactory(OnOffSwitchFactory)
+    power = 2000

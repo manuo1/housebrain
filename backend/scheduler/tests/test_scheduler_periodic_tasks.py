@@ -33,15 +33,28 @@ def test_periodic_tasks_calls_all_steps_in_order(mocker):
         ),
     )
     mocker.patch(
+        "scheduler.management.commands.periodic_tasks.get_water_heaters_plan_states",
+        side_effect=lambda: call_order.append("get_water_heaters_plan_states") or [],
+    )
+    mocker.patch(
+        "scheduler.management.commands.periodic_tasks.resolve_water_heaters_to_update",
+        side_effect=lambda plan_states: call_order.append(
+            "resolve_water_heaters_to_update"
+        )
+        or {"ids_to_turn_off": [], "to_turn_on": []},
+    )
+    mocker.patch(
         "scheduler.management.commands.periodic_tasks."
-        "synchronize_water_heater_requested_states_with_day_plan",
-        side_effect=lambda: call_order.append("sync_water_heater_requested_states"),
+        "turn_off_water_heaters_and_apply_to_hardware",
+        side_effect=lambda water_heaters_to_update: call_order.append(
+            "turn_off_water_heaters_and_apply_to_hardware"
+        ),
     )
-    mock_water_heater_sync = mocker.patch(
-        "scheduler.management.commands.periodic_tasks.WaterHeaterSyncService"
-    )
-    mock_water_heater_sync.synchronize_database_and_hardware.side_effect = (
-        lambda: call_order.append("water_heater_hardware_sync")
+    mocker.patch(
+        "scheduler.management.commands.periodic_tasks.queue_water_heaters_to_turn_on",
+        side_effect=lambda water_heaters_to_update: call_order.append(
+            "queue_water_heaters_to_turn_on"
+        ),
     )
     mocker.patch(
         "scheduler.management.commands.periodic_tasks.log_system_metrics",
@@ -56,11 +69,12 @@ def test_periodic_tasks_calls_all_steps_in_order(mocker):
         "resolve_radiators_to_update",
         "turn_off_radiators_and_apply_to_hardware",
         "queue_radiators_to_turn_on",
-        "sync_water_heater_requested_states",
-        "water_heater_hardware_sync",
+        "get_water_heaters_plan_states",
+        "resolve_water_heaters_to_update",
+        "turn_off_water_heaters_and_apply_to_hardware",
+        "queue_water_heaters_to_turn_on",
         "log_system_metrics",
     ]
-    mock_water_heater_sync.synchronize_database_and_hardware.assert_called_once()
 
 
 def test_periodic_tasks_stops_and_raises_if_a_step_fails(mocker):

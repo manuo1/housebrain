@@ -139,6 +139,11 @@ class WaterHeater(Equipment):
         verbose_name="Interrupteur",
     )
 
+    power = models.PositiveIntegerField(
+        verbose_name="Puissance (W)",
+        help_text="Puissance de la résistance, utilisée pour le calcul de puissance disponible lors du délestage",
+    )
+
     requested_state = models.CharField(
         max_length=20,
         choices=RequestedState.choices,

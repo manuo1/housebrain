@@ -3,14 +3,11 @@ from django.utils import timezone
 from equipment.models import WaterHeater
 
 
-def update_water_heater_requested_state(
-    water_heater_id: int, requested_state: WaterHeater.RequestedState
-) -> bool:
-    updated = WaterHeater.objects.filter(id=water_heater_id).update(
-        requested_state=requested_state,
+def set_water_heaters_requested_state_to_off(water_heater_ids: list[int]) -> None:
+    WaterHeater.objects.filter(id__in=water_heater_ids).update(
+        requested_state=WaterHeater.RequestedState.OFF,
         last_requested=timezone.now(),
     )
-    return updated == 1
 
 
 def update_water_heater_hardware_state(

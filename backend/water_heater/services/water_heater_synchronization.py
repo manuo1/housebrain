@@ -1,50 +1,73 @@
 import logging
 
-from django.utils import timezone
-
 from device.drivers.base import DeviceDriverError
 from equipment.models import WaterHeater
-from planning.services import get_slot_data
+from water_heater.mappers import water_heater_state_matches_plan_state
 from water_heater.mutators import (
+    set_water_heaters_requested_state_to_off,
     update_water_heater_hardware_state,
-    update_water_heater_requested_state,
 )
-from water_heater.selectors import get_water_heaters_plans_data
+from water_heater.selectors import get_water_heaters_plan_states
+from water_heater.utils.cache_water_heater import set_water_heaters_to_turn_on_in_cache
 
 logger = logging.getLogger("django")
 
 
-def synchronize_water_heater_requested_states_with_day_plan() -> None:
+def resolve_water_heaters_to_update(water_heaters_plan_states: list[dict]) -> dict:
     """
-    Resolve today's WaterHeaterDayPlan for each water heater and update
-    requested_state accordingly.
-
-    Simplified mirror of
-    heating.synchronize_room_requested_heating_states_with_room_heating_day_plan:
-    water heaters are onoff-only (no thermostat branch), and there's no
-    intermediate Room-like object to route through.
+    Pure/time-free: compares each water heater's plan-wanted state to its
+    current requested_state (via water_heater_state_matches_plan_state,
+    which leaves a LOAD_SHED water heater alone when the plan still wants
+    it on — mirrors radiator_state_matches_room_state). Takes the output
+    of get_water_heaters_plan_states(), the only time-dependent step.
     """
-    today = timezone.localdate()
-    now = timezone.localtime().time()
+    water_heaters = {"to_turn_on": [], "ids_to_turn_off": []}
+    for water_heater in water_heaters_plan_states:
+        plan_state = water_heater["plan_requested_state"]
+        current_state = water_heater["water_heater__requested_state"]
 
-    for plan in get_water_heaters_plans_data(today):
-        slot_type, slot_value = get_slot_data(plan["schedule_pattern__slots"], now)
-
-        if slot_type != "onoff":
-            # No slot covers the current time, or (future) an unsupported
-            # slot type (e.g. a temperature-based one) -> leave untouched.
+        if water_heater_state_matches_plan_state(plan_state, current_state):
             continue
 
-        new_requested_state = (
-            WaterHeater.RequestedState.ON
-            if slot_value == "on"
-            else WaterHeater.RequestedState.OFF
-        )
+        match plan_state:
+            case WaterHeater.RequestedState.ON:
+                water_heaters["to_turn_on"].append(
+                    {
+                        "id": water_heater["water_heater_id"],
+                        "power": water_heater["water_heater__power"],
+                    }
+                )
+            case WaterHeater.RequestedState.OFF:
+                water_heaters["ids_to_turn_off"].append(
+                    water_heater["water_heater_id"]
+                )
+            case _:
+                continue
 
-        if plan["water_heater__requested_state"] != new_requested_state:
-            update_water_heater_requested_state(
-                plan["water_heater_id"], new_requested_state
-            )
+    return water_heaters
+
+
+def turn_off_water_heaters_and_apply_to_hardware(
+    water_heaters_to_update: dict,
+) -> None:
+    """
+    Writes requested_state = OFF for the given water heaters, then
+    immediately applies the change to hardware. Turning off is never a
+    power problem, so no need to wait for the listener. Mirrors
+    heating.turn_off_radiators_and_apply_to_hardware.
+    """
+    set_water_heaters_requested_state_to_off(water_heaters_to_update["ids_to_turn_off"])
+    WaterHeaterSyncService.synchronize_database_and_hardware()
+
+
+def queue_water_heaters_to_turn_on(water_heaters_to_update: dict) -> None:
+    """
+    Queues the given water heaters into the cache. Does NOT change their
+    requested_state or touch hardware — the teleinfo listener, the only
+    one that knows the available power in real time, decides from there.
+    Mirrors heating.queue_radiators_to_turn_on.
+    """
+    set_water_heaters_to_turn_on_in_cache(water_heaters_to_update["to_turn_on"])
 
 
 class WaterHeaterSyncService:

@@ -15,15 +15,22 @@ def test_periodic_tasks_calls_all_steps_in_order(mocker):
         side_effect=lambda: call_order.append("sync_requested_heating_states"),
     )
     mocker.patch(
+        "scheduler.management.commands.periodic_tasks.resolve_radiators_to_update",
+        side_effect=lambda: call_order.append("resolve_radiators_to_update")
+        or {"ids_to_turn_off": [], "to_turn_on": []},
+    )
+    mocker.patch(
         "scheduler.management.commands.periodic_tasks."
-        "synchronize_room_heating_requested_states_with_radiators_requested_states",
-        side_effect=lambda: call_order.append("sync_heating_states_with_radiators"),
+        "turn_off_radiators_and_apply_to_hardware",
+        side_effect=lambda radiators_to_update: call_order.append(
+            "turn_off_radiators_and_apply_to_hardware"
+        ),
     )
-    mock_radiator_sync = mocker.patch(
-        "scheduler.management.commands.periodic_tasks.RadiatorSyncService"
-    )
-    mock_radiator_sync.synchronize_database_and_hardware.side_effect = (
-        lambda: call_order.append("radiator_hardware_sync")
+    mocker.patch(
+        "scheduler.management.commands.periodic_tasks.queue_radiators_to_turn_on",
+        side_effect=lambda radiators_to_update: call_order.append(
+            "queue_radiators_to_turn_on"
+        ),
     )
     mocker.patch(
         "scheduler.management.commands.periodic_tasks."
@@ -46,13 +53,13 @@ def test_periodic_tasks_calls_all_steps_in_order(mocker):
     assert call_order == [
         "save_teleinfo_data",
         "sync_requested_heating_states",
-        "sync_heating_states_with_radiators",
-        "radiator_hardware_sync",
+        "resolve_radiators_to_update",
+        "turn_off_radiators_and_apply_to_hardware",
+        "queue_radiators_to_turn_on",
         "sync_water_heater_requested_states",
         "water_heater_hardware_sync",
         "log_system_metrics",
     ]
-    mock_radiator_sync.synchronize_database_and_hardware.assert_called_once()
     mock_water_heater_sync.synchronize_database_and_hardware.assert_called_once()
 
 

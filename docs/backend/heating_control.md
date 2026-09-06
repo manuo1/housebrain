@@ -20,13 +20,15 @@ synchronize_room_requested_heating_states_with_room_heating_day_plan()
 ```
 Lit les plannings du jour et met à jour `requested_heating_state` de chaque Room.
 
-**2. Synchronisation Rooms → Radiators**
+**2. Synchronisation Rooms → Radiators (2 fonctions distinctes, pour rendre explicite ce qui a un effet hardware immédiat)**
 ```python
-synchronize_room_heating_requested_states_with_radiators_requested_states()
+radiators_to_update = resolve_radiators_to_update()
+turn_off_radiators_and_apply_to_hardware(radiators_to_update)
+queue_radiators_to_turn_on(radiators_to_update)
 ```
-Propage `requested_heating_state` des Rooms vers `requested_state` des Radiators — ce dernier champ est ensuite appliqué tel quel au hardware par `RadiatorSyncService.synchronize_database_and_hardware()`.
+`resolve_radiators_to_update()` calcule qui doit changer (`get_radiators_to_update`). `turn_off_radiators_and_apply_to_hardware()` écrit `requested_state = OFF` pour les radiateurs à éteindre **et** applique immédiatement au hardware (`RadiatorSyncService.synchronize_database_and_hardware()`, qui resynchronise toute la flotte d'un coup — impossible de la cibler sur un sous-ensemble, lecture/écriture I2C batchée). `queue_radiators_to_turn_on()` ne touche ni `requested_state` ni le hardware — elle place juste les radiateurs à allumer dans le cache.
 
-**3. Application hardware (via listener Teleinfo)**
+**3. Application hardware pour l'allumage (via listener Teleinfo)**
 ```python
 turn_on_radiators_according_to_the_available_power()
 ```
@@ -152,11 +154,12 @@ radiator.requested_state != room.requested_heating_state
 
 3. **Séparation selon action**
 
-**Radiateurs à éteindre :**
-- `requested_state` mis à `OFF` directement en base (`set_radiators_requested_state_to_off()`) — aucun problème à éteindre sans vérifier la puissance. Le radiateur ne s'éteint physiquement qu'au prochain passage de `RadiatorSyncService.synchronize_database_and_hardware()`, pas à cet instant.
+**Radiateurs à éteindre** (`turn_off_radiators_and_apply_to_hardware()`) :
+- `requested_state` mis à `OFF` directement en base (`set_radiators_requested_state_to_off()`) — aucun problème à éteindre sans vérifier la puissance
+- Appliqué immédiatement au hardware dans la même fonction (`RadiatorSyncService.synchronize_database_and_hardware()`)
 
-**Radiateurs à allumer :**
-- `requested_state` n'est PAS modifié ici — stockage dans le cache Redis (liste triée par importance), délégation au listener Teleinfo qui est le seul à connaître la puissance disponible en temps réel avant de décider d'un allumage
+**Radiateurs à allumer** (`queue_radiators_to_turn_on()`) :
+- `requested_state` n'est PAS modifié ici, aucun appel hardware — stockage dans le cache Redis (liste triée par importance), délégation au listener Teleinfo qui est le seul à connaître la puissance disponible en temps réel avant de décider d'un allumage
 
 ---
 

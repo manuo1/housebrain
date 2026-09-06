@@ -9,10 +9,12 @@ from actuators.models import Radiator
 from actuators.tests.factories import RadiatorFactory
 from heating.services.heating_synchronization import (
     get_radiators_to_update,
+    queue_radiators_to_turn_on,
+    resolve_radiators_to_update,
     room_plan_keys_are_valides,
     split_radiators_by_available_power,
-    synchronize_room_heating_requested_states_with_radiators_requested_states,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
+    turn_off_radiators_and_apply_to_hardware,
     turn_on_radiators_according_to_the_available_power,
 )
 from heating.tests.factories import RoomHeatingDayPlanFactory
@@ -90,41 +92,58 @@ def test_get_radiators_to_update():
 
 
 @pytest.mark.django_db
-def test_synchronize_room_heating_requested_states_with_radiators_requested_states():
-    cache.clear
-    radiator_to_turn_off = RadiatorFactory(
-        id=1,
-        power=1000,
-        importance=Radiator.Importance.HIGH,
-        requested_state=Radiator.RequestedState.ON,
-    )
+def test_resolve_radiators_to_update():
     RoomFactory(
         heating_control_mode=Room.HeatingControlMode.ONOFF,
-        radiator=radiator_to_turn_off,
-        requested_heating_state=Room.RequestedHeatingState.OFF,
-    )
-
-    radiator_to_turn_on = RadiatorFactory(
-        id=2,
-        power=1000,
-        importance=Radiator.Importance.HIGH,
-        requested_state=Radiator.RequestedState.OFF,
-    )
-    RoomFactory(
-        heating_control_mode=Room.HeatingControlMode.ONOFF,
-        radiator=radiator_to_turn_on,
+        radiator=RadiatorFactory(
+            id=1,
+            power=1000,
+            importance=Radiator.Importance.HIGH,
+            requested_state=Radiator.RequestedState.OFF,
+        ),
         requested_heating_state=Room.RequestedHeatingState.ON,
     )
-    synchronize_room_heating_requested_states_with_radiators_requested_states()
+
+    radiators_to_update = resolve_radiators_to_update()
+
+    assert radiators_to_update == {
+        "to_turn_on": [
+            {"id": 1, "power": 1000, "importance": Radiator.Importance.HIGH}
+        ],
+        "ids_to_turn_off": [],
+    }
+
+
+@pytest.mark.django_db
+def test_turn_off_radiators_and_apply_to_hardware():
+    radiator_to_turn_off = RadiatorFactory(
+        id=1, requested_state=Radiator.RequestedState.ON
+    )
+
+    turn_off_radiators_and_apply_to_hardware({"ids_to_turn_off": [1]})
+
     radiator_to_turn_off.refresh_from_db()
-    radiator_to_turn_on.refresh_from_db()
-    # radiator to turn off gets requested_state = OFF written directly
+    # requested_state written directly to DB
     assert radiator_to_turn_off.requested_state == Radiator.RequestedState.OFF
-    # radiator to turn on does NOT get requested_state = ON written here
+
+
+@pytest.mark.django_db
+def test_queue_radiators_to_turn_on():
+    cache.clear
+    radiator_to_turn_on = RadiatorFactory(
+        id=2, power=1000, requested_state=Radiator.RequestedState.OFF
+    )
+
+    queue_radiators_to_turn_on(
+        {"to_turn_on": [{"id": 2, "power": 1000, "importance": 1}]}
+    )
+
+    radiator_to_turn_on.refresh_from_db()
+    # requested_state is NOT changed here
     assert radiator_to_turn_on.requested_state == Radiator.RequestedState.OFF
-    # they are added in the cache
+    # only added to the cache, for the teleinfo listener to decide
     assert get_radiators_to_turn_on_in_cache() == [
-        {"id": 2, "power": 1000, "importance": Radiator.Importance.HIGH}
+        {"id": 2, "power": 1000, "importance": 1}
     ]
 
 

@@ -8,6 +8,7 @@ from actuators.mutators.radiators import (
     set_radiators_requested_state_to_off,
     set_radiators_requested_state_to_on,
 )
+from actuators.services.radiator_synchronization import RadiatorSyncService
 from core.utils.temperatures import validate_temperature_value
 from heating.mappers import (
     heating_pattern_slot_value_to_room_requested_heating_state,
@@ -85,22 +86,33 @@ def turn_on_radiators_according_to_the_available_power():
     apply_load_shedding_to_radiators([radiator["id"] for radiator in cannot_turn_on])
 
 
-def synchronize_room_heating_requested_states_with_radiators_requested_states():
-    # Matches the room's requested heating state with the radiator's
-    # requested state.
-    # The radiator's requested state is what
-    # RadiatorSyncService.synchronize_database_and_hardware()
-    # applies directly to the hardware.
-    # Turning a radiator off is never a problem, so we can set its
-    # requested_state to OFF directly.
-    # But to avoid turning one on without enough available power, we do
-    # NOT change the requested_state of radiators to turn on here — we
-    # only place them in the cache, delegating the decision to the
-    # teleinfo listener, the only one that knows the available power.
+def resolve_radiators_to_update() -> dict:
     rooms_data = get_rooms_heating_state_data()
-    radiators = get_radiators_to_update(rooms_data)
-    set_radiators_requested_state_to_off(radiators["ids_to_turn_off"])
-    set_radiators_to_turn_on_in_cache(radiators["to_turn_on"])
+    return get_radiators_to_update(rooms_data)
+
+
+def turn_off_radiators_and_apply_to_hardware(radiators_to_update: dict) -> None:
+    """
+    Writes requested_state = OFF for the given radiators, then immediately
+    applies the change to hardware. Turning off is never a power problem,
+    so no need to wait for the listener.
+
+    Note: RadiatorSyncService works on the whole radiator fleet at once
+    (single batched I2C read/write) — it can't be scoped to just these
+    radiators, so this also re-applies every other radiator's current
+    requested_state, unchanged.
+    """
+    set_radiators_requested_state_to_off(radiators_to_update["ids_to_turn_off"])
+    RadiatorSyncService.synchronize_database_and_hardware()
+
+
+def queue_radiators_to_turn_on(radiators_to_update: dict) -> None:
+    """
+    Queues the given radiators into the cache. Does NOT change their
+    requested_state or touch hardware — the teleinfo listener, the only
+    one that knows the available power in real time, decides from there.
+    """
+    set_radiators_to_turn_on_in_cache(radiators_to_update["to_turn_on"])
 
 
 def room_plan_keys_are_valides(room_plan: dict) -> bool:

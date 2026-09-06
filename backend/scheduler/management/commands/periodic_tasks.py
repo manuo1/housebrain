@@ -7,7 +7,7 @@ from consumption.mutators import save_teleinfo_data
 from core.constants import LoggerLabel
 from core.services.system_metrics import log_system_metrics
 from heating.services.heating_synchronization import (
-    synchronize_room_heating_states_with_radiators,
+    synchronize_room_heating_requested_states_with_radiators_requested_states,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
 )
 from water_heater.services.water_heater_synchronization import (
@@ -32,7 +32,7 @@ class Command(BaseCommand):
         logger.info(f"{label} sync_requested_heating_states: done")
 
         logger.info(f"{label} sync_heating_states_with_radiators: start")
-        synchronize_room_heating_states_with_radiators()
+        synchronize_room_heating_requested_states_with_radiators_requested_states()
         logger.info(f"{label} sync_heating_states_with_radiators: done")
 
         logger.info(f"{label} radiator_hardware_sync: start")

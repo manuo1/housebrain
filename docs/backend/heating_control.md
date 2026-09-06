@@ -22,9 +22,9 @@ Lit les plannings du jour et met à jour `requested_heating_state` de chaque Roo
 
 **2. Synchronisation Rooms → Radiators**
 ```python
-synchronize_room_heating_states_with_radiators()
+synchronize_room_heating_requested_states_with_radiators_requested_states()
 ```
-Propage `requested_heating_state` des Rooms vers les Radiators.
+Propage `requested_heating_state` des Rooms vers `requested_state` des Radiators — ce dernier champ est ensuite appliqué tel quel au hardware par `RadiatorSyncService.synchronize_database_and_hardware()`.
 
 **3. Application hardware (via listener Teleinfo)**
 ```python
@@ -153,11 +153,10 @@ radiator.requested_state != room.requested_heating_state
 3. **Séparation selon action**
 
 **Radiateurs à éteindre :**
-- Application immédiate : `set_radiators_requested_state_to_off()`
+- `requested_state` mis à `OFF` directement en base (`set_radiators_requested_state_to_off()`) — aucun problème à éteindre sans vérifier la puissance. Le radiateur ne s'éteint physiquement qu'au prochain passage de `RadiatorSyncService.synchronize_database_and_hardware()`, pas à cet instant.
 
 **Radiateurs à allumer :**
-- Stockage dans cache Redis (liste triée par importance)
-- Délégation au listener Teleinfo pour allumage conditionnel
+- `requested_state` n'est PAS modifié ici — stockage dans le cache Redis (liste triée par importance), délégation au listener Teleinfo qui est le seul à connaître la puissance disponible en temps réel avant de décider d'un allumage
 
 ---
 

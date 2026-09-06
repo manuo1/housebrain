@@ -16,7 +16,7 @@ def test_periodic_tasks_calls_all_steps_in_order(mocker):
     )
     mocker.patch(
         "scheduler.management.commands.periodic_tasks."
-        "synchronize_room_heating_states_with_radiators",
+        "synchronize_room_heating_requested_states_with_radiators_requested_states",
         side_effect=lambda: call_order.append("sync_heating_states_with_radiators"),
     )
     mock_radiator_sync = mocker.patch(

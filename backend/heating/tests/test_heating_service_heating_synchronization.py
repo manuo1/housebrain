@@ -11,7 +11,7 @@ from heating.services.heating_synchronization import (
     get_radiators_to_update,
     room_plan_keys_are_valides,
     split_radiators_by_available_power,
-    synchronize_room_heating_states_with_radiators,
+    synchronize_room_heating_requested_states_with_radiators_requested_states,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
     turn_on_radiators_according_to_the_available_power,
 )
@@ -90,7 +90,7 @@ def test_get_radiators_to_update():
 
 
 @pytest.mark.django_db
-def test_synchronize_room_heating_states_with_radiators():
+def test_synchronize_room_heating_requested_states_with_radiators_requested_states():
     cache.clear
     radiator_to_turn_off = RadiatorFactory(
         id=1,
@@ -115,12 +115,12 @@ def test_synchronize_room_heating_states_with_radiators():
         radiator=radiator_to_turn_on,
         requested_heating_state=Room.RequestedHeatingState.ON,
     )
-    synchronize_room_heating_states_with_radiators()
+    synchronize_room_heating_requested_states_with_radiators_requested_states()
     radiator_to_turn_off.refresh_from_db()
     radiator_to_turn_on.refresh_from_db()
-    # radiator to turn-off are immediately turn-off
+    # radiator to turn off gets requested_state = OFF written directly
     assert radiator_to_turn_off.requested_state == Radiator.RequestedState.OFF
-    # radiator to turn-on are NOT immediately turn-on
+    # radiator to turn on does NOT get requested_state = ON written here
     assert radiator_to_turn_on.requested_state == Radiator.RequestedState.OFF
     # they are added in the cache
     assert get_radiators_to_turn_on_in_cache() == [

@@ -85,14 +85,21 @@ def turn_on_radiators_according_to_the_available_power():
     apply_load_shedding_to_radiators([radiator["id"] for radiator in cannot_turn_on])
 
 
-def synchronize_room_heating_states_with_radiators():
+def synchronize_room_heating_requested_states_with_radiators_requested_states():
+    # Matches the room's requested heating state with the radiator's
+    # requested state.
+    # The radiator's requested state is what
+    # RadiatorSyncService.synchronize_database_and_hardware()
+    # applies directly to the hardware.
+    # Turning a radiator off is never a problem, so we can set its
+    # requested_state to OFF directly.
+    # But to avoid turning one on without enough available power, we do
+    # NOT change the requested_state of radiators to turn on here — we
+    # only place them in the cache, delegating the decision to the
+    # teleinfo listener, the only one that knows the available power.
     rooms_data = get_rooms_heating_state_data()
     radiators = get_radiators_to_update(rooms_data)
-    # Immediately turn off radiators that need to be turned off
     set_radiators_requested_state_to_off(radiators["ids_to_turn_off"])
-    # Store the list of radiators to be turned on in the cache
-    # to delegate their activation to the teleinfo listener
-    # who has the better understanding of the available power
     set_radiators_to_turn_on_in_cache(radiators["to_turn_on"])
 
 
@@ -129,6 +136,8 @@ def synchronize_room_requested_heating_states_with_room_heating_day_plan():
             case SchedulePattern.SlotType.TEMPERATURE:
                 heating_control_mode = Room.HeatingControlMode.THERMOSTAT
                 temperature_setpoint = validate_temperature_value(setpoint_value)
+                # Falls back to the room's current state (not OFF) when the
+                # thermostat can't decide (e.g. missing/faulty sensor)
                 requested_heating_state = (
                     get_requested_heating_state_based_on_temperature(
                         temperature_setpoint,

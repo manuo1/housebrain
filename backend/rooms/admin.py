@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from heating.services.heating_synchronization import (
-    synchronize_room_heating_states_with_radiators,
+    synchronize_room_heating_requested_states_with_radiators_requested_states,
 )
 from rooms.models import Room
 
@@ -56,7 +56,7 @@ class RoomAdmin(admin.ModelAdmin):
             request,
             f"{updated} pièce(s) mise(s) sur ON avec succès.",
         )
-        synchronize_room_heating_states_with_radiators()
+        synchronize_room_heating_requested_states_with_radiators_requested_states()
 
     @admin.action(
         description="État du chauffage sur Éteint pour les pièces sélectionnées"
@@ -69,4 +69,4 @@ class RoomAdmin(admin.ModelAdmin):
             request,
             f"{updated} pièce(s) mise(s) sur OFF avec succès.",
         )
-        synchronize_room_heating_states_with_radiators()
+        synchronize_room_heating_requested_states_with_radiators_requested_states()

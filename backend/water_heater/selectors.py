@@ -2,9 +2,12 @@ from datetime import date
 
 from django.utils import timezone
 
+from equipment.models import WaterHeater
 from planning.models import SchedulePattern
 from planning.services import get_slot_data
-from water_heater.mappers import schedule_pattern_slot_value_to_water_heater_requested_state
+from water_heater.mappers import (
+    schedule_pattern_slot_value_to_water_heater_requested_state,
+)
 from water_heater.models import WaterHeaterDayPlan
 
 
@@ -39,9 +42,7 @@ def get_water_heaters_plan_states() -> list[dict]:
         plan_requested_state = None
         if slot_type == SchedulePattern.SlotType.ONOFF:
             plan_requested_state = (
-                schedule_pattern_slot_value_to_water_heater_requested_state(
-                    slot_value
-                )
+                schedule_pattern_slot_value_to_water_heater_requested_state(slot_value)
             )
 
         water_heaters_plan_states.append(
@@ -55,3 +56,16 @@ def get_water_heaters_plan_states() -> list[dict]:
         )
 
     return water_heaters_plan_states
+
+
+def get_water_heaters_data_for_load_shedding() -> list[dict]:
+    """
+    Return the minimum info needed for load shedding, sorted from lowest
+    to highest priority (mirrors
+    actuators.selectors.radiators.get_radiators_data_for_load_shedding).
+    """
+    return list(
+        WaterHeater.objects.filter(actual_state=WaterHeater.ActualState.ON, power__gt=0)
+        .order_by("-importance", "-power")
+        .values("id", "power", "importance")
+    )

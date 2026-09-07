@@ -6,7 +6,10 @@ from freezegun import freeze_time
 from equipment.models import WaterHeater
 from equipment.tests.factories import WaterHeaterFactory
 from planning.tests.factories import SchedulePatternFactory, SchedulePatternOnOffFactory
-from water_heater.selectors import get_water_heaters_plan_states
+from water_heater.selectors import (
+    get_water_heaters_data_for_load_shedding,
+    get_water_heaters_plan_states,
+)
 from water_heater.tests.factories import WaterHeaterDayPlanFactory
 
 
@@ -122,3 +125,53 @@ def test_multiple_water_heaters():
     result_by_id = {r["water_heater_id"]: r["plan_requested_state"] for r in result}
     assert result_by_id[water_heater_1.id] == WaterHeater.RequestedState.ON
     assert result_by_id[water_heater_2.id] == WaterHeater.RequestedState.OFF
+
+
+@pytest.mark.django_db
+def test_get_water_heaters_data_for_load_shedding_select():
+    # power > 0 et ActualState.ON -> sera sélectionné
+    WaterHeaterFactory(power=100, importance=1, actual_state=WaterHeater.ActualState.ON)
+    # ActualState.OFF -> ne sera pas sélectionné
+    WaterHeaterFactory(
+        power=100, importance=1, actual_state=WaterHeater.ActualState.OFF
+    )
+    # power == 0 -> ne sera pas sélectionné
+    WaterHeaterFactory(power=0, importance=1, actual_state=WaterHeater.ActualState.ON)
+
+    result = get_water_heaters_data_for_load_shedding()
+
+    assert result == [{"id": 1, "importance": 1, "power": 100}]
+
+
+@pytest.mark.django_db
+def test_get_water_heaters_data_for_load_shedding_no_water_heater():
+    result = get_water_heaters_data_for_load_shedding()
+
+    assert result == []
+
+
+@pytest.mark.django_db
+def test_get_water_heaters_data_for_load_shedding_sort():
+    """
+    Importance:
+        CRITICAL = 0
+        HIGH = 1
+        MEDIUM = 2
+        LOW = 3
+    """
+    WaterHeaterFactory(power=100, importance=1, actual_state=WaterHeater.ActualState.ON)
+    WaterHeaterFactory(power=100, importance=2, actual_state=WaterHeater.ActualState.ON)
+    WaterHeaterFactory(power=200, importance=2, actual_state=WaterHeater.ActualState.ON)
+    WaterHeaterFactory(power=100, importance=3, actual_state=WaterHeater.ActualState.ON)
+
+    result = get_water_heaters_data_for_load_shedding()
+
+    assert result == [
+        # moins important en premier
+        {"id": 4, "power": 100, "importance": 3},
+        # Même importance donc plus forte puissance en premier
+        {"id": 3, "power": 200, "importance": 2},
+        {"id": 2, "power": 100, "importance": 2},
+        # plus important donc en dernier
+        {"id": 1, "power": 100, "importance": 1},
+    ]

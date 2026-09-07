@@ -69,6 +69,8 @@ def split_radiators_by_available_power(radiators: list, remaining_power: int):
 
 
 def turn_on_radiators_according_to_the_available_power(remaining_power: int | None):
+    if remaining_power is None or remaining_power <= 0:
+        return
     radiators = get_radiators_to_turn_on_in_cache()
     if not radiators:
         return

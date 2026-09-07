@@ -205,6 +205,24 @@ def test_turn_on_radiators_according_to_the_available_power(monkeypatch):
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("remaining_power", [None, 0, -100])
+def test_turn_on_radiators_according_to_the_available_power_is_a_noop_when_nothing_can_turn_on(
+    monkeypatch, remaining_power
+):
+    def fail_if_called():
+        raise AssertionError(
+            "should not read the cache when nothing can be turned on"
+        )
+
+    monkeypatch.setattr(
+        "heating.services.heating_synchronization.get_radiators_to_turn_on_in_cache",
+        fail_if_called,
+    )
+
+    turn_on_radiators_according_to_the_available_power(remaining_power=remaining_power)
+
+
+@pytest.mark.django_db
 @freeze_time("2025-01-15 08:00:00+01:00")
 def test_sync_onoff_pattern_during_on_slot():
     """Test that room state is set to ON during an 'on' slot"""

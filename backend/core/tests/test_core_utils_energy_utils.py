@@ -1,6 +1,10 @@
 import pytest
 
-from core.utils.energy_utils import split_by_available_power, wh_to_watt
+from core.utils.energy_utils import (
+    select_items_for_load_shedding,
+    split_by_available_power,
+    wh_to_watt,
+)
 
 
 @pytest.mark.parametrize(
@@ -51,3 +55,32 @@ def test_split_by_available_power_empty_items():
 
     assert can_turn_on == []
     assert cannot_turn_on == []
+
+
+ITEMS_ON = [
+    {"id": 2, "power": 750, "importance": 3},
+    {"id": 11, "power": 1250, "importance": 3},
+    {"id": 4, "power": 750, "importance": 2},
+    {"id": 5, "power": 1000, "importance": 2},
+    {"id": 10, "power": 1500, "importance": 2},
+    {"id": 13, "power": 1500, "importance": 2},
+    {"id": 3, "power": 1500, "importance": 1},
+    {"id": 8, "power": 1500, "importance": 1},
+]
+
+
+@pytest.mark.parametrize(
+    "remaining_power, items_on, expected",
+    [
+        # -500w restant (soit 1500w avant marge) + 750w de id=2 = 250w, encore déficitaire de 750-500=250 recouvert par id=11 seul
+        (1500 - 2000, ITEMS_ON, [2]),
+        # -2000w restant (soit 0w avant marge) + 750w de id=2 + 1250w de id=11 = 2000w pile
+        (0 - 2000, ITEMS_ON, [2, 11]),
+        # si la puissance consommée est supérieur à la puissance autorisée
+        (-1500 - 2000, ITEMS_ON, [2, 11, 4, 5]),
+        # Plus d'accès à la teleinfo -> éteint tout sauf importance 0 et 1
+        (None, ITEMS_ON, [2, 11, 4, 5, 10, 13]),
+    ],
+)
+def test_select_items_for_load_shedding(remaining_power, items_on, expected):
+    assert select_items_for_load_shedding(remaining_power, items_on) == expected

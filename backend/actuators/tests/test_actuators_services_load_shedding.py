@@ -1,42 +1,8 @@
 import pytest
 
-from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
-from actuators.services.load_shedding import (
-    manage_load_shedding,
-    select_radiators_for_load_shedding,
-)
+from actuators.services.load_shedding import manage_load_shedding
 from actuators.tests.factories import RadiatorFactory
-
-RADIATORS_ON_1 = [
-    {"id": 2, "power": 750, "importance": 3},
-    {"id": 11, "power": 1250, "importance": 3},
-    {"id": 4, "power": 750, "importance": 2},
-    {"id": 5, "power": 1000, "importance": 2},
-    {"id": 10, "power": 1500, "importance": 2},
-    {"id": 13, "power": 1500, "importance": 2},
-    {"id": 3, "power": 1500, "importance": 1},
-    {"id": 8, "power": 1500, "importance": 1},
-]
-
-
-@pytest.mark.parametrize(
-    "remaining_power, radiators_on, expected",
-    [
-        # -500w restant (soit 1500w avant marge) + 750w de id=1 = 250w, encore déficitaire de 750-500=250 recouvert par id=2 seul
-        (1500 - POWER_SAFETY_MARGIN, RADIATORS_ON_1, [2]),
-        # -2000w restant (soit 0w avant marge) + 750w de id=1 + 1250w de id=11 = 2000w pile
-        (0 - POWER_SAFETY_MARGIN, RADIATORS_ON_1, [2, 11]),
-        # si la puissance consommée est supérieur à la puissance autorisée
-        (-1500 - POWER_SAFETY_MARGIN, RADIATORS_ON_1, [2, 11, 4, 5]),
-        # PLus accès à la teleinfo -> éteint tous les radiateurs sauf importance 0 et 1
-        (None, RADIATORS_ON_1, [2, 11, 4, 5, 10, 13]),
-    ],
-)
-def test_select_radiators_for_load_shedding(remaining_power, radiators_on, expected):
-    assert (
-        select_radiators_for_load_shedding(remaining_power, radiators_on) == expected
-    )
 
 
 @pytest.mark.django_db

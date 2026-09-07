@@ -8,6 +8,7 @@ from actuators.mutators.radiators import (
     set_radiators_requested_state_to_on,
 )
 from actuators.services.radiator_synchronization import RadiatorSyncService
+from core.utils.energy_utils import split_by_available_power
 from core.utils.temperatures import validate_temperature_value
 from heating.mappers import (
     heating_pattern_slot_value_to_room_requested_heating_state,
@@ -54,20 +55,6 @@ def get_radiators_to_update(rooms_data: list[dict]) -> list:
     return radiators
 
 
-def split_radiators_by_available_power(radiators: list, remaining_power: int):
-    can_turn_on = []
-    cannot_turn_on = []
-
-    for radiator in radiators:
-        if remaining_power >= radiator["power"]:
-            can_turn_on.append(radiator)
-            remaining_power -= radiator["power"]
-        else:
-            cannot_turn_on.append(radiator)
-
-    return can_turn_on, cannot_turn_on
-
-
 def turn_on_radiators_according_to_the_available_power(remaining_power: int | None):
     if remaining_power is None or remaining_power <= 0:
         return
@@ -75,7 +62,7 @@ def turn_on_radiators_according_to_the_available_power(remaining_power: int | No
     if not radiators:
         return
     sorted_radiators = sorted(radiators, key=lambda x: (x["importance"], -x["power"]))
-    can_turn_on, cannot_turn_on = split_radiators_by_available_power(
+    can_turn_on, cannot_turn_on = split_by_available_power(
         sorted_radiators, remaining_power
     )
 

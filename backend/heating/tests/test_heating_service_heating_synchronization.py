@@ -11,7 +11,6 @@ from heating.services.heating_synchronization import (
     queue_radiators_to_turn_on,
     resolve_radiators_to_update,
     room_plan_keys_are_valides,
-    split_radiators_by_available_power,
     synchronize_room_requested_heating_states_with_room_heating_day_plan,
     turn_off_radiators_and_apply_to_hardware,
     turn_on_radiators_according_to_the_available_power,
@@ -163,17 +162,6 @@ RADIATOR_3 = {
 }
 
 
-def test_split_radiators_by_available_power():
-    can_turn_on, cannot_turn_on = split_radiators_by_available_power(
-        [RADIATOR_1, RADIATOR_2, RADIATOR_3], remaining_power=2000
-    )
-    # remaining_power = 2000
-    # RADIATOR_1 power + RADIATOR_2 power = 2000
-    # Not enough power for RADIATOR_3
-    assert can_turn_on == [RADIATOR_1, RADIATOR_2]
-    assert cannot_turn_on == [RADIATOR_3]
-
-
 @pytest.mark.django_db
 def test_turn_on_radiators_according_to_the_available_power(monkeypatch):
     cache.clear
@@ -189,7 +177,7 @@ def test_turn_on_radiators_according_to_the_available_power(monkeypatch):
     can_turn_on = [RADIATOR_1, RADIATOR_2]
     cannot_turn_on = [RADIATOR_3]
     monkeypatch.setattr(
-        "heating.services.heating_synchronization.split_radiators_by_available_power",
+        "heating.services.heating_synchronization.split_by_available_power",
         lambda radiators, remaining_power: (can_turn_on, cannot_turn_on),
     )
     turn_on_radiators_according_to_the_available_power(remaining_power=2000)

@@ -4,7 +4,6 @@ import pytest
 from django.core.cache import cache
 from freezegun import freeze_time
 
-from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
 from actuators.tests.factories import RadiatorFactory
 from heating.services.heating_synchronization import (
@@ -164,17 +163,11 @@ RADIATOR_3 = {
 }
 
 
-def test_split_radiators_by_available_power(monkeypatch):
-    available_power = 2000 + POWER_SAFETY_MARGIN
-    monkeypatch.setattr(
-        "heating.services.heating_synchronization.get_instant_available_power",
-        lambda: available_power,
-    )
-
+def test_split_radiators_by_available_power():
     can_turn_on, cannot_turn_on = split_radiators_by_available_power(
-        [RADIATOR_1, RADIATOR_2, RADIATOR_3]
+        [RADIATOR_1, RADIATOR_2, RADIATOR_3], remaining_power=2000
     )
-    # available_power = 2000
+    # remaining_power = 2000
     # RADIATOR_1 power + RADIATOR_2 power = 2000
     # Not enough power for RADIATOR_3
     assert can_turn_on == [RADIATOR_1, RADIATOR_2]
@@ -197,9 +190,9 @@ def test_turn_on_radiators_according_to_the_available_power(monkeypatch):
     cannot_turn_on = [RADIATOR_3]
     monkeypatch.setattr(
         "heating.services.heating_synchronization.split_radiators_by_available_power",
-        lambda radiators: (can_turn_on, cannot_turn_on),
+        lambda radiators, remaining_power: (can_turn_on, cannot_turn_on),
     )
-    turn_on_radiators_according_to_the_available_power()
+    turn_on_radiators_according_to_the_available_power(remaining_power=2000)
 
     assert get_radiators_to_turn_on_in_cache() == cannot_turn_on
     radiator_1.refresh_from_db()

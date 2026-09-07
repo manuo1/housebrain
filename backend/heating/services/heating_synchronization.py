@@ -2,7 +2,6 @@ import logging
 
 from django.utils import timezone
 
-from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.mutators.radiators import (
     apply_load_shedding_to_radiators,
     set_radiators_requested_state_to_off,
@@ -25,7 +24,6 @@ from planning.services import get_slot_data
 from rooms.models import Room
 from rooms.mutators.rooms import update_room_heating_fields
 from rooms.selectors.heating import get_rooms_heating_state_data
-from teleinfo.utils.cache_teleinfo_data import get_instant_available_power
 
 logger = logging.getLogger("django")
 
@@ -56,10 +54,9 @@ def get_radiators_to_update(rooms_data: list[dict]) -> list:
     return radiators
 
 
-def split_radiators_by_available_power(radiators: list):
+def split_radiators_by_available_power(radiators: list, remaining_power: int):
     can_turn_on = []
     cannot_turn_on = []
-    remaining_power = get_instant_available_power() - POWER_SAFETY_MARGIN
 
     for radiator in radiators:
         if remaining_power >= radiator["power"]:
@@ -71,12 +68,14 @@ def split_radiators_by_available_power(radiators: list):
     return can_turn_on, cannot_turn_on
 
 
-def turn_on_radiators_according_to_the_available_power():
+def turn_on_radiators_according_to_the_available_power(remaining_power: int | None):
     radiators = get_radiators_to_turn_on_in_cache()
     if not radiators:
         return
     sorted_radiators = sorted(radiators, key=lambda x: (x["importance"], -x["power"]))
-    can_turn_on, cannot_turn_on = split_radiators_by_available_power(sorted_radiators)
+    can_turn_on, cannot_turn_on = split_radiators_by_available_power(
+        sorted_radiators, remaining_power
+    )
 
     # Keep the radiators that couldn't be turned on in the cache to try again.
     set_radiators_to_turn_on_in_cache(cannot_turn_on)

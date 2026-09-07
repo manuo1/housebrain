@@ -1,6 +1,5 @@
 import logging
 
-from actuators.constants import POWER_SAFETY_MARGIN
 from actuators.models import Radiator
 from actuators.mutators.radiators import apply_load_shedding_to_radiators
 from actuators.selectors.radiators import get_radiators_data_for_load_shedding
@@ -10,14 +9,14 @@ from core.constants import LoggerLabel
 logger = logging.getLogger("django")
 
 
-def manage_load_shedding(available_power: int | None) -> None:
+def manage_load_shedding(remaining_power: int | None) -> None:
     """
     Manage load shedding to avoid exceeding the authorized power
     """
 
     radiators_on = get_radiators_data_for_load_shedding()
     radiators_id_for_load_shedding = select_radiators_for_load_shedding(
-        available_power, radiators_on
+        remaining_power, radiators_on
     )
     apply_load_shedding_to_radiators(radiators_id_for_load_shedding)
     # immediately applies the changes
@@ -25,16 +24,16 @@ def manage_load_shedding(available_power: int | None) -> None:
 
 
 def select_radiators_for_load_shedding(
-    available_power: int | None, radiators_on: list
+    remaining_power: int | None, radiators_on: list
 ) -> list:
     """
     Select the radiators that will be turned off for load shedding depending
     on the importance until the available power becomes sufficient again.
 
-    If available_power is None (teleinfo unavailable), turn off all radiators
+    If remaining_power is None (teleinfo unavailable), turn off all radiators
     except CRITICAL and HIGH importance.
     """
-    if available_power is None:
+    if remaining_power is None:
         logger.warning(
             f"{LoggerLabel.LOADSHEDDING} Available power is unknown. Low-value heaters will be turned off."
         )
@@ -46,7 +45,9 @@ def select_radiators_for_load_shedding(
             not in (Radiator.Importance.CRITICAL, Radiator.Importance.HIGH)
         ]
 
-    power_needed = POWER_SAFETY_MARGIN - available_power
+    # remaining_power already excludes the safety margin, so a deficit
+    # is simply its negation.
+    power_needed = -remaining_power
     if power_needed <= 0:
         return []
 
@@ -60,7 +61,7 @@ def select_radiators_for_load_shedding(
             break
 
     logger.warning(
-        f"{LoggerLabel.LOADSHEDDING} Available power is too low ({available_power}W). {len(radiators_to_turn_off)} heaters will be turned off."
+        f"{LoggerLabel.LOADSHEDDING} Available power is too low ({remaining_power}W short of margin). {len(radiators_to_turn_off)} heaters will be turned off."
     )
 
     return radiators_to_turn_off

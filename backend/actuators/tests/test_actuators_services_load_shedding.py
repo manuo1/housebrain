@@ -21,20 +21,22 @@ RADIATORS_ON_1 = [
 
 
 @pytest.mark.parametrize(
-    "available_power, radiators_on, expected",
+    "remaining_power, radiators_on, expected",
     [
-        # 1500w restant + 750w de id=1 = 2250w, 2250w > POWER_SAFETY_MARGIN = 2000
-        (1500, RADIATORS_ON_1, [2]),
-        # 0w restant + 750w de id=1 + 1250w de id=11 = 2000w, 2000W = POWER_SAFETY_MARGIN = 2000
-        (0, RADIATORS_ON_1, [2, 11]),
+        # -500w restant (soit 1500w avant marge) + 750w de id=1 = 250w, encore déficitaire de 750-500=250 recouvert par id=2 seul
+        (1500 - POWER_SAFETY_MARGIN, RADIATORS_ON_1, [2]),
+        # -2000w restant (soit 0w avant marge) + 750w de id=1 + 1250w de id=11 = 2000w pile
+        (0 - POWER_SAFETY_MARGIN, RADIATORS_ON_1, [2, 11]),
         # si la puissance consommée est supérieur à la puissance autorisée
-        (-1500, RADIATORS_ON_1, [2, 11, 4, 5]),
+        (-1500 - POWER_SAFETY_MARGIN, RADIATORS_ON_1, [2, 11, 4, 5]),
         # PLus accès à la teleinfo -> éteint tous les radiateurs sauf importance 0 et 1
         (None, RADIATORS_ON_1, [2, 11, 4, 5, 10, 13]),
     ],
 )
-def test_select_radiators_for_load_shedding(available_power, radiators_on, expected):
-    assert select_radiators_for_load_shedding(available_power, radiators_on) == expected
+def test_select_radiators_for_load_shedding(remaining_power, radiators_on, expected):
+    assert (
+        select_radiators_for_load_shedding(remaining_power, radiators_on) == expected
+    )
 
 
 @pytest.mark.django_db
@@ -47,7 +49,7 @@ def test_manage_load_shedding():
     # power == 0 -> ne serra pas sélectionné
     r9 = RadiatorFactory(power=0, importance=1, actual_state=Radiator.ActualState.ON)
 
-    manage_load_shedding(POWER_SAFETY_MARGIN - 750 - 1250)
+    manage_load_shedding(-750 - 1250)
 
     radiators_with_load_shed = Radiator.objects.filter(
         requested_state=Radiator.RequestedState.LOAD_SHED

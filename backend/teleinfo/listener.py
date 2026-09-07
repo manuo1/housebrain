@@ -15,6 +15,7 @@ from teleinfo.services import (
     buffer_is_complete,
     ensure_power_not_exceeded,
     get_data_in_line,
+    get_instant_remaining_power,
 )
 from teleinfo.utils.cache_teleinfo_data import set_teleinfo_data_in_cache
 
@@ -102,6 +103,7 @@ class TeleinfoListener:
             # Alternate power management cycles to allow teleinfo
             # to reflect changes before applying new modifications
             if self.should_manage_radiator_power:
-                ensure_power_not_exceeded()
-                turn_on_radiators_according_to_the_available_power()
+                remaining_power = get_instant_remaining_power()
+                ensure_power_not_exceeded(remaining_power)
+                turn_on_radiators_according_to_the_available_power(remaining_power)
             self.should_manage_radiator_power = not self.should_manage_radiator_power

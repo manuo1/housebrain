@@ -30,9 +30,11 @@ queue_radiators_to_turn_on(radiators_to_update)
 
 **3. Application hardware pour l'allumage (via listener Teleinfo)**
 ```python
-turn_on_radiators_according_to_the_available_power()
+remaining_power = get_instant_remaining_power()
+ensure_power_not_exceeded(remaining_power)
+turn_on_radiators_according_to_the_available_power(remaining_power)
 ```
-Allume les radiateurs en attente selon la puissance disponible.
+`get_instant_remaining_power()` (dans `teleinfo/services.py`) calcule une seule fois la puissance disponible moins la marge de sécurité, et c'est cette valeur qui circule en paramètre — évite que plusieurs fonctions (allumage radiateurs, futur allumage chauffe-eau, délestage) lisent chacune la puissance dispo indépendamment et s'allouent la même puissance sans se coordonner.
 
 ---
 
@@ -193,9 +195,10 @@ radiator.requested_state != room.requested_heating_state
    - CRITICAL (0) en premier, puis HIGH (1), MEDIUM (2), LOW (3)
    - À importance égale, puissance décroissante
 
-3. **Calcul puissance disponible**
+3. **Puissance disponible**
    ```python
-   remaining_power = get_instant_available_power() - POWER_SAFETY_MARGIN
+   # calculée une fois par le listener (teleinfo.services.get_instant_remaining_power),
+   # marge de sécurité déjà retranchée, passée en paramètre
    ```
 
 4. **Sélection des radiateurs**

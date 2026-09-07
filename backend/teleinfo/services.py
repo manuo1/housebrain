@@ -113,8 +113,15 @@ def buffer_is_complete(buffer: dict[str, str]) -> bool:
     return all(key in buffer for key in REQUIRED_TELEINFO_KEYS)
 
 
-def ensure_power_not_exceeded() -> None:
-    """Monitors the power consumed to avoid exceeding the authorized power"""
+def get_instant_remaining_power() -> int | None:
+    """Instant available power minus the safety margin."""
     available_power = get_instant_available_power()
-    if available_power is None or available_power < POWER_SAFETY_MARGIN:
-        manage_load_shedding(available_power)
+    if available_power is None:
+        return None
+    return available_power - POWER_SAFETY_MARGIN
+
+
+def ensure_power_not_exceeded(remaining_power: int | None) -> None:
+    """Monitors the power consumed to avoid exceeding the authorized power"""
+    if remaining_power is None or remaining_power < 0:
+        manage_load_shedding(remaining_power)

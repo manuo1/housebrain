@@ -15,6 +15,7 @@ def get_water_heaters_plans_data(day: date) -> list[dict]:
             "schedule_pattern__slots",
             "water_heater__requested_state",
             "water_heater__power",
+            "water_heater__importance",
         )
     )
 
@@ -48,6 +49,7 @@ def get_water_heaters_plan_states() -> list[dict]:
                 "water_heater_id": plan["water_heater_id"],
                 "water_heater__requested_state": plan["water_heater__requested_state"],
                 "water_heater__power": plan["water_heater__power"],
+                "water_heater__importance": plan["water_heater__importance"],
                 "plan_requested_state": plan_requested_state,
             }
         )

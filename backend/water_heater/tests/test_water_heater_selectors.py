@@ -28,6 +28,7 @@ def test_plan_wants_on_during_on_slot():
             "water_heater_id": water_heater.id,
             "water_heater__requested_state": WaterHeater.RequestedState.OFF,
             "water_heater__power": water_heater.power,
+            "water_heater__importance": water_heater.importance,
             "plan_requested_state": WaterHeater.RequestedState.ON,
         }
     ]

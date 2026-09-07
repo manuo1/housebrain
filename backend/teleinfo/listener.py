@@ -18,6 +18,9 @@ from teleinfo.services import (
     get_instant_remaining_power,
 )
 from teleinfo.utils.cache_teleinfo_data import set_teleinfo_data_in_cache
+from water_heater.services.water_heater_synchronization import (
+    turn_on_water_heaters_according_to_the_available_power,
+)
 
 logger = logging.getLogger("django")
 
@@ -105,5 +108,8 @@ class TeleinfoListener:
             if self.should_manage_radiator_power:
                 remaining_power = get_instant_remaining_power()
                 ensure_power_not_exceeded(remaining_power)
+                remaining_power = turn_on_water_heaters_according_to_the_available_power(
+                    remaining_power
+                )
                 turn_on_radiators_according_to_the_available_power(remaining_power)
             self.should_manage_radiator_power = not self.should_manage_radiator_power

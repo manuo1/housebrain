@@ -1,17 +1,15 @@
 from django.db import models
 from django.utils import timezone
 
+from core.choices import LoadSheddingImportance
 from device.models import RelayOnOff
 
 
 class Radiator(models.Model):
-    class Importance(models.IntegerChoices):
-        """Heating importance level (higher importance = use last for load shedding)"""
-
-        CRITICAL = 0, "Critique"
-        HIGH = 1, "Haute"
-        MEDIUM = 2, "Moyenne"
-        LOW = 3, "Basse"
+    Importance = LoadSheddingImportance
+    """Alias kept so existing Radiator.Importance.X references (tests,
+    admin, heating) don't need to change — the actual choices now live in
+    core.choices.LoadSheddingImportance, shared with other equipment."""
 
     class RequestedState(models.TextChoices):
         """System intention for radiator state"""

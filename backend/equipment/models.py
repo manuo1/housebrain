@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from actuators.models import OnOffSwitch, SingleButtonMotor
+from core.choices import LoadSheddingImportance
 from equipment.constants import EquipmentStatusLevel
 from sensors.models import DoorContactSensor
 
@@ -142,6 +143,13 @@ class WaterHeater(Equipment):
     power = models.PositiveIntegerField(
         verbose_name="Puissance (W)",
         help_text="Puissance de la résistance, utilisée pour le calcul de puissance disponible lors du délestage",
+    )
+
+    importance = models.PositiveSmallIntegerField(
+        choices=LoadSheddingImportance.choices,
+        default=LoadSheddingImportance.CRITICAL,
+        verbose_name="Importance",
+        help_text="Détermine l'ordre de délestage/rallumage face aux autres équipements (même échelle) — chauffe-eau traité critique par défaut : délesté en dernier, rallumé en premier",
     )
 
     requested_state = models.CharField(

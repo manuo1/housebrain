@@ -1,14 +1,20 @@
 import logging
 
+from core.utils.energy_utils import split_by_available_power
 from device.drivers.base import DeviceDriverError
 from equipment.models import WaterHeater
 from water_heater.mappers import water_heater_state_matches_plan_state
 from water_heater.mutators import (
+    apply_load_shedding_to_water_heaters,
     set_water_heaters_requested_state_to_off,
+    set_water_heaters_requested_state_to_on,
     update_water_heater_hardware_state,
 )
 from water_heater.selectors import get_water_heaters_plan_states
-from water_heater.utils.cache_water_heater import set_water_heaters_to_turn_on_in_cache
+from water_heater.utils.cache_water_heater import (
+    get_water_heaters_to_turn_on_in_cache,
+    set_water_heaters_to_turn_on_in_cache,
+)
 
 logger = logging.getLogger("django")
 
@@ -35,6 +41,7 @@ def resolve_water_heaters_to_update(water_heaters_plan_states: list[dict]) -> di
                     {
                         "id": water_heater["water_heater_id"],
                         "power": water_heater["water_heater__power"],
+                        "importance": water_heater["water_heater__importance"],
                     }
                 )
             case WaterHeater.RequestedState.OFF:
@@ -68,6 +75,41 @@ def queue_water_heaters_to_turn_on(water_heaters_to_update: dict) -> None:
     Mirrors heating.queue_radiators_to_turn_on.
     """
     set_water_heaters_to_turn_on_in_cache(water_heaters_to_update["to_turn_on"])
+
+
+def turn_on_water_heaters_according_to_the_available_power(
+    remaining_power: int | None,
+) -> int | None:
+    """
+    Water heaters are turned on before radiators (priority call order set
+    by the listener) and their consumption is deducted from the returned
+    power, so radiators see what's actually left.
+    """
+    if remaining_power is None or remaining_power <= 0:
+        return remaining_power
+    water_heaters = get_water_heaters_to_turn_on_in_cache()
+    if not water_heaters:
+        return remaining_power
+    sorted_water_heaters = sorted(
+        water_heaters, key=lambda x: (x["importance"], -x["power"])
+    )
+    can_turn_on, cannot_turn_on = split_by_available_power(
+        sorted_water_heaters, remaining_power
+    )
+
+    # Keep the water heaters that couldn't be turned on in the cache to try again.
+    set_water_heaters_to_turn_on_in_cache(cannot_turn_on)
+    # Turn on the water heaters that can.
+    set_water_heaters_requested_state_to_on(
+        [water_heater["id"] for water_heater in can_turn_on]
+    )
+    # Indicates that the others are experiencing load shedding.
+    apply_load_shedding_to_water_heaters(
+        [water_heater["id"] for water_heater in cannot_turn_on]
+    )
+
+    power_used = sum(water_heater["power"] for water_heater in can_turn_on)
+    return remaining_power - power_used
 
 
 class WaterHeaterSyncService:

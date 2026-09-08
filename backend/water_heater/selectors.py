@@ -39,7 +39,7 @@ def get_water_heaters_plan_states() -> list[dict]:
             plan["schedule_pattern__slots"], now.time()
         )
 
-        plan_requested_state = None
+        plan_requested_state = WaterHeater.RequestedState.OFF
         if slot_type == SchedulePattern.SlotType.ONOFF:
             plan_requested_state = (
                 schedule_pattern_slot_value_to_water_heater_requested_state(slot_value)

@@ -55,7 +55,7 @@ def test_plan_wants_off_during_off_slot():
 
 @pytest.mark.django_db
 @freeze_time("2025-01-15 10:00:00+01:00")
-def test_plan_has_no_opinion_outside_slots():
+def test_plan_defaults_to_off_outside_slots():
     pattern = SchedulePatternOnOffFactory(
         slots=[{"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}]
     )
@@ -66,14 +66,15 @@ def test_plan_has_no_opinion_outside_slots():
 
     result = get_water_heaters_plan_states()
 
-    assert result[0]["plan_requested_state"] is None
+    assert result[0]["plan_requested_state"] == WaterHeater.RequestedState.OFF
 
 
 @pytest.mark.django_db
 @freeze_time("2025-01-15 08:00:00+01:00")
-def test_plan_has_no_opinion_on_non_onoff_slot_type():
+def test_plan_defaults_to_off_on_non_onoff_slot_type():
     """A temp-type slot (e.g. a future temperature-sensing water heater)
-    is not handled yet."""
+    is not handled yet, so it falls back to the same OFF default as no
+    slot at all."""
     pattern = SchedulePatternFactory(
         slots=[{"start": "07:00", "end": "09:00", "type": "temp", "value": 55.0}]
     )
@@ -84,7 +85,7 @@ def test_plan_has_no_opinion_on_non_onoff_slot_type():
 
     result = get_water_heaters_plan_states()
 
-    assert result[0]["plan_requested_state"] is None
+    assert result[0]["plan_requested_state"] == WaterHeater.RequestedState.OFF
 
 
 @pytest.mark.django_db

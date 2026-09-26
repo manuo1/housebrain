@@ -55,11 +55,11 @@ class WaterHeaterAdmin(admin.ModelAdmin):
         except DeviceDriverError as e:
             return f"Erreur : {e}"
 
-    @admin.action(description="Forcer en marche (HC) les chauffe-eau sélectionnés")
+    @admin.action(description="Forcer en marche les chauffe-eau sélectionnés")
     def turn_on_selected(self, request, queryset):
         self._apply(request, queryset, "turn_on", "forcé(s) en marche")
 
-    @admin.action(description="Forcer à l'arrêt (HP) les chauffe-eau sélectionnés")
+    @admin.action(description="Forcer à l'arrêt les chauffe-eau sélectionnés")
     def turn_off_selected(self, request, queryset):
         self._apply(request, queryset, "turn_off", "forcé(s) à l'arrêt")
 

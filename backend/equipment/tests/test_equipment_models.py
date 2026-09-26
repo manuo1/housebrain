@@ -60,7 +60,7 @@ def test_water_heater_get_status_when_on(mocker):
     water_heater = WaterHeaterFactory.build()
 
     assert water_heater.get_status() == {
-        "state": "Marche forcée (HC)",
+        "state": "Marche",
         "status_level": EquipmentStatusLevel.OK,
     }
 
@@ -70,6 +70,6 @@ def test_water_heater_get_status_when_off(mocker):
     water_heater = WaterHeaterFactory.build()
 
     assert water_heater.get_status() == {
-        "state": "Arrêt (HP)",
+        "state": "Arrêt",
         "status_level": EquipmentStatusLevel.OK,
     }

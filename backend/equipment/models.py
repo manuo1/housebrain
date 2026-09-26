@@ -103,9 +103,9 @@ class GarageDoor(SingleButtonEquipment):
 
 class WaterHeater(Equipment):
     """
-    A water heater whose day/night contactor coil is driven by a Shelly
-    relay wired in series with the Linky teleinfo signal — turning the
-    relay on/off forces HC/HP instead of following the Linky schedule.
+    A water heater whose contactor coil is driven by a Shelly relay,
+    controlled purely by its own planning (water_heater.WaterHeaterDayPlan)
+    — no manual toggle, mirrors heating's Room planning.
 
     Extends Equipment directly, not SingleButtonEquipment: unlike
     GarageDoor, control here is maintained on/off, not a momentary
@@ -127,7 +127,7 @@ class WaterHeater(Equipment):
         ON = "ON", "Allumé"
         UNDEFINED = "UNDEFINED", "Indéterminé"
 
-    interaction_type = "toggle_with_state"
+    interaction_type = None
 
     select_related_fields = ("switch__relay_on_off__device_io__device",)
 
@@ -200,6 +200,6 @@ class WaterHeater(Equipment):
     def get_status(self) -> dict:
         is_on = self.switch.read_state()
         return {
-            "state": "Marche forcée (HC)" if is_on else "Arrêt (HP)",
+            "state": "Marche" if is_on else "Arrêt",
             "status_level": EquipmentStatusLevel.OK,
         }

@@ -1,8 +1,25 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from planning.models import SchedulePattern
+from planning.models import EquipmentDayPlan, SchedulePattern
 from planning.tests.factories import SchedulePatternFactory, SchedulePatternOnOffFactory
+
+
+class TestEquipmentDayPlanSubclasses:
+    def test_every_subclass_declares_equipment_field(self):
+        """
+        EquipmentDayPlan can't declare the owner FK itself (target model
+        varies per subclass), so it's a documented convention instead of
+        an enforced one. This test is the enforcement: every concrete
+        subclass must expose a field named `equipment`, or the generic
+        planning/api layer breaks silently at runtime instead of here.
+        """
+        subclasses = [cls for cls in EquipmentDayPlan.__subclasses__() if not cls._meta.abstract]
+
+        assert subclasses, "No concrete EquipmentDayPlan subclass found — is this test running with all apps loaded?"
+
+        for cls in subclasses:
+            assert hasattr(cls, "equipment"), f"{cls.__name__} must declare a FK field named 'equipment'"
 
 
 @pytest.mark.django_db

@@ -6,6 +6,35 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
+class EquipmentDayPlan(models.Model):
+    """
+    Abstract base for a daily plan tied to one schedulable equipment for
+    one date. Guarantees `date` and `schedule_pattern` exist with the
+    same name on every concrete day-plan model (WaterHeaterDayPlan,
+    future SmartPlugDayPlan...), so the generic planning/api layer can
+    rely on them without knowing the concrete subclass.
+
+    Does NOT declare the FK to the equipment owner itself — its target
+    model varies per subclass. Each subclass must declare its own FK, by
+    convention named `equipment`.
+    """
+
+    date = models.DateField(verbose_name="Date")
+
+    schedule_pattern = models.ForeignKey(
+        "planning.SchedulePattern",
+        on_delete=models.PROTECT,
+        verbose_name="Pattern de planification",
+        help_text="Programme appliqué pour cette journée",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
 class SchedulePattern(models.Model):
     """
     Reusable day pattern: a full day's worth of time slots. Shared by any

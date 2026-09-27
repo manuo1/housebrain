@@ -30,6 +30,8 @@ class Equipment(models.Model):
 
     interaction_type: str
 
+    name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
+
     class Meta:
         abstract = True
 
@@ -64,8 +66,6 @@ class GarageDoor(SingleButtonEquipment):
         "door_sensor__sensor_true_false__device_io__device",
         "motor__relay_on_off__device_io__device",
     )
-
-    name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
 
     motor = models.OneToOneField(
         SingleButtonMotor,
@@ -130,8 +130,6 @@ class WaterHeater(Equipment):
     interaction_type = None
 
     select_related_fields = ("switch__relay_on_off__device_io__device",)
-
-    name = models.CharField(max_length=100, unique=True, verbose_name="Nom")
 
     switch = models.OneToOneField(
         OnOffSwitch,

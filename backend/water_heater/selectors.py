@@ -12,15 +12,27 @@ from water_heater.models import WaterHeaterDayPlan
 
 
 def get_water_heaters_plans_data(day: date) -> list[dict]:
-    return list(
-        WaterHeaterDayPlan.objects.filter(date=day).values(
-            "water_heater_id",
-            "schedule_pattern__slots",
-            "water_heater__requested_state",
-            "water_heater__power",
-            "water_heater__importance",
-        )
+    # Query on the renamed generic FK (`equipment`), but republish with
+    # water_heater_* keys — downstream (get_water_heaters_plan_states,
+    # water_heater_synchronization.py, and their tests) is business logic
+    # specific to water heaters and reads more clearly that way.
+    rows = WaterHeaterDayPlan.objects.filter(date=day).values(
+        "equipment_id",
+        "schedule_pattern__slots",
+        "equipment__requested_state",
+        "equipment__power",
+        "equipment__importance",
     )
+    return [
+        {
+            "water_heater_id": row["equipment_id"],
+            "schedule_pattern__slots": row["schedule_pattern__slots"],
+            "water_heater__requested_state": row["equipment__requested_state"],
+            "water_heater__power": row["equipment__power"],
+            "water_heater__importance": row["equipment__importance"],
+        }
+        for row in rows
+    ]
 
 
 def get_water_heaters_plan_states() -> list[dict]:

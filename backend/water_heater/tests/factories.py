@@ -10,6 +10,6 @@ class WaterHeaterDayPlanFactory(DjangoModelFactory):
     class Meta:
         model = WaterHeaterDayPlan
 
-    water_heater = factory.SubFactory(WaterHeaterFactory)
+    equipment = factory.SubFactory(WaterHeaterFactory)
     date = factory.Faker("date_object")
     schedule_pattern = factory.SubFactory(SchedulePatternFactory)

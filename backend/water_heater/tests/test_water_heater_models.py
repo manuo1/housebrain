@@ -16,7 +16,7 @@ class TestWaterHeaterDayPlan:
         """Test basic creation of a water heater day plan"""
         plan = WaterHeaterDayPlanFactory()
         assert plan.id is not None
-        assert plan.water_heater is not None
+        assert plan.equipment is not None
         assert plan.date is not None
         assert plan.schedule_pattern is not None
 
@@ -27,12 +27,12 @@ class TestWaterHeaterDayPlan:
         test_date = date(2025, 10, 24)
 
         WaterHeaterDayPlanFactory(
-            water_heater=water_heater, date=test_date, schedule_pattern=pattern
+            equipment=water_heater, date=test_date, schedule_pattern=pattern
         )
 
         with pytest.raises(IntegrityError):
             WaterHeaterDayPlanFactory(
-                water_heater=water_heater, date=test_date, schedule_pattern=pattern
+                equipment=water_heater, date=test_date, schedule_pattern=pattern
             )
 
     def test_can_create_same_date_different_water_heaters(self):
@@ -43,14 +43,14 @@ class TestWaterHeaterDayPlan:
         test_date = date(2025, 10, 24)
 
         plan1 = WaterHeaterDayPlanFactory(
-            water_heater=water_heater_1, date=test_date, schedule_pattern=pattern
+            equipment=water_heater_1, date=test_date, schedule_pattern=pattern
         )
         plan2 = WaterHeaterDayPlanFactory(
-            water_heater=water_heater_2, date=test_date, schedule_pattern=pattern
+            equipment=water_heater_2, date=test_date, schedule_pattern=pattern
         )
 
         assert plan1.id != plan2.id
-        assert plan1.water_heater != plan2.water_heater
+        assert plan1.equipment != plan2.equipment
         assert plan1.date == plan2.date
 
     def test_can_create_same_water_heater_different_dates(self):
@@ -59,14 +59,14 @@ class TestWaterHeaterDayPlan:
         pattern = SchedulePatternFactory()
 
         plan1 = WaterHeaterDayPlanFactory(
-            water_heater=water_heater, date=date(2025, 10, 24), schedule_pattern=pattern
+            equipment=water_heater, date=date(2025, 10, 24), schedule_pattern=pattern
         )
         plan2 = WaterHeaterDayPlanFactory(
-            water_heater=water_heater, date=date(2025, 10, 25), schedule_pattern=pattern
+            equipment=water_heater, date=date(2025, 10, 25), schedule_pattern=pattern
         )
 
         assert plan1.id != plan2.id
-        assert plan1.water_heater == plan2.water_heater
+        assert plan1.equipment == plan2.equipment
         assert plan1.date != plan2.date
 
     def test_multiple_plans_can_share_same_pattern(self):
@@ -82,7 +82,7 @@ class TestWaterHeaterDayPlan:
         """Test string representation of WaterHeaterDayPlan"""
         water_heater = WaterHeaterFactory(name="Cumulus")
         test_date = date(2025, 10, 24)
-        plan = WaterHeaterDayPlanFactory(water_heater=water_heater, date=test_date)
+        plan = WaterHeaterDayPlanFactory(equipment=water_heater, date=test_date)
 
         assert str(plan) == "Cumulus - 2025-10-24"
 

@@ -21,7 +21,7 @@ def test_plan_wants_on_during_on_slot():
     )
     water_heater = WaterHeaterFactory(requested_state=WaterHeater.RequestedState.OFF)
     WaterHeaterDayPlanFactory(
-        water_heater=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
+        equipment=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
     )
 
     result = get_water_heaters_plan_states()
@@ -45,7 +45,7 @@ def test_plan_wants_off_during_off_slot():
     )
     water_heater = WaterHeaterFactory(requested_state=WaterHeater.RequestedState.ON)
     WaterHeaterDayPlanFactory(
-        water_heater=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
+        equipment=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
     )
 
     result = get_water_heaters_plan_states()
@@ -61,7 +61,7 @@ def test_plan_defaults_to_off_outside_slots():
     )
     water_heater = WaterHeaterFactory()
     WaterHeaterDayPlanFactory(
-        water_heater=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
+        equipment=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
     )
 
     result = get_water_heaters_plan_states()
@@ -80,7 +80,7 @@ def test_plan_defaults_to_off_on_non_onoff_slot_type():
     )
     water_heater = WaterHeaterFactory()
     WaterHeaterDayPlanFactory(
-        water_heater=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
+        equipment=water_heater, date=date(2025, 1, 15), schedule_pattern=pattern
     )
 
     result = get_water_heaters_plan_states()
@@ -111,12 +111,12 @@ def test_multiple_water_heaters():
     water_heater_1 = WaterHeaterFactory()
     water_heater_2 = WaterHeaterFactory()
     WaterHeaterDayPlanFactory(
-        water_heater=water_heater_1,
+        equipment=water_heater_1,
         date=date(2025, 1, 15),
         schedule_pattern=pattern_on,
     )
     WaterHeaterDayPlanFactory(
-        water_heater=water_heater_2,
+        equipment=water_heater_2,
         date=date(2025, 1, 15),
         schedule_pattern=pattern_off,
     )

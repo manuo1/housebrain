@@ -4,7 +4,12 @@ import pytest
 
 from equipment.models import WaterHeater
 from equipment.tests.factories import WaterHeaterFactory
-from planning.api.selectors import get_equipment_day_plans
+from planning.api.selectors import (
+    get_equipment_day_plans,
+    get_equipment_names_by_type_and_ids,
+    get_schedulable_equipment_config,
+    invalid_equipment_refs_in_plans,
+)
 from planning.api.views import SchedulableEquipment
 from planning.tests.factories import SchedulePatternFactory
 from water_heater.models import WaterHeaterDayPlan
@@ -104,3 +109,76 @@ def test_multiple_equipment_types_are_all_included():
 def test_no_registered_equipment_types_returns_empty_list():
     WaterHeaterFactory()
     assert get_equipment_day_plans([], DEFAULT_DATE) == []
+
+
+# ------------------------------------------------------------------------------
+# tests for get_schedulable_equipment_config
+# ------------------------------------------------------------------------------
+
+
+def test_get_schedulable_equipment_config_found():
+    assert (
+        get_schedulable_equipment_config([WATER_HEATER_CONFIG], "water_heater")
+        == WATER_HEATER_CONFIG
+    )
+
+
+def test_get_schedulable_equipment_config_not_found():
+    assert get_schedulable_equipment_config([WATER_HEATER_CONFIG], "unknown") is None
+
+
+# ------------------------------------------------------------------------------
+# tests for invalid_equipment_refs_in_plans
+# ------------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_invalid_equipment_refs_unknown_type():
+    plans = [{"type": "unknown_type", "id": 1}]
+
+    assert invalid_equipment_refs_in_plans([WATER_HEATER_CONFIG], plans) == [
+        {"type": "unknown_type", "id": 1}
+    ]
+
+
+@pytest.mark.django_db
+def test_invalid_equipment_refs_unknown_id():
+    water_heater = WaterHeaterFactory()
+    plans = [{"type": "water_heater", "id": water_heater.id + 999}]
+
+    assert invalid_equipment_refs_in_plans([WATER_HEATER_CONFIG], plans) == [
+        {"type": "water_heater", "id": water_heater.id + 999}
+    ]
+
+
+@pytest.mark.django_db
+def test_invalid_equipment_refs_all_valid_returns_empty_list():
+    water_heater = WaterHeaterFactory()
+    plans = [{"type": "water_heater", "id": water_heater.id}]
+
+    assert invalid_equipment_refs_in_plans([WATER_HEATER_CONFIG], plans) == []
+
+
+# ------------------------------------------------------------------------------
+# tests for get_equipment_names_by_type_and_ids
+# ------------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_get_equipment_names_by_type_and_ids():
+    water_heater = WaterHeaterFactory(name="Cumulus")
+
+    result = get_equipment_names_by_type_and_ids(
+        [WATER_HEATER_CONFIG], {("water_heater", water_heater.id)}
+    )
+
+    assert result == {("water_heater", water_heater.id): "Cumulus"}
+
+
+@pytest.mark.django_db
+def test_get_equipment_names_by_type_and_ids_unknown_type_ignored():
+    result = get_equipment_names_by_type_and_ids(
+        [WATER_HEATER_CONFIG], {("unknown_type", 1)}
+    )
+
+    assert result == {}

@@ -1,6 +1,13 @@
 from datetime import date
 
 
+def get_schedulable_equipment_config(schedulable_equipments: list, type_name: str):
+    for config in schedulable_equipments:
+        if config.type_name == type_name:
+            return config
+    return None
+
+
 def get_equipment_day_plans(schedulable_equipments: list, day: date) -> list[dict]:
     """
     For each registered schedulable equipment type, list every equipment
@@ -35,3 +42,53 @@ def get_equipment_day_plans(schedulable_equipments: list, day: date) -> list[dic
             )
 
     return results
+
+
+def invalid_equipment_refs_in_plans(
+    schedulable_equipments: list, plans: list[dict]
+) -> list[dict]:
+    """
+    Returns the {type, id} pairs from `plans` that don't match a
+    registered type_name, or whose id doesn't exist for that type's
+    equipment_model. One query per distinct type in `plans`, not one per
+    plan entry.
+    """
+    ids_by_type: dict[str, set[int]] = {}
+    for plan in plans:
+        ids_by_type.setdefault(plan["type"], set()).add(plan["id"])
+
+    invalid = []
+    for type_name, ids in ids_by_type.items():
+        config = get_schedulable_equipment_config(schedulable_equipments, type_name)
+        if config is None:
+            invalid.extend({"type": type_name, "id": i} for i in ids)
+            continue
+
+        existing_ids = set(
+            config.equipment_model.objects.filter(id__in=ids).values_list(
+                "id", flat=True
+            )
+        )
+        invalid.extend({"type": type_name, "id": i} for i in ids - existing_ids)
+
+    return invalid
+
+
+def get_equipment_names_by_type_and_ids(
+    schedulable_equipments: list, refs: set[tuple[str, int]]
+) -> dict[tuple[str, int], str]:
+    ids_by_type: dict[str, set[int]] = {}
+    for type_name, equipment_id in refs:
+        ids_by_type.setdefault(type_name, set()).add(equipment_id)
+
+    names = {}
+    for type_name, ids in ids_by_type.items():
+        config = get_schedulable_equipment_config(schedulable_equipments, type_name)
+        if config is None:
+            continue
+        for equipment_id, name in config.equipment_model.objects.filter(
+            id__in=ids
+        ).values_list("id", "name"):
+            names[(type_name, equipment_id)] = name
+
+    return names

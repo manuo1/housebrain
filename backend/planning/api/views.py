@@ -1,3 +1,4 @@
+import calendar
 from dataclasses import dataclass
 
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -17,6 +18,8 @@ from planning.api.selectors import (
 from planning.api.serializers import (
     DailyEquipmentPlanInputSerializer,
     DailyEquipmentPlansSerializer,
+    EquipmentCalendarInputSerializer,
+    EquipmentCalendarSerializer,
     EquipmentPlansInputSerializer,
     EquipmentPlansSaveResultSerializer,
 )
@@ -38,6 +41,24 @@ SCHEDULABLE_EQUIPMENTS = [
         equipment_model=WaterHeater,
     ),
 ]
+
+
+class EquipmentCalendarView(APIView):
+    def get(self, request):
+        today = timezone.localdate()
+        input_serializer = EquipmentCalendarInputSerializer(data=request.query_params)
+        input_serializer.is_valid(raise_exception=True)
+        params = input_serializer.validated_data
+        year = params.get("year", today.year)
+        month = params.get("month", today.month)
+
+        cal = calendar.Calendar(firstweekday=0)
+        days = [{"date": date} for date in cal.itermonthdates(year, month)]
+
+        serializer = EquipmentCalendarSerializer(
+            {"year": year, "month": month, "today": today, "days": days}
+        )
+        return Response(serializer.data)
 
 
 class DailyEquipmentPlanView(APIView):

@@ -7,6 +7,22 @@ class DailyEquipmentPlanInputSerializer(serializers.Serializer):
     date = serializers.DateField(required=False)
 
 
+class EquipmentCalendarInputSerializer(serializers.Serializer):
+    year = serializers.IntegerField(required=False)
+    month = serializers.IntegerField(required=False, min_value=1, max_value=12)
+
+
+class EquipmentCalendarDaySerializer(serializers.Serializer):
+    date = serializers.DateField()
+
+
+class EquipmentCalendarSerializer(serializers.Serializer):
+    year = serializers.IntegerField()
+    month = serializers.IntegerField()
+    today = serializers.DateField()
+    days = EquipmentCalendarDaySerializer(many=True)
+
+
 class EquipmentDayPlanSerializer(serializers.Serializer):
     type = serializers.CharField()
     id = serializers.IntegerField()

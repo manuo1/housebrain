@@ -65,6 +65,49 @@ def test_daily_equipment_plan_get_no_auth_required(api_client):
 
 
 # ------------------------------------------------------------------------------
+# tests for EquipmentCalendarView.get
+# ------------------------------------------------------------------------------
+
+
+@freeze_time("2025-12-15 12:00:00+01:00")
+@pytest.mark.django_db
+def test_equipment_calendar_defaults_to_current_month(api_client):
+    response = api_client.get("/api/planning/calendar/")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["year"] == 2025
+    assert response.data["month"] == 12
+    assert response.data["today"] == "2025-12-15"
+
+
+@pytest.mark.django_db
+def test_equipment_calendar_explicit_month():
+    api_client = APIClient()
+    response = api_client.get("/api/planning/calendar/?year=2025&month=2")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["year"] == 2025
+    assert response.data["month"] == 2
+    # Full weeks, leading/trailing days from adjacent months included
+    dates = [day["date"] for day in response.data["days"]]
+    assert "2025-02-01" in dates
+    assert "2025-02-28" in dates
+    assert len(dates) % 7 == 0
+
+
+@pytest.mark.django_db
+def test_equipment_calendar_no_auth_required(api_client):
+    response = api_client.get("/api/planning/calendar/")
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.django_db
+def test_equipment_calendar_invalid_month_returns_400(api_client):
+    response = api_client.get("/api/planning/calendar/?year=2025&month=13")
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+# ------------------------------------------------------------------------------
 # tests for DailyEquipmentPlanView.post
 # ------------------------------------------------------------------------------
 

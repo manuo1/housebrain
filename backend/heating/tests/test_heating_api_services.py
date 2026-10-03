@@ -212,7 +212,7 @@ def test_build_ai_duplication_recap_all_rooms_single_weekday():
 
     assert recap == (
         "Je récapitule, vous voulez copier les plannings de toutes les pièces "
-        "du samedi 15 août 2026 sur tous les mercredi "
+        "du samedi 15 août 2026 sur tous les mercredis "
         "entre le mercredi 19 août 2026 et le mercredi 26 août 2026 ?"
     )
 
@@ -233,7 +233,7 @@ def test_build_ai_duplication_recap_single_room_single_weekday():
 
     assert recap == (
         "Je récapitule, vous voulez copier le planning de Chambre P "
-        "du samedi 15 août 2026 sur tous les mercredi "
+        "du samedi 15 août 2026 sur tous les mercredis "
         "entre le mercredi 19 août 2026 et le mercredi 26 août 2026 ?"
     )
 
@@ -255,7 +255,7 @@ def test_build_ai_duplication_recap_two_rooms_two_weekdays():
 
     assert recap == (
         "Je récapitule, vous voulez copier les plannings de Chambre P et Chambre d'amis "
-        "du samedi 15 août 2026 sur tous les mercredi et jeudi "
+        "du samedi 15 août 2026 sur tous les mercredis et jeudis "
         "entre le mercredi 19 août 2026 et le jeudi 27 août 2026 ?"
     )
 
@@ -278,7 +278,7 @@ def test_build_ai_duplication_recap_three_rooms_three_weekdays():
 
     assert recap.startswith(
         "Je récapitule, vous voulez copier les plannings de Chambre P, Chambre R et Chambre M "
-        "du samedi 15 août 2026 sur tous les lundi, mercredi et vendredi "
+        "du samedi 15 août 2026 sur tous les lundis, mercredis et vendredis "
     )
 
 

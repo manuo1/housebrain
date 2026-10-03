@@ -5,12 +5,14 @@ import pytest
 from equipment.models import WaterHeater
 from equipment.tests.factories import WaterHeaterFactory
 from planning.api.selectors import (
+    get_equipment_day_plan_data,
     get_equipment_day_plans,
     get_equipment_names_by_type_and_ids,
     get_schedulable_equipment_config,
     invalid_equipment_refs_in_plans,
 )
 from planning.api.views import SchedulableEquipment
+from planning.models import SchedulePattern
 from planning.tests.factories import SchedulePatternFactory
 from water_heater.models import WaterHeaterDayPlan
 from water_heater.tests.factories import WaterHeaterDayPlanFactory
@@ -182,3 +184,107 @@ def test_get_equipment_names_by_type_and_ids_unknown_type_ignored():
     )
 
     assert result == {}
+
+
+# ------------------------------------------------------------------------------
+# tests for get_equipment_day_plan_data
+# ------------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_get_equipment_day_plan_data_returns_existing_plan():
+    water_heater = WaterHeaterFactory()
+    pattern = SchedulePatternFactory(
+        slots=[{"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}]
+    )
+    WaterHeaterDayPlanFactory(
+        equipment=water_heater, date=DEFAULT_DATE, schedule_pattern=pattern
+    )
+
+    result = get_equipment_day_plan_data(
+        [WATER_HEATER_CONFIG], DEFAULT_DATE, {("water_heater", water_heater.id)}
+    )
+
+    assert result == [("water_heater", water_heater.id, pattern.id)]
+
+
+@pytest.mark.django_db
+def test_get_equipment_day_plan_data_equipment_without_plan_gets_empty_pattern():
+    water_heater = WaterHeaterFactory()
+
+    result = get_equipment_day_plan_data(
+        [WATER_HEATER_CONFIG], DEFAULT_DATE, {("water_heater", water_heater.id)}
+    )
+
+    empty_pattern, _ = SchedulePattern.get_or_create_from_slots([])
+    assert result == [("water_heater", water_heater.id, empty_pattern.id)]
+
+
+@pytest.mark.django_db
+def test_get_equipment_day_plan_data_ignores_plan_of_another_date():
+    water_heater = WaterHeaterFactory()
+    WaterHeaterDayPlanFactory(
+        equipment=water_heater,
+        date=date(2025, 12, 11),  # different day
+        schedule_pattern=SchedulePatternFactory(
+            slots=[
+                {"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}
+            ]
+        ),
+    )
+
+    result = get_equipment_day_plan_data(
+        [WATER_HEATER_CONFIG], DEFAULT_DATE, {("water_heater", water_heater.id)}
+    )
+
+    empty_pattern, _ = SchedulePattern.get_or_create_from_slots([])
+    assert result == [("water_heater", water_heater.id, empty_pattern.id)]
+
+
+@pytest.mark.django_db
+def test_get_equipment_day_plan_data_mixes_equipments_with_and_without_plan():
+    with_plan = WaterHeaterFactory(name="Cumulus")
+    without_plan = WaterHeaterFactory(name="Ballon")
+    pattern = SchedulePatternFactory(
+        slots=[{"start": "07:00", "end": "09:00", "type": "onoff", "value": "on"}]
+    )
+    WaterHeaterDayPlanFactory(
+        equipment=with_plan, date=DEFAULT_DATE, schedule_pattern=pattern
+    )
+
+    result = get_equipment_day_plan_data(
+        [WATER_HEATER_CONFIG],
+        DEFAULT_DATE,
+        {("water_heater", with_plan.id), ("water_heater", without_plan.id)},
+    )
+
+    empty_pattern, _ = SchedulePattern.get_or_create_from_slots([])
+    assert sorted(result) == sorted(
+        [
+            ("water_heater", with_plan.id, pattern.id),
+            ("water_heater", without_plan.id, empty_pattern.id),
+        ]
+    )
+
+
+@pytest.mark.django_db
+def test_get_equipment_day_plan_data_unknown_type_is_skipped():
+    result = get_equipment_day_plan_data(
+        [WATER_HEATER_CONFIG], DEFAULT_DATE, {("unknown_type", 1)}
+    )
+
+    assert result == []
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "day, refs",
+    [
+        ("not-a-date", {("water_heater", 1)}),
+        (DEFAULT_DATE, [("water_heater", 1)]),  # refs must be a set
+        (DEFAULT_DATE, set()),
+        (None, {("water_heater", 1)}),
+    ],
+)
+def test_get_equipment_day_plan_data_invalid_inputs_return_empty_list(day, refs):
+    assert get_equipment_day_plan_data([WATER_HEATER_CONFIG], day, refs) == []

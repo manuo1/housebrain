@@ -144,8 +144,9 @@ def build_ai_equipment_duplication_recap(
     if set(weekdays) == set(range(7)):
         weekdays_fr = "tous les jours"
     else:
+        # Every French weekday name takes a plain "s" in the plural (lundi -> lundis)
         weekdays_fr = "tous les " + join_fr(
-            [FRENCH_WEEKDAYS[w] for w in sorted(weekdays)]
+            [FRENCH_WEEKDAYS[w] + "s" for w in sorted(weekdays)]
         )
 
     return (

@@ -36,3 +36,27 @@ class AiHeatingPlanDuplicateInputSerializer(serializers.Serializer):
     step = serializers.ChoiceField(choices=["clarify", "to_validate", "validate"])
     source_date = serializers.DateField()
     data = AiDuplicationDataSerializer(required=False)
+
+
+class AiEquipmentDuplicationDataSerializer(serializers.Serializer):
+    """
+    Same role as AiDuplicationDataSerializer: echoed back to the front for display only,
+    never trusted as-is on the "validate" step. Equipments are "type:id" keys because ids
+    alone are only unique within one equipment type.
+    """
+
+    equipment_keys = serializers.ListField(
+        child=serializers.CharField(), allow_empty=True
+    )
+    weekdays = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
+    start = serializers.DateField(allow_null=True, required=False)
+    end = serializers.DateField(allow_null=True, required=False)
+
+
+class AiEquipmentPlanDuplicateInputSerializer(serializers.Serializer):
+    echanges = serializers.ListField(
+        child=DuplicationExchangeSerializer(), min_length=1
+    )
+    step = serializers.ChoiceField(choices=["clarify", "to_validate", "validate"])
+    source_date = serializers.DateField()
+    data = AiEquipmentDuplicationDataSerializer(required=False)

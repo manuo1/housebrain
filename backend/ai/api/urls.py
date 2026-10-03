@@ -1,6 +1,7 @@
 from django.urls import path
 
 from ai.api.views import (
+    AiEquipmentPlanDuplicateView,
     AiEquipmentPlanModifyView,
     AiHeatingPlanDuplicateView,
     AiHeatingPlanModifyView,
@@ -19,5 +20,10 @@ urlpatterns = [
         "heating/duplicate/",
         AiHeatingPlanDuplicateView.as_view(),
         name="ai-heating-duplicate",
+    ),
+    path(
+        "equipment/duplicate/",
+        AiEquipmentPlanDuplicateView.as_view(),
+        name="ai-equipment-duplicate",
     ),
 ]

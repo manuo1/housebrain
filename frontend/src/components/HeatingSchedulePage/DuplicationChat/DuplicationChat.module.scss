@@ -32,6 +32,26 @@
   margin: 0;
 }
 
+// ============================================
+// LOCKED (logged out)
+// ============================================
+
+.lockedHint {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $text-muted;
+}
+
+// Only the demo content is dimmed so the hint above stays fully readable.
+.locked {
+  .messageList,
+  .inputRow {
+    opacity: $opacity-muted;
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
 .userMsg,
 .assistantMsg {
   font-size: $font-size-sm;

@@ -4,9 +4,10 @@ import styles from "./AiPlanInput.module.scss";
 interface AiPlanInputProps {
   onSubmit: (instruction: string) => Promise<void>;
   disabled?: boolean;
+  locked?: boolean;
 }
 
-export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
+export default function AiPlanInput({ onSubmit, disabled, locked = false }: AiPlanInputProps) {
   const [expanded, setExpanded] = useState(false);
   const [instruction, setInstruction] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
   };
 
   const handleSubmit = async () => {
-    if (!instruction.trim() || loading) return;
+    if (locked || !instruction.trim() || loading) return;
     setLoading(true);
     setError(null);
     try {
@@ -64,12 +65,12 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
   return (
     <div className={styles.wrapper}>
       <button
-        className={`${styles.toggleBtn} ${expanded ? styles.active : ""}`}
+        className={`${styles.toggleBtn} ${expanded ? styles.active : ""} ${locked ? styles.locked : ""}`}
         onClick={handleToggle}
         disabled={disabled}
         type="button"
       >
-        <span className={styles.icon}>✦</span>
+        <span className={styles.icon}>{locked ? "🔒" : "✦"}</span>
         Modifier via IA
       </button>
 
@@ -86,8 +87,11 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
             }}
             onKeyDown={handleKeyDown}
             rows={2}
-            disabled={loading}
+            disabled={loading || locked}
           />
+          {locked && (
+            <p className={styles.lockedHint}>Connectez-vous pour utiliser cette fonction</p>
+          )}
           {error && (
             <p className={styles.errorMessage}>{error}</p>
           )}
@@ -95,7 +99,7 @@ export default function AiPlanInput({ onSubmit, disabled }: AiPlanInputProps) {
             <button
               className={styles.submitBtn}
               onClick={handleSubmit}
-              disabled={loading || !instruction.trim()}
+              disabled={locked || loading || !instruction.trim()}
               type="button"
             >
               {btnLabel}

@@ -17,7 +17,18 @@ interface DuplicationChatProps {
   sourceDate: string;
   onDuplicationSuccess: () => void;
   propagationSeed?: PropagationSeed | null;
+  locked?: boolean;
 }
+
+// Static example shown when logged out, so the user sees what the feature does
+// without any request being possible.
+const LOCKED_DEMO: Echange[] = [
+  { role: "user", content: "Copie le planning de la chambre tous les mercredis jusqu'à fin septembre" },
+  {
+    role: "assistant",
+    content: "Je copie le planning de la chambre sur tous les mercredis jusqu'à fin septembre. Confirmez-vous ?",
+  },
+];
 
 function joinRoomNamesFr(names: string[]): string {
   if (names.length <= 1) return names[0] ?? "";
@@ -35,7 +46,12 @@ function buildPropagationEchanges(rooms: ChangedRoom[]): Echange[] {
   ];
 }
 
-export default function DuplicationChat({ sourceDate, onDuplicationSuccess, propagationSeed }: DuplicationChatProps) {
+export default function DuplicationChat({
+  sourceDate,
+  onDuplicationSuccess,
+  propagationSeed,
+  locked = false,
+}: DuplicationChatProps) {
   const { accessToken, refresh } = useAuth();
   const [echanges, setEchanges] = useState<Echange[]>([]);
   const [step, setStep] = useState<DuplicationStep | null>(null);
@@ -65,7 +81,7 @@ export default function DuplicationChat({ sourceDate, onDuplicationSuccess, prop
   }, [propagationSeed?.nonce]);
 
   const handleSend = async () => {
-    if (!inputValue.trim() || isLoading || !accessToken) return;
+    if (locked || !inputValue.trim() || isLoading || !accessToken) return;
     const nextEchanges: Echange[] = [...echanges, { role: "user", content: inputValue.trim() }];
     setEchanges(nextEchanges);
     setInputValue("");
@@ -107,18 +123,26 @@ export default function DuplicationChat({ sourceDate, onDuplicationSuccess, prop
     setStep("clarify");
   };
 
+  const displayedEchanges = locked ? LOCKED_DEMO : echanges;
+
   return (
-    <div className={styles.duplicationChat}>
-      <h3>Dupliquer via IA</h3>
+    <div className={`${styles.duplicationChat} ${locked ? styles.locked : ""}`}>
+      <h3>{locked ? "🔒 " : ""}Dupliquer via IA</h3>
+
+      {locked && (
+        <p className={styles.lockedHint}>
+          Connectez-vous pour dupliquer vos plannings en langage naturel. Exemple :
+        </p>
+      )}
 
       <div className={styles.messageList}>
-        {echanges.length === 0 && (
+        {!locked && echanges.length === 0 && (
           <p className={styles.placeholder}>
             Décrivez la duplication souhaitée (ex : "copie le planning de la chambre tous les mercredis
             jusqu'à fin septembre")
           </p>
         )}
-        {echanges.map((e, i) => (
+        {displayedEchanges.map((e, i) => (
           <div key={i} className={e.role === "user" ? styles.userMsg : styles.assistantMsg}>
             {e.content}
           </div>
@@ -140,10 +164,10 @@ export default function DuplicationChat({ sourceDate, onDuplicationSuccess, prop
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            disabled={isLoading}
+            disabled={isLoading || locked}
             placeholder="Votre instruction..."
           />
-          <button onClick={handleSend} disabled={isLoading || !inputValue.trim()}>Envoyer</button>
+          <button onClick={handleSend} disabled={locked || isLoading || !inputValue.trim()}>Envoyer</button>
         </div>
       )}
     </div>

@@ -170,9 +170,7 @@ export default function EquipmentSchedulePage() {
             )}
           </div>
           {pageError && <p className={styles.pageError}>{pageError}</p>}
-          {user && (
-            <AiPlanInput onSubmit={handleAiRequest} />
-          )}
+          <AiPlanInput onSubmit={handleAiRequest} locked={!user} />
         </div>
 
         {loading ? (
@@ -188,12 +186,13 @@ export default function EquipmentSchedulePage() {
         )}
       </main>
 
-      {user && selectedDate && (
+      {selectedDate && (
         <div className={styles.rightPanel}>
           <DuplicationChat
             sourceDate={selectedDate}
             onDuplicationSuccess={handleDuplicationSuccess}
             propagationSeed={propagationSeed}
+            locked={!user}
           />
         </div>
       )}

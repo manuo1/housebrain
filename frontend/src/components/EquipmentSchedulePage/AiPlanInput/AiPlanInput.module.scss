@@ -34,6 +34,17 @@
     opacity: $opacity-disabled;
     cursor: not-allowed;
   }
+
+  // Stays clickable on purpose: the user can unfold the area to preview the
+  // feature, only the input itself is disabled.
+  &.locked {
+    opacity: $opacity-muted;
+    border-style: dashed;
+
+    .icon {
+      color: $text-muted;
+    }
+  }
 }
 
 .icon {
@@ -102,6 +113,16 @@
     border-color: $color-danger;
     box-shadow: $glow-danger;
   }
+}
+
+// ============================================
+// LOCKED HINT
+// ============================================
+
+.lockedHint {
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $text-muted;
 }
 
 // ============================================

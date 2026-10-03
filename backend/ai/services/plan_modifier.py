@@ -6,6 +6,12 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from ai.services.groq_client import GroqClient
 from ai.services.prompt_builder import build_prompt
+from ai.services.prompts.equipment import (
+    get_system_prompt as get_equipment_system_prompt,
+)
+from ai.services.prompts.equipment import (
+    get_user_prompt as get_equipment_user_prompt,
+)
 from ai.services.prompts.heating import get_system_prompt, get_user_prompt
 from planning.models import SchedulePattern
 
@@ -155,5 +161,82 @@ def modify_heating_plan(instruction: str, plan: dict) -> dict:
 
     _normalize_plan(parsed)
     _validate_plan(parsed)
+
+    return parsed
+
+
+def _normalize_equipment_plan(plan: dict) -> dict:
+    """
+    Equipment counterpart of _normalize_plan: the plan key is "equipments"
+    instead of "rooms", so the heating version can't be reused as is.
+    """
+    for equipment in plan.get("equipments", []):
+        equipment["slots"] = [
+            _infer_slot_type(slot) for slot in equipment.get("slots", [])
+        ]
+    return plan
+
+
+def _validate_equipment_plan(plan: dict) -> None:
+    """
+    Equipment counterpart of _validate_plan: same SchedulePattern checks
+    (overlap, duration, type consistency), applied per equipment.
+    """
+    if not isinstance(plan, dict):
+        raise DRFValidationError("Le plan retourné par l'IA est invalide.")
+
+    if "equipments" not in plan or not isinstance(plan["equipments"], list):
+        raise DRFValidationError(
+            "Le plan retourné par l'IA ne contient pas d'équipements."
+        )
+
+    for equipment in plan["equipments"]:
+        equipment_name = equipment.get(
+            "name", f"{equipment.get('type')}_id={equipment.get('id')}"
+        )
+        slots = equipment.get("slots", [])
+
+        try:
+            SchedulePattern.get_or_create_from_slots(slots)
+        except DjangoValidationError as e:
+            logger.warning("Invalid slots for equipment %s: %s", equipment_name, e)
+            raise DRFValidationError(
+                f"Le plan généré contient des créneaux invalides pour '{equipment_name}' : {e.message}"
+            )
+
+
+def modify_equipment_plan(instruction: str, plan: dict) -> dict:
+    """
+    Main entry point for AI-based equipment plan modification.
+
+    Args:
+        instruction: The user's natural language instruction
+        plan: The current equipment plan as a dict (dailyPlan.raw from the frontend)
+
+    Returns:
+        The modified equipment plan as a dict, validated and ready to be returned to the frontend
+    """
+    system_prompt, user_prompt = build_prompt(
+        get_equipment_system_prompt(),
+        get_equipment_user_prompt(instruction, plan),
+    )
+
+    client = _get_llm_client()
+    logger.info(
+        "Sending equipment plan modification request to LLM - instruction: %s",
+        instruction,
+    )
+
+    raw_response = client.generate(system_prompt, user_prompt)
+    logger.info("LLM raw response: %s", raw_response)
+
+    parsed = _parse_llm_response(raw_response)
+    _check_success(parsed)
+
+    parsed.pop("success", None)
+    parsed.pop("reason", None)
+
+    _normalize_equipment_plan(parsed)
+    _validate_equipment_plan(parsed)
 
     return parsed

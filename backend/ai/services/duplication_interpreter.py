@@ -7,6 +7,12 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 from ai.services.groq_client import GroqClient
 from ai.services.prompt_builder import build_prompt
 from ai.services.prompts.duplication import get_system_prompt, get_user_prompt
+from ai.services.prompts.equipment_duplication import (
+    get_system_prompt as get_equipment_system_prompt,
+)
+from ai.services.prompts.equipment_duplication import (
+    get_user_prompt as get_equipment_user_prompt,
+)
 from heating.api.selectors import get_daily_heating_plan
 
 logger = logging.getLogger("django")
@@ -119,5 +125,76 @@ def interpret_duplication_instruction(conversation: list[dict], source_date: dat
 
     parsed = _parse_llm_response(raw_response)
     _validate_llm_shape(parsed)
+
+    return parsed
+
+
+def _validate_equipment_llm_shape(parsed: dict) -> None:
+    """
+    Equipment counterpart of _validate_llm_shape: the LLM returns
+    "equipment_keys" ("type:id" strings) instead of "room_ids".
+    """
+    if not isinstance(parsed, dict):
+        raise DRFValidationError("Réponse IA invalide.")
+
+    status = parsed.get("status")
+    if status not in VALID_STATUSES:
+        logger.warning("Duplication LLM returned an unknown status: %s", parsed)
+        raise DRFValidationError("Réponse IA invalide (status manquant ou inconnu).")
+
+    if not isinstance(parsed.get("message"), str):
+        raise DRFValidationError("Réponse IA invalide (message manquant).")
+
+    if status != "ready":
+        return
+
+    for key in ("equipment_keys", "weekdays"):
+        if not isinstance(parsed.get(key), list):
+            raise DRFValidationError(
+                f"Réponse IA invalide (champ '{key}' manquant ou mal formé)."
+            )
+
+    if not all(isinstance(k, str) for k in parsed["equipment_keys"]):
+        raise DRFValidationError(
+            "Réponse IA invalide (champ 'equipment_keys' mal formé)."
+        )
+
+    for key in ("start", "end"):
+        if not isinstance(parsed.get(key), str):
+            raise DRFValidationError(
+                f"Réponse IA invalide (champ '{key}' manquant ou mal formé)."
+            )
+
+
+def interpret_equipment_duplication_instruction(
+    conversation: list[dict], today: date, equipments: list[dict]
+) -> dict:
+    """
+    Equipment counterpart of interpret_duplication_instruction. Same flow, but the
+    equipments the LLM can pick from are passed in by the caller (a list of
+    {"key": "type:id", "name": str}) instead of being fetched here: the registry of
+    schedulable equipments lives in planning, which this service shouldn't import.
+
+    Returns:
+        A dict: {"status": "ready"|"clarify"|"invalid", "message": str,
+                 "equipment_keys": [...], "weekdays": [...],
+                 "start": "YYYY-MM-DD", "end": "YYYY-MM-DD"}
+    """
+    system_prompt, user_prompt = build_prompt(
+        get_equipment_system_prompt(),
+        get_equipment_user_prompt(conversation, today, equipments),
+    )
+
+    client = _get_llm_client()
+    logger.info(
+        "Sending equipment duplication interpretation request to LLM - conversation: %s",
+        conversation,
+    )
+
+    raw_response = client.generate(system_prompt, user_prompt)
+    logger.info("Duplication LLM raw response: %s", raw_response)
+
+    parsed = _parse_llm_response(raw_response)
+    _validate_equipment_llm_shape(parsed)
 
     return parsed

@@ -119,7 +119,8 @@ export default function EquipmentSchedulePage() {
     applyChange(newPlan);
   };
 
-  // Not wired to a backend yet (calendar carries no status to refresh).
+  // Nothing to refresh: the equipment calendar carries no per-day status, and the
+  // displayed day is the duplication source, which a duplication never changes.
   const handleDuplicationSuccess = () => {
     return;
   };

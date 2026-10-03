@@ -3,34 +3,14 @@ from datetime import date, datetime, timedelta
 
 from heating.api.constants import DayStatus
 from heating.api.selectors import get_room_names_by_ids, get_slots_hashes
-
-AI_DUPLICATION_MAX_DAYS = 365
-AI_DUPLICATION_WARNING_THRESHOLD = 30
-
-FRENCH_WEEKDAYS = [
-    "lundi",
-    "mardi",
-    "mercredi",
-    "jeudi",
-    "vendredi",
-    "samedi",
-    "dimanche",
-]
-
-FRENCH_MONTHS = [
-    "janvier",
-    "février",
-    "mars",
-    "avril",
-    "mai",
-    "juin",
-    "juillet",
-    "août",
-    "septembre",
-    "octobre",
-    "novembre",
-    "décembre",
-]
+from planning.services import (
+    AI_DUPLICATION_MAX_DAYS,
+    AI_DUPLICATION_WARNING_THRESHOLD,
+    FRENCH_WEEKDAYS,
+    format_date_fr,
+    generate_duplication_dates,
+    join_fr,
+)
 
 
 def group_slots_hashes_by_date(slots_hashes: list) -> dict:
@@ -82,31 +62,6 @@ def add_day_status(raw_calendar: list) -> list:
     return raw_calendar
 
 
-def generate_duplication_dates(
-    start_date: date, weekdays: list[int], end_date: date
-) -> list[date]:
-    weekdays = sorted(set(weekdays))
-    dates = []
-
-    for weekday in weekdays:
-        # Calculate the number of days until the next requested weekday
-        days_ahead = (weekday - start_date.weekday()) % 7
-
-        # If it's 0, it means start_date is already on this weekday
-        if days_ahead == 0:
-            next_date = start_date
-        else:
-            next_date = start_date + timedelta(days=days_ahead)
-
-        # Add all occurrences of this day until end_date
-        while next_date <= end_date:
-            dates.append(next_date)
-            next_date += timedelta(days=7)
-
-    dates.sort()
-    return dates
-
-
 def validate_ai_duplication_request(
     room_ids: list,
     weekdays: list,
@@ -123,33 +78,73 @@ def validate_ai_duplication_request(
     "nb_days_impacted" is 0 on "error" (not computed / not meaningful).
     """
     if not room_ids:
-        return {"status": "error", "message": "Aucune pièce sélectionnée.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "Aucune pièce sélectionnée.",
+            "nb_days_impacted": 0,
+        }
     if len(room_ids) != len(set(room_ids)):
-        return {"status": "error", "message": "Des pièces sont dupliquées dans la sélection.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "Des pièces sont dupliquées dans la sélection.",
+            "nb_days_impacted": 0,
+        }
     if set(room_ids) - known_room_ids:
-        return {"status": "error", "message": "La sélection contient des pièces non proposées.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "La sélection contient des pièces non proposées.",
+            "nb_days_impacted": 0,
+        }
 
     if not weekdays:
-        return {"status": "error", "message": "Aucun jour de la semaine sélectionné.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "Aucun jour de la semaine sélectionné.",
+            "nb_days_impacted": 0,
+        }
     if len(weekdays) != len(set(weekdays)):
-        return {"status": "error", "message": "Des jours de la semaine sont dupliqués dans la sélection.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "Des jours de la semaine sont dupliqués dans la sélection.",
+            "nb_days_impacted": 0,
+        }
     if any(w < 0 or w > 6 for w in weekdays):
-        return {"status": "error", "message": "Jour de la semaine invalide.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "Jour de la semaine invalide.",
+            "nb_days_impacted": 0,
+        }
 
     try:
         start_date = datetime.strptime(start, "%Y-%m-%d").date()
     except (ValueError, TypeError):
-        return {"status": "error", "message": "Date de début invalide.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "Date de début invalide.",
+            "nb_days_impacted": 0,
+        }
     try:
         end_date = datetime.strptime(end, "%Y-%m-%d").date()
     except (ValueError, TypeError):
-        return {"status": "error", "message": "Date de fin invalide.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "Date de fin invalide.",
+            "nb_days_impacted": 0,
+        }
 
     # today is not yet over, its plan can still be duplicated onto — but no earlier than that
     if start_date < today:
-        return {"status": "error", "message": "La date de début doit être aujourd'hui ou une date future.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "La date de début doit être aujourd'hui ou une date future.",
+            "nb_days_impacted": 0,
+        }
     if end_date < start_date:
-        return {"status": "error", "message": "La date de fin doit être postérieure ou égale à la date de début.", "nb_days_impacted": 0}
+        return {
+            "status": "error",
+            "message": "La date de fin doit être postérieure ou égale à la date de début.",
+            "nb_days_impacted": 0,
+        }
     if (end_date - start_date).days > AI_DUPLICATION_MAX_DAYS:
         return {
             "status": "error",
@@ -173,18 +168,6 @@ def validate_ai_duplication_request(
         }
 
     return {"status": "ok", "message": "", "nb_days_impacted": nb_days_impacted}
-
-
-def format_date_fr(day: date) -> str:
-    """Formats a date as "lundi 18 août 2026" (French, spelled out weekday and month)."""
-    return f"{FRENCH_WEEKDAYS[day.weekday()]} {day.day} {FRENCH_MONTHS[day.month - 1]} {day.year}"
-
-
-def _join_fr(items: list[str]) -> str:
-    """Joins items with commas and "et" before the last one, from 2 items up ("a et b", "a, b et c")."""
-    if len(items) <= 1:
-        return items[0] if items else ""
-    return ", ".join(items[:-1]) + " et " + items[-1]
 
 
 def build_ai_duplication_recap(
@@ -211,14 +194,14 @@ def build_ai_duplication_recap(
     elif len(room_ids) == 1:
         rooms_fr = f"le planning de {room_names[room_ids[0]]}"
     else:
-        rooms_fr = "les plannings de " + _join_fr(
+        rooms_fr = "les plannings de " + join_fr(
             [room_names[room_id] for room_id in room_ids if room_id in room_names]
         )
 
     if set(weekdays) == set(range(7)):
         weekdays_fr = "tous les jours"
     else:
-        weekdays_fr = "tous les " + _join_fr(
+        weekdays_fr = "tous les " + join_fr(
             [FRENCH_WEEKDAYS[w] for w in sorted(weekdays)]
         )
 

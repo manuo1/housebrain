@@ -6,12 +6,19 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ai.api.serializers import AiHeatingPlanDuplicateInputSerializer, AiHeatingPlanModifyInputSerializer
+from ai.api.serializers import (
+    AiHeatingPlanDuplicateInputSerializer,
+    AiHeatingPlanModifyInputSerializer,
+)
 from ai.services.duplication_interpreter import interpret_duplication_instruction
 from ai.services.plan_modifier import modify_heating_plan
 from heating.api.mutators import duplicate_heating_plan_with_override
 from heating.api.selectors import get_daily_heating_plan, get_room_heating_day_plan_data
-from heating.api.services import build_ai_duplication_recap, generate_duplication_dates, validate_ai_duplication_request
+from heating.api.services import (
+    build_ai_duplication_recap,
+    validate_ai_duplication_request,
+)
+from planning.services import generate_duplication_dates
 
 logger = logging.getLogger("django")
 
@@ -111,12 +118,14 @@ class AiHeatingPlanDuplicateView(APIView):
 
         # step == "clarify": (re)run the LLM interpreter over the full exchange history
         if len(echanges) >= MAX_EXCHANGES_BEFORE_GIVING_UP:
-            return Response(_give_up_response(echanges, source_date), status=status.HTTP_200_OK)
+            return Response(
+                _give_up_response(echanges, source_date), status=status.HTTP_200_OK
+            )
 
-        conversation = [
-            {"role": e["role"], "content": e["content"]} for e in echanges
-        ]
-        interpretation = interpret_duplication_instruction(conversation, source_date, today)
+        conversation = [{"role": e["role"], "content": e["content"]} for e in echanges]
+        interpretation = interpret_duplication_instruction(
+            conversation, source_date, today
+        )
 
         if interpretation["status"] != "ready":
             echanges = echanges + [

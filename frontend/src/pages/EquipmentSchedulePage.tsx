@@ -13,6 +13,7 @@ import styles from "./EquipmentSchedulePage.module.scss";
 import EquipmentCalendarModel from "../models/EquipmentCalendar";
 import { Slot } from "../models/DailyEquipmentPlan";
 import DailyEquipmentPlan, { RawDailyEquipmentPlan } from "../models/DailyEquipmentPlan";
+import applyAiEquipmentPlanModification from "../services/applyAiEquipmentPlanModification";
 
 interface CurrentMonth {
   year: number;
@@ -20,7 +21,7 @@ interface CurrentMonth {
 }
 
 export default function EquipmentSchedulePage() {
-  const { user } = useAuth();
+  const { user, accessToken, refresh } = useAuth();
   const [calendar, setCalendar] = useState<EquipmentCalendarModel | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDateObj, setSelectedDateObj] = useState<SimpleDate | null>(null);
@@ -108,12 +109,14 @@ export default function EquipmentSchedulePage() {
     applyChange(new DailyEquipmentPlan(newRaw));
   };
 
-  // Not wired to a backend yet: no generic equivalent of
-  // applyAiPlanModification exists for planning/api. Visible and
-  // interactive, but a silent no-op (closes as if it worked, changes
-  // nothing) rather than calling anything.
-  const handleAiRequest = async (_instruction: string) => {
-    return;
+  const handleAiRequest = async (instruction: string) => {
+    if (!dailyPlan || !accessToken) return;
+    const newPlan = await applyAiEquipmentPlanModification(
+      { instruction, plan: dailyPlan.raw },
+      accessToken,
+      refresh
+    );
+    applyChange(newPlan);
   };
 
   // Not wired to a backend yet (calendar carries no status to refresh).

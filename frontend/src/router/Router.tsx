@@ -3,6 +3,7 @@ import Home from '../pages/Home';
 import ConsumptionPage from '../pages/ConsumptionPage';
 import LiveTeleinfoPage from '../pages/LiveTeleinfoPage';
 import HeatingSchedulePage from '../pages/HeatingSchedulePage';
+import EquipmentSchedulePage from '../pages/EquipmentSchedulePage';
 import Layout from '../layouts/Layout';
 import NotFound from '../pages/NotFound';
 
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
       { path: 'consumption', element: <ConsumptionPage /> },
       { path: 'teleinfo', element: <LiveTeleinfoPage /> },
       { path: 'heating/schedule', element: <HeatingSchedulePage /> },
+      { path: 'equipment/schedule', element: <EquipmentSchedulePage /> },
       { path: '*', element: <NotFound /> },
     ],
   },

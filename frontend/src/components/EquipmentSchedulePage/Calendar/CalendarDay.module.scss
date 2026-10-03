@@ -1,0 +1,40 @@
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/mixins' as *;
+
+.dayButton {
+  @include flex-center;
+  width: 28px;
+  height: 28px;
+  border-radius: $radius-round;
+  border: none;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: $transition-fast;
+  font-weight: $font-weight-normal;
+  font-size: $font-size-xs;
+  position: relative;
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// ============================================
+// STATES
+// ============================================
+.otherMonth {
+  color: $text-dark;
+  opacity: 0.4;
+}
+
+.today {
+  background: $color-primary !important;
+  color: white !important;
+  font-weight: $font-weight-semibold;
+}
+
+.selected {
+  background: $color-info !important;
+  color: white !important;
+  font-weight: $font-weight-semibold;
+}

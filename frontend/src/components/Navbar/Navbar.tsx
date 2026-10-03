@@ -39,6 +39,7 @@ export default function Navbar() {
     { to: "/teleinfo", text: "Téléinformation" },
     { to: "/consumption", text: "Suivi consommation" },
     { to: "/heating/schedule", text: "Chauffages" },
+    { to: "/equipment/schedule", text: "Équipements programmables" },
   ];
 
   return (

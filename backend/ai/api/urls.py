@@ -1,10 +1,19 @@
 from django.urls import path
 
-from ai.api.views import AiHeatingPlanDuplicateView, AiHeatingPlanModifyView
+from ai.api.views import (
+    AiEquipmentPlanModifyView,
+    AiHeatingPlanDuplicateView,
+    AiHeatingPlanModifyView,
+)
 
 urlpatterns = [
     path(
         "heating/modify/", AiHeatingPlanModifyView.as_view(), name="ai-heating-modify"
+    ),
+    path(
+        "equipment/modify/",
+        AiEquipmentPlanModifyView.as_view(),
+        name="ai-equipment-modify",
     ),
     path(
         "heating/duplicate/",

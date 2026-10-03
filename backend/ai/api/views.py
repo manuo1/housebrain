@@ -7,11 +7,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ai.api.serializers import (
+    AiEquipmentPlanModifyInputSerializer,
     AiHeatingPlanDuplicateInputSerializer,
     AiHeatingPlanModifyInputSerializer,
 )
 from ai.services.duplication_interpreter import interpret_duplication_instruction
-from ai.services.plan_modifier import modify_heating_plan
+from ai.services.plan_modifier import modify_equipment_plan, modify_heating_plan
 from heating.api.mutators import duplicate_heating_plan_with_override
 from heating.api.selectors import get_daily_heating_plan, get_room_heating_day_plan_data
 from heating.api.services import (
@@ -35,6 +36,20 @@ class AiHeatingPlanModifyView(APIView):
         params = serializer.validated_data
 
         modified_plan = modify_heating_plan(
+            instruction=params["instruction"],
+            plan=params["plan"],
+        )
+
+        return Response(modified_plan, status=status.HTTP_200_OK)
+
+
+class AiEquipmentPlanModifyView(APIView):
+    def post(self, request):
+        serializer = AiEquipmentPlanModifyInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        modified_plan = modify_equipment_plan(
             instruction=params["instruction"],
             plan=params["plan"],
         )

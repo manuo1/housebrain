@@ -6,6 +6,11 @@ class AiHeatingPlanModifyInputSerializer(serializers.Serializer):
     plan = serializers.DictField()
 
 
+class AiEquipmentPlanModifyInputSerializer(serializers.Serializer):
+    instruction = serializers.CharField(min_length=1, max_length=500)
+    plan = serializers.DictField()
+
+
 class DuplicationExchangeSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=["user", "assistant"])
     content = serializers.CharField()

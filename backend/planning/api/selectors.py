@@ -1,5 +1,7 @@
 from datetime import date
 
+from planning.models import SchedulePattern
+
 
 def get_schedulable_equipment_config(schedulable_equipments: list, type_name: str):
     for config in schedulable_equipments:
@@ -92,3 +94,48 @@ def get_equipment_names_by_type_and_ids(
             names[(type_name, equipment_id)] = name
 
     return names
+
+
+def get_equipment_day_plan_data(
+    schedulable_equipments: list, day: date, refs: set[tuple[str, int]]
+) -> list[tuple[str, int, int]]:
+    """
+    Returns (type_name, equipment_id, schedule_pattern_id) for each ref in
+    `refs` (a set of (type_name, equipment_id)), read from `day`'s plans.
+
+    An equipment without a plan on `day` is returned with the empty
+    pattern rather than skipped, so duplicating an empty day also empties
+    the target days (same behavior as the heating duplication). Refs whose
+    type_name isn't registered are skipped: callers are expected to have
+    validated them beforehand.
+
+    One query per equipment type, regardless of how many instances.
+    """
+    if not isinstance(day, date) or not isinstance(refs, set) or not refs:
+        return []
+
+    ids_by_type: dict[str, set[int]] = {}
+    for type_name, equipment_id in refs:
+        ids_by_type.setdefault(type_name, set()).add(equipment_id)
+
+    results = []
+    empty_pattern_id = None
+    for type_name, ids in ids_by_type.items():
+        config = get_schedulable_equipment_config(schedulable_equipments, type_name)
+        if config is None:
+            continue
+
+        existing = list(
+            config.equipment_dayplan.objects.filter(
+                date=day, equipment_id__in=ids
+            ).values_list("equipment_id", "schedule_pattern_id")
+        )
+        results.extend((type_name, eid, pid) for eid, pid in existing)
+
+        missing_ids = ids - {eid for eid, _ in existing}
+        if missing_ids:
+            if empty_pattern_id is None:
+                empty_pattern_id = SchedulePattern.get_or_create_from_slots([])[0].id
+            results.extend((type_name, eid, empty_pattern_id) for eid in missing_ids)
+
+    return results

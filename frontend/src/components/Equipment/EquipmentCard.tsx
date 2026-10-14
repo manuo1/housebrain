@@ -17,7 +17,7 @@ export default function EquipmentCard({ equipment, onOpeningTriggered }: Equipme
   const [triggerError, setTriggerError] = useState<string | null>(null);
 
   const { pressing, progress, secondsLeft, handlers } = useLongPress({
-    durationMs: 5000,
+    durationMs: 3000,
     onComplete: async () => {
       if (!accessToken) return;
       // Snapshot avant trigger : la porte de garage étant "fermée" veut dire

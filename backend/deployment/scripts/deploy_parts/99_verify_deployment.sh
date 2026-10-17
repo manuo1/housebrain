@@ -91,4 +91,20 @@ for dir in "${DIRS[@]}"; do
     fi
 done
 
+# Vérification de journald : logs persistants (config effective + fichier actif sur disque)
+EFFECTIVE_STORAGE=$(systemd-analyze cat-config systemd/journald.conf 2>/dev/null \
+    | grep -E '^Storage=' | tail -1 | cut -d= -f2)
+
+if [ "$EFFECTIVE_STORAGE" = "persistent" ]; then
+    print_success "journald : Storage effectif = persistent."
+else
+    print_error "journald : Storage effectif = '$EFFECTIVE_STORAGE' (attendu : persistent), les logs sont perdus à chaque reboot."
+fi
+
+if ls /var/log/journal/*/system.journal > /dev/null 2>&1; then
+    print_success "journald : journal actif sous /var/log/journal."
+else
+    print_error "journald : aucun journal sous /var/log/journal (écriture en RAM)."
+fi
+
 print_success "Vérification complète terminée."

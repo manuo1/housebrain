@@ -44,11 +44,27 @@ sudo journalctl -u gunicorn -f -o json-pretty --no-pager
 ```
 ---
 ## **Persistance des logs (journald) :**
-Les logs journald sont configurés en persistant (`/etc/systemd/journald.conf`, `Storage=persistent`) : ils survivent aux reboots et aux freezes, contrairement au mode par défaut (RAM uniquement).
+Les logs journald sont configurés en persistant : ils survivent aux reboots et aux freezes, contrairement au mode par défaut (RAM uniquement, perdus à chaque redémarrage).
+
+**Piège Raspberry Pi OS** : le système fournit `/usr/lib/systemd/journald.conf.d/40-rpi-volatile-storage.conf` (`Storage=volatile`). Les drop-ins `.conf.d/` s'appliquent APRÈS `/etc/systemd/journald.conf` et l'écrasent : modifier `journald.conf` seul n'a aucun effet.
+
+**Config en place** : drop-in `/etc/systemd/journald.conf.d/99-housebrain.conf` (le préfixe `99` le fait passer après tous les drop-ins fournis par le système ; `/etc` n'est jamais écrasé par `apt`). Il est écrit et vérifié par `deploy_parts/01b_configure_journald.sh`, rejoué à chaque update. Contenu : `Storage=persistent`, `SystemMaxUse=100M`, `SystemMaxFileSize=20M`, `MaxRetentionSec=30day`, `Compress=yes`.
+
+**Vérifier la config EFFECTIVE** (tous fichiers fusionnés, la dernière valeur de `Storage=` gagne) :
+```bash
+systemd-analyze cat-config systemd/journald.conf | grep -E '^(Storage|SystemMax|MaxRetention|Compress)'
+```
+
+**Vérifier que le journal est bien sur disque** (doit lister un `system.journal`, pas `/run/log/journal`) :
+```bash
+ls /var/log/journal/*/
+```
+
+Si `01b` sort en erreur (`Storage effectif ≠ persistent`), un autre fichier de conf passe après le drop-in : `systemd-analyze cat-config systemd/journald.conf | grep -nE '^(#|Storage=)'` montre lequel. `99_verify_deployment.sh` contrôle aussi ces deux points.
 
 **Espace disque utilisé par les logs** :
 ```bash
-journalctl --disk-usage
+journalctl --no-pager --disk-usage
 ```
 
 **Purge** : automatique, gérée par journald (`SystemMaxUse=100M`, `SystemMaxFileSize=20M`, `MaxRetentionSec=30day`). Aucune action manuelle nécessaire.
